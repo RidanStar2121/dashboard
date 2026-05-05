@@ -82,57 +82,58 @@ tr:hover {
 
 <script>
 
-let sheetURL = "https://script.google.com/macros/s/AKfycbxYCJOlTOjlWJsruTTsUGrKutimQXzyED5utioIwiHCN2vSpVacS8HHsxb4oWJ7RvgjMA/exec";
+const sheetURL = "https://script.google.com/macros/s/AKfycbxYCJOlTOjlWJsruTTsUGrKutimQXzyED5utioIwiHCN2vSpVacS8HHsxb4oWJ7RvgjMA/exec";
 
-fetch(sheetURL)
-.then(res => res.text())   // 🔥 مهم جدًا (ليس json)
-.then(text => {
-
-  document.getElementById("loading").style.display = "none";
-
-  let data = [];
-
+async function loadData() {
   try {
-    data = JSON.parse(text);
-  } catch (e) {
-    console.log("خطأ JSON:", e);
-    alert("❌ خطأ في جلب البيانات من السيرفر");
-    return;
+
+    const res = await fetch(sheetURL);
+
+    if (!res.ok) {
+      throw new Error("HTTP ERROR");
+    }
+
+    const text = await res.text();
+
+    const data = JSON.parse(text);
+
+    document.getElementById("loading").style.display = "none";
+
+    const table = document.getElementById("dataTable");
+
+    if (!Array.isArray(data) || data.length === 0) {
+      table.innerHTML += `
+        <tr>
+          <td colspan="6">⚠️ لا توجد بيانات بعد</td>
+        </tr>
+      `;
+      return;
+    }
+
+    data.forEach(row => {
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${row.id || ""}</td>
+        <td>${row.name || ""}</td>
+        <td>${row.age || ""}</td>
+        <td>${row.phone || ""}</td>
+        <td>${row.course || ""}</td>
+        <td>${row.date || ""}</td>
+      `;
+
+      table.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.log(err);
+    document.getElementById("loading").innerHTML =
+      "❌ خطأ في الاتصال بالسيرفر أو البيانات";
   }
+}
 
-  let table = document.getElementById("dataTable");
-
-  if (data.length === 0) {
-    table.innerHTML += `
-      <tr>
-        <td colspan="6">⚠️ لا توجد بيانات بعد</td>
-      </tr>
-    `;
-    return;
-  }
-
-  data.forEach(row => {
-
-    let tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${row.id ?? ""}</td>
-      <td>${row.name ?? ""}</td>
-      <td>${row.age ?? ""}</td>
-      <td>${row.phone ?? ""}</td>
-      <td>${row.course ?? ""}</td>
-      <td>${row.date ?? ""}</td>
-    `;
-
-    table.appendChild(tr);
-  });
-
-})
-.catch(err => {
-  console.log(err);
-  document.getElementById("loading").innerHTML =
-    "❌ خطأ في الاتصال بالسيرفر";
-});
+loadData();
 
 </script>
 
