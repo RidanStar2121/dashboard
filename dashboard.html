@@ -18,6 +18,7 @@ body {
   color: white;
   padding: 15px;
   text-align: center;
+  font-size: 18px;
 }
 
 .container {
@@ -46,6 +47,12 @@ th {
 tr:hover {
   background: #f1f1f1;
 }
+
+.loading {
+  text-align: center;
+  padding: 15px;
+  color: gray;
+}
 </style>
 
 </head>
@@ -69,33 +76,62 @@ tr:hover {
     </tr>
   </table>
 
+  <div class="loading" id="loading">⏳ جاري تحميل البيانات...</div>
+
 </div>
 
 <script>
 
-// ضع هنا رابط Google Sheets JSON
 let sheetURL = "https://script.google.com/macros/s/AKfycbxTGELHHIGsGQno1bxZmh5JELRm5QturBpEi9NlvyF6aOGSKUUTcDIC0m9KT9K3PeBUPw/exec";
 
 fetch(sheetURL)
-.then(res => res.json())
-.then(data => {
+.then(res => res.text())   // 🔥 مهم جدًا (ليس json)
+.then(text => {
+
+  document.getElementById("loading").style.display = "none";
+
+  let data = [];
+
+  try {
+    data = JSON.parse(text);
+  } catch (e) {
+    console.log("خطأ JSON:", e);
+    alert("❌ خطأ في جلب البيانات من السيرفر");
+    return;
+  }
 
   let table = document.getElementById("dataTable");
 
-  data.forEach(row => {
-    let tr = `
+  if (data.length === 0) {
+    table.innerHTML += `
       <tr>
-        <td>${row.id}</td>
-        <td>${row.name}</td>
-        <td>${row.age}</td>
-        <td>${row.phone}</td>
-        <td>${row.course}</td>
-        <td>${row.date}</td>
+        <td colspan="6">⚠️ لا توجد بيانات بعد</td>
       </tr>
     `;
-    table.innerHTML += tr;
+    return;
+  }
+
+  data.forEach(row => {
+
+    let tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${row.id ?? ""}</td>
+      <td>${row.name ?? ""}</td>
+      <td>${row.age ?? ""}</td>
+      <td>${row.phone ?? ""}</td>
+      <td>${row.course ?? ""}</td>
+      <td>${row.date ?? ""}</td>
+    `;
+
+    table.appendChild(tr);
   });
 
+})
+.catch(err => {
+  console.log(err);
+  document.getElementById("loading").innerHTML =
+    "❌ خطأ في الاتصال بالسيرفر";
 });
 
 </script>
