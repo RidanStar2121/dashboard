@@ -25,6 +25,33 @@ body {
   padding: 20px;
 }
 
+/* أدوات التحكم */
+.tools {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.tools input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  flex: 1;
+}
+
+.tools button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+}
+
+.add { background: #28a745; }
+.edit { background: #ffc107; color: black; }
+.delete { background: #dc3545; }
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -48,6 +75,10 @@ tr:hover {
   background: #f1f1f1;
 }
 
+.selected {
+  background: #d1ecf1 !important;
+}
+
 .loading {
   text-align: center;
   padding: 15px;
@@ -60,10 +91,18 @@ tr:hover {
 <body>
 
 <div class="header">
-  📊 لوحة التحكم أكاديمية وضاح للعلوم - الطلاب المسجلين
+  📊 لوحة التحكم أكاديمية وضاح للعلوم
 </div>
 
 <div class="container">
+
+  <!-- أدوات -->
+  <div class="tools">
+    <input type="text" id="search" placeholder="🔍 بحث بالاسم أو الرقم ID">
+    <button class="add" onclick="addStudent()">➕ إضافة</button>
+    <button class="edit" onclick="editStudent()">✏️ تعديل</button>
+    <button class="delete" onclick="deleteStudent()">🗑️ حذف</button>
+  </div>
 
   <table id="dataTable">
     <tr>
@@ -84,53 +123,121 @@ tr:hover {
 
 const sheetURL = "https://script.google.com/macros/s/AKfycbz-a90ud2aPiXUEMJcku1dhmu3mdofjFfv8lhsa9V8i-3QLRxvocYSIlWR7DV9hf3CLFQ/exec";
 
+let allData = [];
+let selectedRow = null;
+
 async function loadData() {
   try {
 
     const res = await fetch(sheetURL);
-
-    if (!res.ok) {
-      throw new Error("HTTP ERROR");
-    }
-
-    const text = await res.text();
-
-    const data = JSON.parse(text);
+    const data = await res.json();
 
     document.getElementById("loading").style.display = "none";
 
-    const table = document.getElementById("dataTable");
-
-    if (!Array.isArray(data) || data.length === 0) {
-      table.innerHTML += `
-        <tr>
-          <td colspan="6">⚠️ لا توجد بيانات بعد</td>
-        </tr>
-      `;
-      return;
-    }
-
-    data.forEach(row => {
-
-      const tr = document.createElement("tr");
-
-      tr.innerHTML = `
-        <td>${row.id || ""}</td>
-        <td>${row.name || ""}</td>
-        <td>${row.age || ""}</td>
-        <td>${row.phone || ""}</td>
-        <td>${row.course || ""}</td>
-        <td>${row.date || ""}</td>
-      `;
-
-      table.appendChild(tr);
-    });
+    allData = data;
+    renderTable(data);
 
   } catch (err) {
-    console.log(err);
     document.getElementById("loading").innerHTML =
-      "❌ خطأ في الاتصال بالسيرفر أو البيانات";
+      "❌ خطأ في الاتصال بالسيرفر";
   }
+}
+
+function renderTable(data) {
+  const table = document.getElementById("dataTable");
+  table.innerHTML = `
+    <tr>
+      <th>🆔</th>
+      <th>👦 الاسم</th>
+      <th>🎂 العمر</th>
+      <th>📱 الهاتف</th>
+      <th>📚 الدورة</th>
+      <th>📅 التاريخ</th>
+    </tr>
+  `;
+
+  data.forEach((row, index) => {
+
+    const tr = document.createElement("tr");
+
+    tr.onclick = () => {
+      document.querySelectorAll("tr").forEach(r => r.classList.remove("selected"));
+      tr.classList.add("selected");
+      selectedRow = row;
+    };
+
+    tr.innerHTML = `
+      <td>${row.id}</td>
+      <td>${row.name}</td>
+      <td>${row.age}</td>
+      <td>${row.phone}</td>
+      <td>${row.course}</td>
+      <td>${row.date}</td>
+    `;
+
+    table.appendChild(tr);
+  });
+}
+
+/* 🔍 البحث */
+document.getElementById("search").addEventListener("input", function() {
+  let val = this.value.toLowerCase();
+
+  let filtered = allData.filter(r =>
+    r.name.toLowerCase().includes(val) ||
+    r.id.toLowerCase().includes(val)
+  );
+
+  renderTable(filtered);
+});
+
+/* ➕ إضافة */
+function addStudent() {
+  let name = prompt("اسم الطفل:");
+  let age = prompt("العمر:");
+  let phone = prompt("الهاتف:");
+  let course = prompt("الدورة:");
+
+  if (!name) return;
+
+  fetch(sheetURL, {
+    method: "POST",
+    body: JSON.stringify({name, age, phone, course})
+  }).then(() => location.reload());
+}
+
+/* ✏️ تعديل */
+function editStudent() {
+  if (!selectedRow) return alert("اختر طالب");
+
+  let name = prompt("اسم الطفل:", selectedRow.name);
+  let age = prompt("العمر:", selectedRow.age);
+  let phone = prompt("الهاتف:", selectedRow.phone);
+  let course = prompt("الدورة:", selectedRow.course);
+
+  fetch(sheetURL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "edit",
+      id: selectedRow.id,
+      name, age, phone, course
+    })
+  }).then(() => location.reload());
+}
+
+/* 🗑️ حذف */
+function deleteStudent() {
+  if (!selectedRow) return alert("اختر طالب");
+
+  if (!confirm("هل تريد الحذف؟")) return;
+
+  fetch(sheetURL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "delete",
+      id: selectedRow.id
+    })
+  }).then(() => location.reload());
 }
 
 loadData();
