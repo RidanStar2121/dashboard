@@ -84,6 +84,11 @@ tr:hover {
   padding: 15px;
   color: gray;
 }
+
+.count {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
 </style>
 
 </head>
@@ -95,6 +100,9 @@ tr:hover {
 </div>
 
 <div class="container">
+
+  <!-- عدد المسجلين -->
+  <div class="count" id="count">👥 عدد المسجلين: 0</div>
 
   <!-- أدوات -->
   <div class="tools">
@@ -130,14 +138,16 @@ async function loadData() {
   try {
 
     const res = await fetch(sheetURL);
-
-    if (!res.ok) throw new Error("Server Error");
-
     const data = await res.json();
 
     document.getElementById("loading").style.display = "none";
 
     allData = data;
+
+    // عدد المسجلين
+    document.getElementById("count").innerText =
+      "👥 عدد المسجلين: " + data.length;
+
     renderTable(data);
 
   } catch (err) {
@@ -149,6 +159,7 @@ async function loadData() {
 
 function renderTable(data) {
   const table = document.getElementById("dataTable");
+
   table.innerHTML = `
     <tr>
       <th>🆔</th>
@@ -197,6 +208,7 @@ document.getElementById("search").addEventListener("input", function() {
 
 /* ➕ إضافة */
 function addStudent() {
+
   let name = prompt("اسم الطفل:");
   let age = prompt("العمر:");
   let phone = prompt("الهاتف:");
@@ -206,15 +218,19 @@ function addStudent() {
 
   fetch(sheetURL, {
     method: "POST",
+    mode: "no-cors", // 🔥 الحل
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({name, age, phone, course})
-  }).then(() => location.reload());
+  }).then(() => {
+    setTimeout(loadData, 1000);
+  });
 }
 
 /* ✏️ تعديل */
 function editStudent() {
+
   if (!selectedRow) return alert("اختر طالب");
 
   let name = prompt("اسم الطفل:", selectedRow.name);
@@ -224,6 +240,7 @@ function editStudent() {
 
   fetch(sheetURL, {
     method: "POST",
+    mode: "no-cors",
     headers: {
       "Content-Type": "application/json"
     },
@@ -232,17 +249,21 @@ function editStudent() {
       id: selectedRow.id,
       name, age, phone, course
     })
-  }).then(() => location.reload());
+  }).then(() => {
+    setTimeout(loadData, 1000);
+  });
 }
 
 /* 🗑️ حذف */
 function deleteStudent() {
+
   if (!selectedRow) return alert("اختر طالب");
 
   if (!confirm("هل تريد الحذف؟")) return;
 
   fetch(sheetURL, {
     method: "POST",
+    mode: "no-cors",
     headers: {
       "Content-Type": "application/json"
     },
@@ -250,7 +271,9 @@ function deleteStudent() {
       action: "delete",
       id: selectedRow.id
     })
-  }).then(() => location.reload());
+  }).then(() => {
+    setTimeout(loadData, 1000);
+  });
 }
 
 loadData();
