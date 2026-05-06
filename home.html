@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الرئيسية</title>
+
+<style>
+body {
+  font-family: 'Cairo', sans-serif;
+  margin: 0;
+  background: #f5f7fa;
+  direction: rtl;
+}
+
+/* HEADER */
+.header {
+  background: #007bff;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-size: 18px;
+  position: relative;
+}
+
+.logout-btn {
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  background: #dc3545;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+/* container */
+.container {
+  padding: 20px;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+  gap: 15px;
+}
+
+/* CARD */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.3s;
+  border: 1px solid #eee;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* ICON */
+.icon {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+/* TITLE */
+.title {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* COLORS */
+.blue { color:#007bff; }
+.green { color:#28a745; }
+.orange { color:#ffc107; }
+.red { color:#dc3545; }
+.cyan { color:#17a2b8; }
+.purple { color:#6f42c1; }
+.dark { color:#343a40; }
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+🏫 نظام إدارة أكاديمية وضاح
+<button class="logout-btn" onclick="logout()">🚪 خروج</button>
+</div>
+
+<div class="container">
+
+<div class="grid">
+
+<!-- لوحة التحكم -->
+<div class="card" onclick="go('dashboard.html')">
+  <div class="icon blue">📊</div>
+  <div class="title">لوحة التحكم</div>
+</div>
+
+<!-- تسجيل طالب -->
+<div class="card" onclick="go('add.html')">
+  <div class="icon green">📝</div>
+  <div class="title">تسجيل طالب</div>
+</div>
+
+<!-- الأساتذة -->
+<div class="card" onclick="go('teachers.html')">
+  <div class="icon purple">👨‍🏫</div>
+  <div class="title">الأساتذة</div>
+</div>
+
+<!-- المواد -->
+<div class="card" onclick="go('courses.html')">
+  <div class="icon orange">📚</div>
+  <div class="title">المواد والمستويات</div>
+</div>
+
+<!-- الحضور -->
+<div class="card" onclick="go('attendance.html')">
+  <div class="icon cyan">🕒</div>
+  <div class="title">الحضور والغيابات</div>
+</div>
+
+<!-- الدفع -->
+<div class="card" onclick="go('payments.html')">
+  <div class="icon green">💰</div>
+  <div class="title">الدفع والفواتير</div>
+</div>
+
+<!-- إدارة المجموعات (AI) -->
+<div class="card" onclick="go('groups.html')">
+  <div class="icon blue">🧠</div>
+  <div class="title">تقسيم المجموعات الذكي</div>
+</div>
+
+<!-- التقارير -->
+<div class="card" onclick="go('reports.html')">
+  <div class="icon dark">📈</div>
+  <div class="title">التقارير</div>
+</div>
+
+<!-- الإعدادات -->
+<div class="card" onclick="go('settings.html')">
+  <div class="icon red">⚙️</div>
+  <div class="title">الإعدادات</div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* حماية */
+if (!localStorage.getItem("role")) {
+  window.location.href = "index.html";
+}
+
+/* تنقل */
+function go(page){
+  window.location.href = page;
+}
+
+/* خروج */
+function logout(){
+  localStorage.removeItem("role");
+  window.location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>
