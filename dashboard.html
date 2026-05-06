@@ -38,12 +38,28 @@ body {
   padding: 20px;
 }
 
+/* الإحصائيات */
 .count {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   font-weight: bold;
-  line-height: 1.8;
 }
 
+.badges {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.badge {
+  background: #007bff;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+/* أدوات */
 .tools {
   display: flex;
   gap: 10px;
@@ -111,7 +127,10 @@ th {
 
 <div class="container">
 
-  <div class="count" id="count">👥 عدد المسجلين: 0</div>
+  <div class="count">
+    <div id="total">👥 عدد المسجلين: 0</div>
+    <div class="badges" id="coursesStats"></div>
+  </div>
 
   <div class="tools">
     <input type="text" id="search" placeholder="🔍 بحث بالاسم أو الرقم ID">
@@ -137,7 +156,7 @@ th {
 
 <script>
 
-/* 🔐 حماية الصفحة */
+/* حماية */
 if (!localStorage.getItem("role")) {
   window.location.href = "index.html";
 }
@@ -147,7 +166,7 @@ const sheetURL = "https://script.google.com/macros/s/AKfycbw4Uwp3sG1nLDt8_LkEKRz
 let allData = [];
 let selectedRow = null;
 
-/* 🚪 تسجيل الخروج */
+/* خروج */
 function logout() {
   localStorage.removeItem("role");
   window.location.href = "index.html";
@@ -155,7 +174,6 @@ function logout() {
 
 async function loadData() {
   try {
-
     const res = await fetch(sheetURL);
     const data = await res.json();
 
@@ -163,40 +181,42 @@ async function loadData() {
 
     allData = data;
 
-    updateCounts(data); // 🔥 الجديد
-
+    updateStats(data); // 🔥 الجديد
     renderTable(data);
 
-  } catch (err) {
+  } catch {
     document.getElementById("loading").innerHTML =
       "❌ خطأ في الاتصال بالسيرفر";
   }
 }
 
-/* 🔥 حساب الإحصائيات */
-function updateCounts(data) {
+/* 🔥 إحصائيات ذكية */
+function updateStats(data) {
 
-  let total = data.length;
+  document.getElementById("total").innerText =
+    "👥 عدد المسجلين: " + data.length;
 
-  let counts = {
-    "Scratch": 0,
-    "Python": 0,
-    "روبوتيك": 0,
-    "ذكاء اصطناعي": 0
-  };
+  let courseCounts = {};
 
   data.forEach(row => {
-    if (counts[row.course] !== undefined) {
-      counts[row.course]++;
+    let course = row.course || "غير محدد";
+
+    if (!courseCounts[course]) {
+      courseCounts[course] = 0;
     }
+
+    courseCounts[course]++;
   });
 
-  document.getElementById("count").innerHTML =
-    `👥 عدد المسجلين: ${total} |
-     🎮 Scratch: ${counts["Scratch"]} |
-     🐍 Python: ${counts["Python"]} |
-     🤖 روبوتيك: ${counts["روبوتيك"]} |
-     🧠 ذكاء اصطناعي: ${counts["ذكاء اصطناعي"]}`;
+  let container = document.getElementById("coursesStats");
+  container.innerHTML = "";
+
+  for (let course in courseCounts) {
+    let badge = document.createElement("div");
+    badge.className = "badge";
+    badge.innerText = `${course}: ${courseCounts[course]}`;
+    container.appendChild(badge);
+  }
 }
 
 function renderTable(data) {
@@ -213,8 +233,7 @@ function renderTable(data) {
     </tr>
   `;
 
-  data.forEach((row) => {
-
+  data.forEach(row => {
     const tr = document.createElement("tr");
 
     tr.onclick = () => {
@@ -236,7 +255,7 @@ function renderTable(data) {
   });
 }
 
-/* 🔍 البحث */
+/* بحث */
 document.getElementById("search").addEventListener("input", function() {
   let val = this.value.toLowerCase();
 
@@ -248,9 +267,8 @@ document.getElementById("search").addEventListener("input", function() {
   renderTable(filtered);
 });
 
-/* ➕ إضافة */
+/* إضافة */
 function addStudent() {
-
   let name = prompt("اسم الطفل:");
   let age = prompt("العمر:");
   let phone = prompt("الهاتف:");
@@ -261,14 +279,13 @@ function addStudent() {
   fetch(sheetURL, {
     method: "POST",
     mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({name, age, phone, course})
   }).then(() => setTimeout(loadData, 1000));
 }
 
-/* ✏️ تعديل */
+/* تعديل */
 function editStudent() {
-
   if (!selectedRow) return alert("اختر طالب");
 
   let name = prompt("اسم الطفل:", selectedRow.name);
@@ -279,7 +296,7 @@ function editStudent() {
   fetch(sheetURL, {
     method: "POST",
     mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
       action: "edit",
       id: selectedRow.id,
@@ -288,9 +305,8 @@ function editStudent() {
   }).then(() => setTimeout(loadData, 1000));
 }
 
-/* 🗑️ حذف */
+/* حذف */
 function deleteStudent() {
-
   if (!selectedRow) return alert("اختر طالب");
 
   if (!confirm("هل تريد الحذف؟")) return;
@@ -298,7 +314,7 @@ function deleteStudent() {
   fetch(sheetURL, {
     method: "POST",
     mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
       action: "delete",
       id: selectedRow.id
