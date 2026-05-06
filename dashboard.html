@@ -34,14 +34,9 @@ body {
   cursor: pointer;
 }
 
-.container {
-  padding: 20px;
-}
+.container { padding: 20px; }
 
-.count {
-  margin-bottom: 15px;
-  font-weight: bold;
-}
+.count { margin-bottom: 15px; font-weight: bold; }
 
 .badges {
   margin-top: 8px;
@@ -104,9 +99,7 @@ th {
   color: white;
 }
 
-.selected {
-  background: #d1ecf1 !important;
-}
+.selected { background: #d1ecf1 !important; }
 
 .loading {
   text-align: center;
@@ -114,7 +107,6 @@ th {
   color: gray;
 }
 </style>
-
 </head>
 
 <body>
@@ -154,25 +146,69 @@ th {
   </table>
 
   <div class="loading" id="loading">⏳ جاري تحميل البيانات...</div>
-
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
 
-if (!localStorage.getItem("role")) {
-  window.location.href = "index.html";
-}
-
 const sheetURL = "https://script.google.com/macros/s/AKfycbypM94eQdFgV8zOYvvzg52I1bNFfR84hPr4jFtKTlIPT11Lkbloj-Q3eWfzHmATVlBMWw/exec";
 
 let allData = [];
 let selectedRow = null;
 
-function logout() {
-  localStorage.removeItem("role");
-  window.location.href = "index.html";
+/* 🔥 أهم إصلاح في حياتك */
+function normalizeCourse(course) {
+  if (!course) return "unknown";
+
+  return course
+    .toString()
+    .toLowerCase()
+    .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "") // حذف الإيموجي
+    .replace(/\s+/g, "") // حذف الفراغات
+    .trim();
+}
+
+/* تحويل إلى اسم واضح */
+function courseLabel(key) {
+
+  const map = {
+    "scratch": "Scratch",
+    "python": "Python",
+    "روبوتيك": "روبوتيك",
+    "ذكاءاصطناعي": "ذكاء اصطناعي"
+  };
+
+  return map[key] || key;
+}
+
+function updateStats(data) {
+
+  document.getElementById("total").innerText =
+    "👥 عدد المسجلين: " + data.length;
+
+  let counts = {};
+
+  data.forEach(row => {
+
+    let key = normalizeCourse(row.course);
+
+    if (!counts[key]) counts[key] = 0;
+    counts[key]++;
+  });
+
+  let container = document.getElementById("coursesStats");
+  container.innerHTML = "";
+
+  Object.keys(counts).forEach(k => {
+
+    let badge = document.createElement("div");
+    badge.className = "badge";
+
+    badge.innerText = `${courseLabel(k)}: ${counts[k]}`;
+
+    container.appendChild(badge);
+  });
 }
 
 async function loadData() {
@@ -185,32 +221,6 @@ async function loadData() {
 
   updateStats(data);
   renderTable(data);
-}
-
-/* 🔥 إحصائيات */
-function updateStats(data) {
-
-  document.getElementById("total").innerText =
-    "👥 عدد المسجلين: " + data.length;
-
-  let courseCounts = {};
-
-  data.forEach(row => {
-    let course = row.course || "غير محدد";
-
-    if (!courseCounts[course]) courseCounts[course] = 0;
-    courseCounts[course]++;
-  });
-
-  let container = document.getElementById("coursesStats");
-  container.innerHTML = "";
-
-  for (let c in courseCounts) {
-    let badge = document.createElement("div");
-    badge.className = "badge";
-    badge.innerText = `${c}: ${courseCounts[c]}`;
-    container.appendChild(badge);
-  }
 }
 
 function renderTable(data) {
@@ -228,6 +238,7 @@ function renderTable(data) {
   `;
 
   data.forEach(row => {
+
     const tr = document.createElement("tr");
 
     tr.onclick = () => {
@@ -247,94 +258,6 @@ function renderTable(data) {
 
     table.appendChild(tr);
   });
-}
-
-/* 🔍 بحث */
-document.getElementById("search").addEventListener("input", function() {
-  let val = this.value.toLowerCase();
-
-  let filtered = allData.filter(r =>
-    (r.name && r.name.toLowerCase().includes(val)) ||
-    (r.id && r.id.toLowerCase().includes(val))
-  );
-
-  renderTable(filtered);
-});
-
-/* 📥 تصدير الكل */
-function exportAll() {
-  let wb = XLSX.utils.json_to_book(allData, {sheet: "All"});
-  XLSX.writeFile(wb, "كل_الطلاب.xlsx");
-}
-
-/* 🎯 تصدير حسب الدورة */
-function exportByCourse() {
-
-  let courses = [...new Set(allData.map(x => x.course).filter(Boolean))];
-
-  let course = prompt("اكتب اسم الدورة:\n" + courses.join("\n"));
-
-  if (!course) return;
-
-  let filtered = allData.filter(x => x.course === course);
-
-  if (filtered.length === 0) {
-    alert("لا يوجد بيانات لهذه الدورة");
-    return;
-  }
-
-  let wb = XLSX.utils.json_to_book(filtered, {sheet: course});
-  XLSX.writeFile(wb, course + ".xlsx");
-}
-
-/* إضافة */
-function addStudent() {
-  let name = prompt("اسم الطفل:");
-  let age = prompt("العمر:");
-  let phone = prompt("الهاتف:");
-  let course = prompt("الدورة:");
-
-  fetch(sheetURL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify({name, age, phone, course})
-  }).then(() => setTimeout(loadData, 1000));
-}
-
-/* تعديل */
-function editStudent() {
-  if (!selectedRow) return alert("اختر طالب");
-
-  let name = prompt("اسم الطفل:", selectedRow.name);
-  let age = prompt("العمر:", selectedRow.age);
-  let phone = prompt("الهاتف:", selectedRow.phone);
-  let course = prompt("الدورة:", selectedRow.course);
-
-  fetch(sheetURL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify({
-      action: "edit",
-      id: selectedRow.id,
-      name, age, phone, course
-    })
-  }).then(() => setTimeout(loadData, 1000));
-}
-
-/* حذف */
-function deleteStudent() {
-  if (!selectedRow) return alert("اختر طالب");
-
-  if (!confirm("هل تريد الحذف؟")) return;
-
-  fetch(sheetURL, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify({
-      action: "delete",
-      id: selectedRow.id
-    })
-  }).then(() => setTimeout(loadData, 1000));
 }
 
 loadData();
