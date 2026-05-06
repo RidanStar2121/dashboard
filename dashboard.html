@@ -22,7 +22,6 @@ body {
   position: relative;
 }
 
-/* زر الخروج */
 .logout-btn {
   position: absolute;
   left: 15px;
@@ -35,21 +34,16 @@ body {
   cursor: pointer;
 }
 
-.logout-btn:hover {
-  background: #b52a37;
-}
-
 .container {
   padding: 20px;
 }
 
-/* عدد المسجلين */
 .count {
   margin-bottom: 10px;
   font-weight: bold;
+  line-height: 1.8;
 }
 
-/* أدوات التحكم */
 .tools {
   display: flex;
   gap: 10px;
@@ -93,10 +87,6 @@ th, td {
 th {
   background: #007bff;
   color: white;
-}
-
-tr:hover {
-  background: #f1f1f1;
 }
 
 .selected {
@@ -173,8 +163,7 @@ async function loadData() {
 
     allData = data;
 
-    document.getElementById("count").innerText =
-      "👥 عدد المسجلين: " + data.length;
+    updateCounts(data); // 🔥 الجديد
 
     renderTable(data);
 
@@ -182,6 +171,32 @@ async function loadData() {
     document.getElementById("loading").innerHTML =
       "❌ خطأ في الاتصال بالسيرفر";
   }
+}
+
+/* 🔥 حساب الإحصائيات */
+function updateCounts(data) {
+
+  let total = data.length;
+
+  let counts = {
+    "Scratch": 0,
+    "Python": 0,
+    "روبوتيك": 0,
+    "ذكاء اصطناعي": 0
+  };
+
+  data.forEach(row => {
+    if (counts[row.course] !== undefined) {
+      counts[row.course]++;
+    }
+  });
+
+  document.getElementById("count").innerHTML =
+    `👥 عدد المسجلين: ${total} |
+     🎮 Scratch: ${counts["Scratch"]} |
+     🐍 Python: ${counts["Python"]} |
+     🤖 روبوتيك: ${counts["روبوتيك"]} |
+     🧠 ذكاء اصطناعي: ${counts["ذكاء اصطناعي"]}`;
 }
 
 function renderTable(data) {
@@ -246,9 +261,7 @@ function addStudent() {
   fetch(sheetURL, {
     method: "POST",
     mode: "no-cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({name, age, phone, course})
   }).then(() => setTimeout(loadData, 1000));
 }
@@ -266,9 +279,7 @@ function editStudent() {
   fetch(sheetURL, {
     method: "POST",
     mode: "no-cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       action: "edit",
       id: selectedRow.id,
@@ -287,9 +298,7 @@ function deleteStudent() {
   fetch(sheetURL, {
     method: "POST",
     mode: "no-cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       action: "delete",
       id: selectedRow.id
