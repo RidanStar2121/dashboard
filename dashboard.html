@@ -280,6 +280,31 @@ function renderTable(data) {
   });
 }
 
+function suggestGroups(data){
+
+  let courses = {};
+
+  data.forEach(x=>{
+    let c = normalizeCourse(x.course);
+    courses[c] = (courses[c]||0)+1;
+  });
+
+  for(let c in courses){
+    let n = courses[c];
+
+    if(n > 10){
+      console.log(`⚠️ ${c}: اقسم إلى مجموعتين`);
+    } else if(n < 5){
+      console.log(`💡 ${c}: يمكن دمجه مع دورة أخرى`);
+    } else {
+      console.log(`✅ ${c}: عدد مناسب`);
+    }
+  }
+}
+
+
+
+  
 /* البحث */
 document.getElementById("search").addEventListener("input", function() {
 
