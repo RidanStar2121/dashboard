@@ -38,6 +38,11 @@ body {
 
 .count { margin-bottom: 15px; font-weight: bold; }
 
+#total {
+  cursor: pointer;
+  color: #007bff;
+}
+
 .badges {
   margin-top: 8px;
   display: flex;
@@ -51,6 +56,7 @@ body {
   padding: 5px 10px;
   border-radius: 20px;
   font-size: 13px;
+  cursor: pointer;
 }
 
 .tools {
@@ -119,7 +125,7 @@ th {
 <div class="container">
 
   <div class="count">
-    <div id="total">👥 عدد المسجلين: 0</div>
+    <div id="total">👥 عدد المسجلين: 0 (اضغط للكل)</div>
     <div class="badges" id="coursesStats"></div>
   </div>
 
@@ -134,16 +140,7 @@ th {
     <button class="excel" onclick="exportByCourse()">🎯 Excel حسب الدورة</button>
   </div>
 
-  <table id="dataTable">
-    <tr>
-      <th>🆔</th>
-      <th>👦 الاسم</th>
-      <th>🎂 العمر</th>
-      <th>📱 الهاتف</th>
-      <th>📚 الدورة</th>
-      <th>📅 التاريخ</th>
-    </tr>
-  </table>
+  <table id="dataTable"></table>
 
   <div class="loading" id="loading">⏳ جاري تحميل البيانات...</div>
 </div>
@@ -156,8 +153,9 @@ const sheetURL = "https://script.google.com/macros/s/AKfycbypM94eQdFgV8zOYvvzg52
 
 let allData = [];
 let selectedRow = null;
+let currentFilter = "all";
 
-/* تشغيل آمن */
+/* حماية */
 if (!localStorage.getItem("role")) {
   window.location.href = "index.html";
 }
@@ -167,34 +165,19 @@ function logout() {
   window.location.href = "index.html";
 }
 
-/* 🔥 أهم إصلاح: توحيد الدورات بشكل ذكي */
+/* normalize قوي */
 function normalizeCourse(course) {
   if (!course) return "unknown";
 
   return course
     .toString()
     .toLowerCase()
-    .replace(/🎮|🤖|🐍|🧠/g, "")   // إزالة الإيموجي اليدوي
-    .replace(/\s+/g, "")          // إزالة الفراغات
+    .replace(/[\s🎮🤖🐍🧠]/g, "")
     .trim();
 }
 
-/* عرض جميل */
-function courseLabel(key) {
-
-  const map = {
-    "scratch": "Scratch",
-    "python": "Python",
-    "روبوتيك": "روبوتيك",
-    "ذكاءاصطناعي": "ذكاء اصطناعي"
-  };
-
-  return map[key] || key;
-}
-
-/* تحميل البيانات */
+/* تحميل */
 async function loadData() {
-
   const res = await fetch(sheetURL);
   const data = await res.json();
 
@@ -206,32 +189,56 @@ async function loadData() {
   renderTable(data);
 }
 
-/* الإحصائيات */
+/* 🔥 الإحصائيات + الفلترة */
 function updateStats(data) {
 
   document.getElementById("total").innerText =
-    "👥 عدد المسجلين: " + data.length;
+    "👥 عدد المسجلين: " + data.length + " (اضغط للكل)";
 
   let counts = {};
 
-  data.forEach(row => {
-
+  allData.forEach(row => {
     let key = normalizeCourse(row.course);
-
-    if (!counts[key]) counts[key] = 0;
-    counts[key]++;
+    counts[key] = (counts[key] || 0) + 1;
   });
 
   let container = document.getElementById("coursesStats");
   container.innerHTML = "";
 
+  // زر الكل
+  let allBtn = document.createElement("div");
+  allBtn.className = "badge";
+  allBtn.innerText = "📊 الكل";
+  allBtn.onclick = () => {
+    currentFilter = "all";
+    renderTable(allData);
+    updateStats(allData);
+  };
+  container.appendChild(allBtn);
+
   Object.keys(counts).forEach(k => {
 
     let badge = document.createElement("div");
     badge.className = "badge";
-    badge.innerText = `${courseLabel(k)}: ${counts[k]}`;
+    badge.innerText = `${k} (${counts[k]})`;
+
+    badge.onclick = () => {
+      currentFilter = k;
+      let filtered = allData.filter(x => normalizeCourse(x.course) === k);
+      renderTable(filtered);
+      document.getElementById("total").innerText =
+        "👥 عدد المسجلين: " + filtered.length + " (اضغط للكل)";
+    };
+
     container.appendChild(badge);
   });
+
+  // الضغط على العدد يرجع الكل
+  document.getElementById("total").onclick = () => {
+    currentFilter = "all";
+    renderTable(allData);
+    updateStats(allData);
+  };
 }
 
 /* الجدول */
@@ -262,10 +269,10 @@ function renderTable(data) {
 
     tr.innerHTML = `
       <td>${row.id || ""}</td>
-      <td>${row.name || ""}</td>
-      <td>${row.age || ""}</td>
-      <td>${row.phone || ""}</td>
-      <td>${row.course || ""}</td>
+      <td>👦 ${row.name || ""}</td>
+      <td>🎂 ${row.age || ""}</td>
+      <td>📱 ${row.phone || ""}</td>
+      <td>📚 ${row.course || ""}</td>
       <td>${row.date || ""}</td>
     `;
 
@@ -273,7 +280,7 @@ function renderTable(data) {
   });
 }
 
-/* بحث */
+/* البحث */
 document.getElementById("search").addEventListener("input", function() {
 
   let val = this.value.toLowerCase();
@@ -286,13 +293,12 @@ document.getElementById("search").addEventListener("input", function() {
   renderTable(filtered);
 });
 
-/* Excel الكل */
+/* Excel */
 function exportAll() {
   let wb = XLSX.utils.json_to_book(allData, {sheet: "All"});
   XLSX.writeFile(wb, "students.xlsx");
 }
 
-/* Excel حسب الدورة */
 function exportByCourse() {
 
   let courses = [...new Set(allData.map(x => x.course).filter(Boolean))];
@@ -301,7 +307,7 @@ function exportByCourse() {
 
   if (!course) return;
 
-  let filtered = allData.filter(x => x.course === course);
+  let filtered = allData.filter(x => normalizeCourse(x.course) === normalizeCourse(course));
 
   if (filtered.length === 0) {
     alert("لا يوجد بيانات");
@@ -312,15 +318,12 @@ function exportByCourse() {
   XLSX.writeFile(wb, course + ".xlsx");
 }
 
-/* إضافة */
+/* CRUD */
 function addStudent() {
-
   let name = prompt("اسم الطفل:");
   let age = prompt("العمر:");
   let phone = prompt("الهاتف:");
   let course = prompt("الدورة:");
-
-  if (!name) return;
 
   fetch(sheetURL, {
     method: "POST",
@@ -328,9 +331,7 @@ function addStudent() {
   }).then(() => setTimeout(loadData, 1000));
 }
 
-/* تعديل */
 function editStudent() {
-
   if (!selectedRow) return alert("اختر طالب");
 
   let name = prompt("اسم الطفل:", selectedRow.name);
@@ -348,9 +349,7 @@ function editStudent() {
   }).then(() => setTimeout(loadData, 1000));
 }
 
-/* حذف */
 function deleteStudent() {
-
   if (!selectedRow) return alert("اختر طالب");
 
   if (!confirm("هل تريد الحذف؟")) return;
