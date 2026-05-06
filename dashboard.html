@@ -124,7 +124,7 @@ th {
 
 <div class="header">
   📊 لوحة التحكم أكاديمية وضاح للعلوم
-  <button class="logout-btn" onclick="logout()">🚪 خروج</button>
+  <button class="logout-btn" onclick="logout()">🚪 عودة</button>
 </div>
  
 <div class="container">
@@ -169,7 +169,7 @@ if (!localStorage.getItem("role")) {
 
 function logout() {
   localStorage.removeItem("role");
-  window.location.href = "index.html";
+  window.location.href = "home.html";
 }
 
 /* normalize */
