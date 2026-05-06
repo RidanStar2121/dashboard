@@ -38,7 +38,6 @@ body {
   padding: 20px;
 }
 
-/* الإحصائيات */
 .count {
   margin-bottom: 15px;
   font-weight: bold;
@@ -59,7 +58,6 @@ body {
   font-size: 13px;
 }
 
-/* أدوات */
 .tools {
   display: flex;
   gap: 10px;
@@ -181,7 +179,7 @@ async function loadData() {
 
     allData = data;
 
-    updateStats(data); // 🔥 الجديد
+    updateStats(data);
     renderTable(data);
 
   } catch {
@@ -190,7 +188,7 @@ async function loadData() {
   }
 }
 
-/* 🔥 إحصائيات ذكية */
+/* 🔥 إحصائيات مصححة 100% */
 function updateStats(data) {
 
   document.getElementById("total").innerText =
@@ -199,13 +197,22 @@ function updateStats(data) {
   let courseCounts = {};
 
   data.forEach(row => {
-    let course = row.course || "غير محدد";
 
-    if (!courseCounts[course]) {
-      courseCounts[course] = 0;
+    if (!row.course) return;
+
+    // 🔥 تنظيف الاسم
+    let course = row.course.toString().trim().toLowerCase();
+
+    if (course === "") return;
+
+    // 🔥 توحيد العرض
+    let display = course.charAt(0).toUpperCase() + course.slice(1);
+
+    if (!courseCounts[display]) {
+      courseCounts[display] = 0;
     }
 
-    courseCounts[course]++;
+    courseCounts[display]++;
   });
 
   let container = document.getElementById("coursesStats");
