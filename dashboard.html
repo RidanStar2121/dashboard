@@ -107,6 +107,11 @@ th {
 
 .selected { background: #d1ecf1 !important; }
 
+/* ألوان المجموعات */
+.group-A { background:#d4edda; }
+.group-B { background:#fff3cd; }
+.group-C { background:#f8d7da; }
+
 .loading {
   text-align: center;
   padding: 15px;
@@ -136,7 +141,8 @@ th {
     <button class="edit" onclick="editStudent()">✏️ تعديل</button>
     <button class="delete" onclick="deleteStudent()">🗑️ حذف</button>
 
-    <div class="tools"><button class="excel" onclick="runAI()">🧠 تحليل ذكي</button></div>
+    <button class="excel" onclick="runAI()">🧠 تحليل ذكي</button>
+    <button class="excel" onclick="exportGroups()">📊 Excel المجموعات</button>
   </div>
 
   <table id="dataTable"></table>
@@ -153,6 +159,8 @@ const sheetURL = "https://script.google.com/macros/s/AKfycbypM94eQdFgV8zOYvvzg52
 let allData = [];
 let selectedRow = null;
 let currentFilter = "all";
+let groupMode = false;
+let groupMap = {};
 
 /* حماية */
 if (!localStorage.getItem("role")) {
@@ -164,15 +172,9 @@ function logout() {
   window.location.href = "index.html";
 }
 
-/* normalize قوي */
+/* normalize */
 function normalizeCourse(course) {
-  if (!course) return "unknown";
-
-  return course
-    .toString()
-    .toLowerCase()
-    .replace(/[\s🎮🤖🐍🧠]/g, "")
-    .trim();
+  return (course||"").toString().toLowerCase().replace(/[\s🎮🤖🐍🧠]/g,"").trim();
 }
 
 /* تحميل */
@@ -183,12 +185,11 @@ async function loadData() {
   document.getElementById("loading").style.display = "none";
 
   allData = data;
-
   updateStats(data);
   renderTable(data);
 }
 
-/* 🔥 الإحصائيات + الفلترة */
+/* الإحصائيات */
 function updateStats(data) {
 
   document.getElementById("total").innerText =
@@ -204,7 +205,6 @@ function updateStats(data) {
   let container = document.getElementById("coursesStats");
   container.innerHTML = "";
 
-  // زر الكل
   let allBtn = document.createElement("div");
   allBtn.className = "badge";
   allBtn.innerText = "📊 الكل";
@@ -216,25 +216,19 @@ function updateStats(data) {
   container.appendChild(allBtn);
 
   Object.keys(counts).forEach(k => {
-
     let badge = document.createElement("div");
     badge.className = "badge";
     badge.innerText = `${k} (${counts[k]})`;
 
     badge.onclick = () => {
-      currentFilter = k;
       let filtered = allData.filter(x => normalizeCourse(x.course) === k);
       renderTable(filtered);
-      document.getElementById("total").innerText =
-        "👥 عدد المسجلين: " + filtered.length + " (اضغط للكل)";
     };
 
     container.appendChild(badge);
   });
 
-  // الضغط على العدد يرجع الكل
   document.getElementById("total").onclick = () => {
-    currentFilter = "all";
     renderTable(allData);
     updateStats(allData);
   };
@@ -246,19 +240,25 @@ function renderTable(data) {
   const table = document.getElementById("dataTable");
 
   table.innerHTML = `
-    <tr>
-      <th>🆔</th>
-      <th>👦 الاسم</th>
-      <th>🎂 العمر</th>
-      <th>📱 الهاتف</th>
-      <th>📚 الدورة</th>
-      <th>📅 التاريخ</th>
-    </tr>
-  `;
+<tr>
+  <th>🆔</th>
+  <th>👦 الاسم</th>
+  <th>🎂 العمر</th>
+  <th>📱 الهاتف</th>
+  <th>📚 الدورة</th>
+  <th>👥 المجموعة</th>
+  <th>📅 التاريخ</th>
+</tr>`;
 
   data.forEach(row => {
 
+    let group = groupMode ? (groupMap[row.id] || "-") : "-";
+
     const tr = document.createElement("tr");
+
+    if(group !== "-"){
+      tr.classList.add("group-" + group);
+    }
 
     tr.onclick = () => {
       document.querySelectorAll("tr").forEach(r => r.classList.remove("selected"));
@@ -271,7 +271,8 @@ function renderTable(data) {
       <td>👦 ${row.name || ""}</td>
       <td>🎂 ${row.age || ""}</td>
       <td>📱 ${row.phone || ""}</td>
-      <td>📚 ${row.course || ""}</td>
+      <td>${row.course || ""}</td>
+      <td>${group}</td>
       <td>${row.date || ""}</td>
     `;
 
@@ -279,34 +280,62 @@ function renderTable(data) {
   });
 }
 
-function suggestGroups(data){
+/* AI تقسيم احترافي حسب العمر */
+function runAI(){
 
-  let courses = {};
+  groupMode = true;
+  groupMap = {};
 
-  data.forEach(x=>{
-    let c = normalizeCourse(x.course);
-    courses[c] = (courses[c]||0)+1;
+  let students = [...allData].map(s => ({
+    ...s,
+    age: parseInt(s.age)||0
+  }));
+
+  // ترتيب حسب العمر
+  students.sort((a,b)=> a.age - b.age);
+
+  let groupSize = 10;
+  let groupNames = ["A","B","C","D","E"];
+
+  students.forEach((s,i)=>{
+    let groupIndex = Math.floor(i / groupSize);
+    let g = groupNames[groupIndex] || "Z";
+    groupMap[s.id] = g;
   });
 
-  for(let c in courses){
-    let n = courses[c];
+  // ترتيب الجدول حسب المجموعة
+  let sorted = [...students].sort((a,b)=>{
+    return (groupMap[a.id]||"").localeCompare(groupMap[b.id]||"");
+  });
 
-    if(n > 10){
-      console.log(`⚠️ ${c}: اقسم إلى مجموعتين`);
-    } else if(n < 5){
-      console.log(`💡 ${c}: يمكن دمجه مع دورة أخرى`);
-    } else {
-      console.log(`✅ ${c}: عدد مناسب`);
-    }
-  }
+  renderTable(sorted);
+
+  alert("✅ تم التقسيم حسب العمر + ترتيب المجموعات");
 }
 
+/* Excel المجموعات */
+function exportGroups(){
 
+  if(!groupMode){
+    alert("قم بتشغيل التحليل الذكي أولاً");
+    return;
+  }
 
-  
+  let exportData = allData.map(x=>({
+    id:x.id,
+    name:x.name,
+    age:x.age,
+    phone:x.phone,
+    course:x.course,
+    group:groupMap[x.id] || "-"
+  }));
+
+  let wb = XLSX.utils.json_to_book(exportData);
+  XLSX.writeFile(wb,"groups.xlsx");
+}
+
 /* البحث */
 document.getElementById("search").addEventListener("input", function() {
-
   let val = this.value.toLowerCase();
 
   let filtered = allData.filter(r =>
@@ -317,32 +346,7 @@ document.getElementById("search").addEventListener("input", function() {
   renderTable(filtered);
 });
 
-/* Excel */
-function exportAll() {
-  let wb = XLSX.utils.json_to_book(allData, {sheet: "All"});
-  XLSX.writeFile(wb, "students.xlsx");
-}
-
-function exportByCourse() {
-
-  let courses = [...new Set(allData.map(x => x.course).filter(Boolean))];
-
-  let course = prompt("اكتب اسم الدورة:\n" + courses.join("\n"));
-
-  if (!course) return;
-
-  let filtered = allData.filter(x => normalizeCourse(x.course) === normalizeCourse(course));
-
-  if (filtered.length === 0) {
-    alert("لا يوجد بيانات");
-    return;
-  }
-
-  let wb = XLSX.utils.json_to_book(filtered, {sheet: "course"});
-  XLSX.writeFile(wb, course + ".xlsx");
-}
-
-/* CRUD */
+/* CRUD (لم يتغير) */
 function addStudent() {
   let name = prompt("اسم الطفل:");
   let age = prompt("العمر:");
@@ -389,106 +393,6 @@ function deleteStudent() {
 
 loadData();
 
-
-/* =========================
-   🧠 AI SMART ANALYSIS
-========================= */
-function runAI(){
-
-  try{
-
-    if(!allData || allData.length === 0){
-      alert("لا توجد بيانات");
-      return;
-    }
-
-    let courses = {};
-
-    /* تجميع حسب الدورة */
-    allData.forEach(x=>{
-      let key = normalizeCourse(x.course);
-      if(!courses[key]) courses[key] = [];
-      courses[key].push(x);
-    });
-
-    let message = "🧠 توزيع ذكي حسب العمر:\n\n";
-
-    Object.keys(courses).forEach(c=>{
-
-      let students = courses[c].map(s => ({
-        ...s,
-        age: parseInt(s.age) || 0
-      }));
-
-      let label = courseLabel(c);
-
-      message += `📚 ${label} (${students.length} طالب)\n`;
-
-      /* 🔥 ترتيب حسب العمر */
-      students.sort((a,b)=> b.age - a.age);
-
-      let groupA = [];
-      let groupB = [];
-
-      /* 🔥 توزيع متوازن */
-      students.forEach((s,i)=>{
-        if(i % 2 === 0){
-          groupA.push(s);
-        } else {
-          groupB.push(s);
-        }
-      });
-
-      /* عرض */
-      if(students.length >= 6){
-
-        message += `👥 Group A (${groupA.length}):\n`;
-        message += groupA.map(s => `${s.name}(${s.age})`).join("، ") + "\n";
-
-        message += `👥 Group B (${groupB.length}):\n`;
-        message += groupB.map(s => `${s.name}(${s.age})`).join("، ") + "\n";
-
-      } else {
-
-        message += `👥 مجموعة واحدة:\n`;
-        message += students.map(s => `${s.name}(${s.age})`).join("، ") + "\n";
-
-      }
-
-      message += "----------------------\n";
-
-    });
-
-    alert(message);
-
-  }catch(e){
-    console.error(e);
-    alert("❌ خطأ في AI");
-  }
-}
-
-
-
-
-  
-
-/* 🔥 حل المشكل: إضافة courseLabel */
-function courseLabel(key) {
-  const map = {
-    "scratch": "Scratch",
-    "python": "Python",
-    "روبوتيك": "روبوتيك",
-    "ذكاءاصطناعي": "ذكاء اصطناعي",
-    "ai": "ذكاء اصطناعي"
-  };
-
-  return map[key] || key;
-}
-
-
-
-  
-  
 </script>
 
 </body>
