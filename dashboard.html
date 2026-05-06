@@ -83,6 +83,7 @@ body {
 .add { background: #28a745; }
 .edit { background: #ffc107; color: black; }
 .delete { background: #dc3545; }
+.excel { background: #17a2b8; }
 
 table {
   width: 100%;
@@ -132,9 +133,13 @@ th {
 
   <div class="tools">
     <input type="text" id="search" placeholder="🔍 بحث بالاسم أو الرقم ID">
+    
     <button class="add" onclick="addStudent()">➕ إضافة</button>
     <button class="edit" onclick="editStudent()">✏️ تعديل</button>
     <button class="delete" onclick="deleteStudent()">🗑️ حذف</button>
+
+    <!-- 🔥 زر Excel -->
+    <button class="excel" onclick="exportExcel()">⬇️ Excel</button>
   </div>
 
   <table id="dataTable">
@@ -152,6 +157,9 @@ th {
 
 </div>
 
+<!-- 🔥 مكتبة Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <script>
 
 if (!localStorage.getItem("role")) {
@@ -168,13 +176,12 @@ function logout() {
   window.location.href = "index.html";
 }
 
-/* 🔥 أهم إصلاح: توحيد أسماء الدورات */
 function normalizeCourse(course) {
   if (!course) return "غير محدد";
 
   return course
     .toString()
-    .replace(/[^\p{L}\p{N}\s]/gu, "") // حذف الإيموجي والرموز
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
     .trim()
     .toLowerCase();
 }
@@ -197,7 +204,6 @@ async function loadData() {
   }
 }
 
-/* 🔥 الإحصائيات الصحيحة */
 function updateStats(data) {
 
   document.getElementById("total").innerText =
@@ -264,7 +270,7 @@ function renderTable(data) {
   });
 }
 
-/* البحث */
+/* 🔍 البحث */
 document.getElementById("search").addEventListener("input", function() {
   let val = this.value.toLowerCase();
 
@@ -275,6 +281,16 @@ document.getElementById("search").addEventListener("input", function() {
 
   renderTable(filtered);
 });
+
+/* 📥 Excel Export */
+function exportExcel() {
+
+  let table = document.getElementById("dataTable");
+
+  let wb = XLSX.utils.table_to_book(table, {sheet: "Students"});
+
+  XLSX.writeFile(wb, "students.xlsx");
+}
 
 /* إضافة */
 function addStudent() {
