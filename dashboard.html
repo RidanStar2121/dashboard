@@ -154,7 +154,6 @@ th {
 
 <script>
 
-/* حماية */
 if (!localStorage.getItem("role")) {
   window.location.href = "index.html";
 }
@@ -164,10 +163,20 @@ const sheetURL = "https://script.google.com/macros/s/AKfycbw4Uwp3sG1nLDt8_LkEKRz
 let allData = [];
 let selectedRow = null;
 
-/* خروج */
 function logout() {
   localStorage.removeItem("role");
   window.location.href = "index.html";
+}
+
+/* 🔥 أهم إصلاح: توحيد أسماء الدورات */
+function normalizeCourse(course) {
+  if (!course) return "غير محدد";
+
+  return course
+    .toString()
+    .replace(/[^\p{L}\p{N}\s]/gu, "") // حذف الإيموجي والرموز
+    .trim()
+    .toLowerCase();
 }
 
 async function loadData() {
@@ -188,7 +197,7 @@ async function loadData() {
   }
 }
 
-/* 🔥 إحصائيات مصححة 100% */
+/* 🔥 الإحصائيات الصحيحة */
 function updateStats(data) {
 
   document.getElementById("total").innerText =
@@ -198,21 +207,13 @@ function updateStats(data) {
 
   data.forEach(row => {
 
-    if (!row.course) return;
+    let course = normalizeCourse(row.course);
 
-    // 🔥 تنظيف الاسم
-    let course = row.course.toString().trim().toLowerCase();
-
-    if (course === "") return;
-
-    // 🔥 توحيد العرض
-    let display = course.charAt(0).toUpperCase() + course.slice(1);
-
-    if (!courseCounts[display]) {
-      courseCounts[display] = 0;
+    if (!courseCounts[course]) {
+      courseCounts[course] = 0;
     }
 
-    courseCounts[display]++;
+    courseCounts[course]++;
   });
 
   let container = document.getElementById("coursesStats");
@@ -241,6 +242,7 @@ function renderTable(data) {
   `;
 
   data.forEach(row => {
+
     const tr = document.createElement("tr");
 
     tr.onclick = () => {
@@ -262,7 +264,7 @@ function renderTable(data) {
   });
 }
 
-/* بحث */
+/* البحث */
 document.getElementById("search").addEventListener("input", function() {
   let val = this.value.toLowerCase();
 
