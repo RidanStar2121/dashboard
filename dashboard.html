@@ -121,7 +121,7 @@ th {
   📊 لوحة التحكم أكاديمية وضاح للعلوم
   <button class="logout-btn" onclick="logout()">🚪 خروج</button>
 </div>
-
+ <div class="tools"><button class="excel" onclick="runAI()">🧠 تحليل ذكي</button></div>
 <div class="container">
 
   <div class="count">
@@ -390,6 +390,82 @@ function deleteStudent() {
 
 loadData();
 
+
+/* =========================
+   🧠 AI SMART ANALYSIS
+========================= */
+function runAI(){
+
+  try{
+
+    if(!allData || allData.length === 0){
+      alert("لا توجد بيانات");
+      return;
+    }
+
+    let courses = {};
+
+    allData.forEach(x=>{
+      let key = normalizeCourse(x.course);
+      courses[key] = (courses[key] || 0) + 1;
+    });
+
+    let message = "🧠 تحليل ذكي للطلاب:\n\n";
+
+    Object.keys(courses).forEach(c=>{
+
+      let count = courses[c];
+      let label = courseLabel(c);
+
+      if(count >= 15){
+        message += `⚠️ ${label}: ${count} طالب (مزدحمة - قسمها إلى مجموعتين)\n`;
+      }
+      else if(count >= 8){
+        message += `✅ ${label}: ${count} طالب (ممتاز)\n`;
+      }
+      else if(count >= 4){
+        message += `👌 ${label}: ${count} طالب (جيد)\n`;
+      }
+      else{
+        message += `💡 ${label}: ${count} طالب (قليل - يمكن دمجه)\n`;
+      }
+
+    });
+
+    message += "\n🎯 اقتراحات:\n";
+
+    let smallCourses = Object.keys(courses).filter(c=>courses[c] < 5);
+
+    if(smallCourses.length >= 2){
+      message += "👉 يمكن دمج: " + smallCourses.map(c=>courseLabel(c)).join(" + ");
+    } else {
+      message += "👉 التوزيع جيد حالياً";
+    }
+
+    alert(message);
+
+  }catch(e){
+    console.error(e);
+    alert("❌ حدث خطأ في التحليل الذكي");
+  }
+}
+
+
+
+/* 🔥 حل المشكل: إضافة courseLabel */
+function courseLabel(key) {
+  const map = {
+    "scratch": "Scratch",
+    "python": "Python",
+    "روبوتيك": "روبوتيك",
+    "ذكاءاصطناعي": "ذكاء اصطناعي",
+    "ai": "ذكاء اصطناعي"
+  };
+
+  return map[key] || key;
+}
+
+  
 </script>
 
 </body>
