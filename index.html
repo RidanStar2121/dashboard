@@ -47,6 +47,21 @@ button {
   color: red;
   margin-top: 10px;
 }
+
+.role {
+  margin-top: 10px;
+  font-size: 13px;
+  color: gray;
+}
+
+/* تذكرني */
+.remember {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 14px;
+  margin: 5px 0;
+}
 </style>
 
 </head>
@@ -59,22 +74,91 @@ button {
   <input type="text" id="username" placeholder="اسم المستخدم">
   <input type="password" id="password" placeholder="كلمة المرور">
 
+  <!-- ✅ تذكرني -->
+  <div class="remember">
+    <input type="checkbox" id="remember">
+    <label for="remember">تذكرني</label>
+  </div>
+
   <button onclick="login()">دخول</button>
 
   <div class="error" id="errorMsg"></div>
+  <div class="role" id="roleMsg"></div>
 </div>
 
 <script>
-function login() {
-  let user = document.getElementById("username").value;
-  let pass = document.getElementById("password").value;
 
-  if(user === "admin" && pass === "admin") {
-    window.location.href = "dashboard.html";
-  } else {
-    document.getElementById("errorMsg").innerText = "❌ معلومات خاطئة";
+/* 🔥 دخول تلقائي إذا كان محفوظ */
+window.onload = function() {
+
+  let savedUser = localStorage.getItem("savedUser");
+  let savedPass = localStorage.getItem("savedPass");
+
+  if(savedUser && savedPass) {
+
+    document.getElementById("username").value = savedUser;
+    document.getElementById("password").value = savedPass;
+    document.getElementById("remember").checked = true;
+
+    // دخول مباشر
+    login();
   }
 }
+
+function login() {
+
+  let user = document.getElementById("username").value.trim();
+  let pass = document.getElementById("password").value.trim();
+  let remember = document.getElementById("remember").checked;
+
+  // 👑 المدير الرئيسي
+  if(user === "admin" && pass === "ridan8484") {
+
+    localStorage.setItem("role", "super_admin");
+
+    if(remember){
+      localStorage.setItem("savedUser", user);
+      localStorage.setItem("savedPass", pass);
+    } else {
+      localStorage.removeItem("savedUser");
+      localStorage.removeItem("savedPass");
+    }
+
+    document.getElementById("roleMsg").innerText = "👑 دخول كمدير رئيسي";
+
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 800);
+
+    return;
+  }
+
+  // 👨‍💼 مدير
+  if(user === "admin" && pass === "admin") {
+
+    localStorage.setItem("role", "admin");
+
+    if(remember){
+      localStorage.setItem("savedUser", user);
+      localStorage.setItem("savedPass", pass);
+    } else {
+      localStorage.removeItem("savedUser");
+      localStorage.removeItem("savedPass");
+    }
+
+    document.getElementById("roleMsg").innerText = "👨‍💼 دخول كمدير";
+
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 800);
+
+    return;
+  }
+
+  // ❌ خطأ
+  document.getElementById("errorMsg").innerText = "❌ معلومات خاطئة";
+}
+
 </script>
 
 </body>
