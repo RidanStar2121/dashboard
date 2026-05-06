@@ -157,19 +157,29 @@ const sheetURL = "https://script.google.com/macros/s/AKfycbypM94eQdFgV8zOYvvzg52
 let allData = [];
 let selectedRow = null;
 
-/* 🔥 أهم إصلاح في حياتك */
+/* تشغيل آمن */
+if (!localStorage.getItem("role")) {
+  window.location.href = "index.html";
+}
+
+function logout() {
+  localStorage.removeItem("role");
+  window.location.href = "index.html";
+}
+
+/* 🔥 أهم إصلاح: توحيد الدورات بشكل ذكي */
 function normalizeCourse(course) {
   if (!course) return "unknown";
 
   return course
     .toString()
     .toLowerCase()
-    .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "") // حذف الإيموجي
-    .replace(/\s+/g, "") // حذف الفراغات
+    .replace(/🎮|🤖|🐍|🧠/g, "")   // إزالة الإيموجي اليدوي
+    .replace(/\s+/g, "")          // إزالة الفراغات
     .trim();
 }
 
-/* تحويل إلى اسم واضح */
+/* عرض جميل */
 function courseLabel(key) {
 
   const map = {
@@ -182,6 +192,21 @@ function courseLabel(key) {
   return map[key] || key;
 }
 
+/* تحميل البيانات */
+async function loadData() {
+
+  const res = await fetch(sheetURL);
+  const data = await res.json();
+
+  document.getElementById("loading").style.display = "none";
+
+  allData = data;
+
+  updateStats(data);
+  renderTable(data);
+}
+
+/* الإحصائيات */
 function updateStats(data) {
 
   document.getElementById("total").innerText =
@@ -204,26 +229,14 @@ function updateStats(data) {
 
     let badge = document.createElement("div");
     badge.className = "badge";
-
     badge.innerText = `${courseLabel(k)}: ${counts[k]}`;
-
     container.appendChild(badge);
   });
 }
 
-async function loadData() {
-  const res = await fetch(sheetURL);
-  const data = await res.json();
-
-  document.getElementById("loading").style.display = "none";
-
-  allData = data;
-
-  updateStats(data);
-  renderTable(data);
-}
-
+/* الجدول */
 function renderTable(data) {
+
   const table = document.getElementById("dataTable");
 
   table.innerHTML = `
@@ -258,6 +271,97 @@ function renderTable(data) {
 
     table.appendChild(tr);
   });
+}
+
+/* بحث */
+document.getElementById("search").addEventListener("input", function() {
+
+  let val = this.value.toLowerCase();
+
+  let filtered = allData.filter(r =>
+    (r.name && r.name.toLowerCase().includes(val)) ||
+    (r.id && r.id.toLowerCase().includes(val))
+  );
+
+  renderTable(filtered);
+});
+
+/* Excel الكل */
+function exportAll() {
+  let wb = XLSX.utils.json_to_book(allData, {sheet: "All"});
+  XLSX.writeFile(wb, "students.xlsx");
+}
+
+/* Excel حسب الدورة */
+function exportByCourse() {
+
+  let courses = [...new Set(allData.map(x => x.course).filter(Boolean))];
+
+  let course = prompt("اكتب اسم الدورة:\n" + courses.join("\n"));
+
+  if (!course) return;
+
+  let filtered = allData.filter(x => x.course === course);
+
+  if (filtered.length === 0) {
+    alert("لا يوجد بيانات");
+    return;
+  }
+
+  let wb = XLSX.utils.json_to_book(filtered, {sheet: "course"});
+  XLSX.writeFile(wb, course + ".xlsx");
+}
+
+/* إضافة */
+function addStudent() {
+
+  let name = prompt("اسم الطفل:");
+  let age = prompt("العمر:");
+  let phone = prompt("الهاتف:");
+  let course = prompt("الدورة:");
+
+  if (!name) return;
+
+  fetch(sheetURL, {
+    method: "POST",
+    body: JSON.stringify({name, age, phone, course})
+  }).then(() => setTimeout(loadData, 1000));
+}
+
+/* تعديل */
+function editStudent() {
+
+  if (!selectedRow) return alert("اختر طالب");
+
+  let name = prompt("اسم الطفل:", selectedRow.name);
+  let age = prompt("العمر:", selectedRow.age);
+  let phone = prompt("الهاتف:", selectedRow.phone);
+  let course = prompt("الدورة:", selectedRow.course);
+
+  fetch(sheetURL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "edit",
+      id: selectedRow.id,
+      name, age, phone, course
+    })
+  }).then(() => setTimeout(loadData, 1000));
+}
+
+/* حذف */
+function deleteStudent() {
+
+  if (!selectedRow) return alert("اختر طالب");
+
+  if (!confirm("هل تريد الحذف؟")) return;
+
+  fetch(sheetURL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "delete",
+      id: selectedRow.id
+    })
+  }).then(() => setTimeout(loadData, 1000));
 }
 
 loadData();
