@@ -404,52 +404,73 @@ function runAI(){
 
     let courses = {};
 
+    /* تجميع حسب الدورة */
     allData.forEach(x=>{
       let key = normalizeCourse(x.course);
-      courses[key] = (courses[key] || 0) + 1;
+      if(!courses[key]) courses[key] = [];
+      courses[key].push(x);
     });
 
-    let message = "🧠 تحليل ذكي للطلاب:\n\n";
+    let message = "🧠 توزيع ذكي حسب العمر:\n\n";
 
     Object.keys(courses).forEach(c=>{
 
-      let count = courses[c];
+      let students = courses[c].map(s => ({
+        ...s,
+        age: parseInt(s.age) || 0
+      }));
+
       let label = courseLabel(c);
 
-      if(count >= 15){
-        message += `⚠️ ${label}: ${count} طالب (مزدحمة - قسمها إلى مجموعتين)\n`;
+      message += `📚 ${label} (${students.length} طالب)\n`;
+
+      /* 🔥 ترتيب حسب العمر */
+      students.sort((a,b)=> b.age - a.age);
+
+      let groupA = [];
+      let groupB = [];
+
+      /* 🔥 توزيع متوازن */
+      students.forEach((s,i)=>{
+        if(i % 2 === 0){
+          groupA.push(s);
+        } else {
+          groupB.push(s);
+        }
+      });
+
+      /* عرض */
+      if(students.length >= 6){
+
+        message += `👥 Group A (${groupA.length}):\n`;
+        message += groupA.map(s => `${s.name}(${s.age})`).join("، ") + "\n";
+
+        message += `👥 Group B (${groupB.length}):\n`;
+        message += groupB.map(s => `${s.name}(${s.age})`).join("، ") + "\n";
+
+      } else {
+
+        message += `👥 مجموعة واحدة:\n`;
+        message += students.map(s => `${s.name}(${s.age})`).join("، ") + "\n";
+
       }
-      else if(count >= 8){
-        message += `✅ ${label}: ${count} طالب (ممتاز)\n`;
-      }
-      else if(count >= 4){
-        message += `👌 ${label}: ${count} طالب (جيد)\n`;
-      }
-      else{
-        message += `💡 ${label}: ${count} طالب (قليل - يمكن دمجه)\n`;
-      }
+
+      message += "----------------------\n";
 
     });
-
-    message += "\n🎯 اقتراحات:\n";
-
-    let smallCourses = Object.keys(courses).filter(c=>courses[c] < 5);
-
-    if(smallCourses.length >= 2){
-      message += "👉 يمكن دمج: " + smallCourses.map(c=>courseLabel(c)).join(" + ");
-    } else {
-      message += "👉 التوزيع جيد حالياً";
-    }
 
     alert(message);
 
   }catch(e){
     console.error(e);
-    alert("❌ حدث خطأ في التحليل الذكي");
+    alert("❌ خطأ في AI");
   }
 }
 
 
+
+
+  
 
 /* 🔥 حل المشكل: إضافة courseLabel */
 function courseLabel(key) {
