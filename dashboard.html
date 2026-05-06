@@ -133,13 +133,13 @@ th {
 
   <div class="tools">
     <input type="text" id="search" placeholder="🔍 بحث بالاسم أو الرقم ID">
-    
+
     <button class="add" onclick="addStudent()">➕ إضافة</button>
     <button class="edit" onclick="editStudent()">✏️ تعديل</button>
     <button class="delete" onclick="deleteStudent()">🗑️ حذف</button>
 
-    <!-- 🔥 زر Excel -->
-    <button class="excel" onclick="exportExcel()">⬇️ Excel</button>
+    <button class="excel" onclick="exportAll()">⬇️ Excel الكل</button>
+    <button class="excel" onclick="exportByCourse()">🎯 Excel حسب الدورة</button>
   </div>
 
   <table id="dataTable">
@@ -157,7 +157,6 @@ th {
 
 </div>
 
-<!-- 🔥 مكتبة Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
@@ -176,34 +175,19 @@ function logout() {
   window.location.href = "index.html";
 }
 
-function normalizeCourse(course) {
-  if (!course) return "غير محدد";
-
-  return course
-    .toString()
-    .replace(/[^\p{L}\p{N}\s]/gu, "")
-    .trim()
-    .toLowerCase();
-}
-
 async function loadData() {
-  try {
-    const res = await fetch(sheetURL);
-    const data = await res.json();
+  const res = await fetch(sheetURL);
+  const data = await res.json();
 
-    document.getElementById("loading").style.display = "none";
+  document.getElementById("loading").style.display = "none";
 
-    allData = data;
+  allData = data;
 
-    updateStats(data);
-    renderTable(data);
-
-  } catch {
-    document.getElementById("loading").innerHTML =
-      "❌ خطأ في الاتصال بالسيرفر";
-  }
+  updateStats(data);
+  renderTable(data);
 }
 
+/* 🔥 إحصائيات */
 function updateStats(data) {
 
   document.getElementById("total").innerText =
@@ -212,23 +196,19 @@ function updateStats(data) {
   let courseCounts = {};
 
   data.forEach(row => {
+    let course = row.course || "غير محدد";
 
-    let course = normalizeCourse(row.course);
-
-    if (!courseCounts[course]) {
-      courseCounts[course] = 0;
-    }
-
+    if (!courseCounts[course]) courseCounts[course] = 0;
     courseCounts[course]++;
   });
 
   let container = document.getElementById("coursesStats");
   container.innerHTML = "";
 
-  for (let course in courseCounts) {
+  for (let c in courseCounts) {
     let badge = document.createElement("div");
     badge.className = "badge";
-    badge.innerText = `${course}: ${courseCounts[course]}`;
+    badge.innerText = `${c}: ${courseCounts[c]}`;
     container.appendChild(badge);
   }
 }
@@ -248,7 +228,6 @@ function renderTable(data) {
   `;
 
   data.forEach(row => {
-
     const tr = document.createElement("tr");
 
     tr.onclick = () => {
@@ -270,7 +249,7 @@ function renderTable(data) {
   });
 }
 
-/* 🔍 البحث */
+/* 🔍 بحث */
 document.getElementById("search").addEventListener("input", function() {
   let val = this.value.toLowerCase();
 
@@ -282,14 +261,30 @@ document.getElementById("search").addEventListener("input", function() {
   renderTable(filtered);
 });
 
-/* 📥 Excel Export */
-function exportExcel() {
+/* 📥 تصدير الكل */
+function exportAll() {
+  let wb = XLSX.utils.json_to_book(allData, {sheet: "All"});
+  XLSX.writeFile(wb, "كل_الطلاب.xlsx");
+}
 
-  let table = document.getElementById("dataTable");
+/* 🎯 تصدير حسب الدورة */
+function exportByCourse() {
 
-  let wb = XLSX.utils.table_to_book(table, {sheet: "Students"});
+  let courses = [...new Set(allData.map(x => x.course).filter(Boolean))];
 
-  XLSX.writeFile(wb, "students.xlsx");
+  let course = prompt("اكتب اسم الدورة:\n" + courses.join("\n"));
+
+  if (!course) return;
+
+  let filtered = allData.filter(x => x.course === course);
+
+  if (filtered.length === 0) {
+    alert("لا يوجد بيانات لهذه الدورة");
+    return;
+  }
+
+  let wb = XLSX.utils.json_to_book(filtered, {sheet: course});
+  XLSX.writeFile(wb, course + ".xlsx");
 }
 
 /* إضافة */
@@ -299,12 +294,9 @@ function addStudent() {
   let phone = prompt("الهاتف:");
   let course = prompt("الدورة:");
 
-  if (!name) return;
-
   fetch(sheetURL, {
     method: "POST",
     mode: "no-cors",
-    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({name, age, phone, course})
   }).then(() => setTimeout(loadData, 1000));
 }
@@ -321,7 +313,6 @@ function editStudent() {
   fetch(sheetURL, {
     method: "POST",
     mode: "no-cors",
-    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
       action: "edit",
       id: selectedRow.id,
@@ -339,7 +330,6 @@ function deleteStudent() {
   fetch(sheetURL, {
     method: "POST",
     mode: "no-cors",
-    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
       action: "delete",
       id: selectedRow.id
