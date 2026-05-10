@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل طالب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; margin: 0; background: #f5f7fa; direction: rtl; }
+        .header { background: #007bff; color: white; padding: 15px; text-align: center; position: relative; font-size: 18px; }
+        .logout-btn { position: absolute; left: 15px; top: 15px; background: #dc3545; border: none; padding: 8px 12px; border-radius: 8px; color: white; cursor: pointer; }
+        .container { padding: 20px; display: flex; justify-content: center; }
+        .form-box { width: 100%; max-width: 700px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media(max-width:700px){ .grid { grid-template-columns: 1fr; } }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 10px; box-sizing: border-box; font-size: 14px; }
+        .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        button { padding: 12px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; flex: 1; }
+        .primary { background: #007bff; } .success { background: #28a745; } .warning { background: #ffc107; color: black; }
+        .search-results { background: white; border-radius: 10px; overflow: hidden; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; margin-bottom: 15px; }
+        .search-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .search-item:hover { background: #f1f1f1; }
+        .card-preview { margin-top: 25px; background: white; border-radius: 15px; padding: 20px; border: 2px solid #007bff; text-align: center; }
+        .student-card { width: 340px; margin: auto; background: linear-gradient(135deg, #007bff, #00b4ff); color: white; border-radius: 15px; padding: 20px; position: relative; }
+        .student-photo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid white; margin-bottom: 10px; }
+        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+        .info { margin: 5px 0; font-size: 14px; }
+        .qr { margin-top: 10px; background: white; display: inline-block; padding: 5px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    📝 تسجيل / تعديل طالب
+    <button class="logout-btn" onclick="goHome()">🏠 الرئيسية</button>
+</div>
+
+<div class="container">
+    <div class="form-box">
+        <!-- SEARCH -->
+        <input type="text" id="search" placeholder="🔍 بحث سريع في الطلاب المسجلين...">
+        <div class="search-results" id="results"></div>
+
+        <!-- FORM -->
+        <div class="grid">
+            <input id="name" placeholder="👦 الاسم الكامل">
+            <input id="phone" placeholder="📱 الهاتف">
+            <input id="course" placeholder="📚 الدورة">
+            <input id="birth" type="date">
+            <input id="place" placeholder="📍 مكان الميلاد">
+            <select id="gender">
+                <option value="">الجنس</option>
+                <option>ذكر</option>
+                <option>أنثى</option>
+            </select>
+            <select id="teacher">
+                <option value="">⏳ جاري تحميل قائمة الأساتذة...</option>
+            </select>
+            <input id="school" placeholder="🏫 المدرسة">
+            <input id="level" placeholder="📘 المستوى الدراسي">
+            <input type="file" id="photo">
+        </div>
+
+        <div class="buttons">
+            <button class="success" onclick="saveStudent()">💾 حفظ البيانات</button>
+            <button class="warning" onclick="generateCard()">🎴 إنشاء البطاقة</button>
+            <button class="primary" onclick="printCard()">🖨️ طباعة</button>
+        </div>
+
+        <div id="card" class="card-preview" style="display:none"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+let allStudents = [];
+let selectedID = null;
+
+// تشغيل النظام عند فتح الصفحة
+window.onload = async () => {
+    localStorage.removeItem("editStudent");
+    await loadTeachers();      // خطوة 1: جلب الأساتذة أولاً
+    await loadStudentsList();  // خطوة 2: جلب الطلاب للبحث
+    checkEditMode();           // خطوة 3: التحقق هل نحن في وضع "تعديل"؟
+};
+
+// 1. جلب الأساتذة من جدول teachers فقط
+async function loadTeachers() {
+
+    const teacherSelect = document.getElementById("teacher");
+
+    try {
+
+        const res = await fetch(sheetURL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                action: "get",
+                sheet: "teachers"
+            })
+        });
+
+        const data = await res.json();
+
+        teacherSelect.innerHTML = '<option value="">اختر الأستاذ</option>';
+
+        if (Array.isArray(data)) {
+
+            data.forEach(t => {
+
+                if (t.name) {
+
+                    const option = document.createElement("option");
+                    option.value = t.name;
+                    option.textContent = t.name;
+                    teacherSelect.appendChild(option);
+
+                }
+
+            });
+
+        }
+
+    } catch (err) {
+
+        teacherSelect.innerHTML =
+            '<option value="">⚠️ خطأ في تحميل الأساتذة</option>';
+
+    }
+}
+
+// 2. جلب الطلاب للبحث
+async function loadStudentsList() {
+    try {
+        const res = await fetch(sheetURL + "?sheet=students&action=get");
+        allStudents = await res.json();
+    } catch (e) { console.error("Students list error"); }
+}
+
+// 3. التحقق من وضع التعديل (القادم من صفحة students.html)
+function checkEditMode() {
+    const editData = localStorage.getItem("editStudent");
+    if (editData) {
+        const student = JSON.parse(editData);
+        selectedID = student.id;
+        
+        // ملأ الخانات
+        document.getElementById("name").value = student.name || "";
+        document.getElementById("phone").value = student.phone || "";
+        document.getElementById("course").value = student.course || "";
+        document.getElementById("birth").value = student.birth || "";
+        document.getElementById("place").value = student.place || "";
+        document.getElementById("gender").value = student.gender || "";
+        document.getElementById("school").value = student.school || "";
+        document.getElementById("level").value = student.level || "";
+        
+        // اختيار الأستاذ من القائمة المنسدلة
+        setTimeout(() => {
+            document.getElementById("teacher").value = student.teacher || "";
+        }, 300);
+    } else {
+        // إذا لم يكن هناك تعديل، نتأكد أن الحقول فارغة تماماً
+        clearForm();
+    }
+}
+
+// حفظ الطالب (إضافة أو تعديل)
+function saveStudent() {
+    const isEdit = !!localStorage.getItem("editStudent");
+    const editData = isEdit ? JSON.parse(localStorage.getItem("editStudent")) : null;
+
+    let data = {
+        action: isEdit ? "editStudent" : "addStudent",
+        sheet: "students",
+        id: isEdit ? editData.id : null,
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        course: document.getElementById("course").value,
+        birth: document.getElementById("birth").value,
+        place: document.getElementById("place").value,
+        gender: document.getElementById("gender").value,
+        teacher: document.getElementById("teacher").value,
+        school: document.getElementById("school").value,
+        level: document.getElementById("level").value
+    };
+
+    if (!data.name) return alert("يرجى إدخال اسم الطالب على الأقل");
+
+    fetch(sheetURL, {
+        method: "POST",
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            alert("✅ تم الحفظ بنجاح");
+            localStorage.removeItem("editStudent"); // تنظيف بعد الحفظ
+            clearForm(); // إفراغ الحقول
+            location.reload(); // إعادة تحميل لمزامنة البحث
+        } else {
+            alert("❌ خطأ: " + res.error);
+        }
+    });
+}
+
+function clearForm() {
+    const ids = ["name", "phone", "course", "birth", "place", "gender", "teacher", "school", "level", "search"];
+    ids.forEach(id => document.getElementById(id).value = "");
+    selectedID = null;
+}
+
+function goHome() {
+    localStorage.removeItem("editStudent"); // مسح بيانات التعديل عند الخروج للرئيسية
+    window.location.href = "home.html";
+}
+
+// البحث التفاعلي في الصفحة
+document.getElementById("search").addEventListener("input", function() {
+    let val = this.value.toLowerCase().trim();
+    let box = document.getElementById("results");
+    box.innerHTML = "";
+    if (!val) return;
+
+    let filtered = allStudents.filter(s => 
+        (s.name || "").toLowerCase().includes(val) || 
+        (s.id || "").toString().includes(val)
+    );
+
+    filtered.forEach(s => {
+        let div = document.createElement("div");
+        div.className = "search-item";
+        div.innerHTML = `👦 ${s.name} | 📚 ${s.course}`;
+        div.onclick = () => {
+            document.getElementById("name").value = s.name;
+            document.getElementById("phone").value = s.phone;
+            document.getElementById("course").value = s.course;
+            document.getElementById("teacher").value = s.teacher;
+            selectedID = s.id;
+            box.innerHTML = "";
+        };
+        box.appendChild(div);
+    });
+});
+
+/* وظائف البطاقة والطباعة */
+function generateCard() {
+    let card = document.getElementById("card");
+    let name = document.getElementById("name").value;
+    let course = document.getElementById("course").value;
+    let teacher = document.getElementById("teacher").value;
+    card.style.display = "block";
+    card.innerHTML = `
+        <div class="student-card">
+            <div class="card-title">🎓 بطاقة الطالب</div>
+            <div class="info">👦 الاسم: ${name}</div>
+            <div class="info">📚 الدورة: ${course}</div>
+            <div class="info">👨‍🏫 الأستاذ: ${teacher}</div>
+            <div class="qr"><canvas id="qr"></canvas></div>
+        </div>`;
+    QRCode.toCanvas(document.getElementById("qr"), selectedID || name);
+}
+
+function printCard() {
+    let content = document.getElementById("card").innerHTML;
+    let win = window.open("");
+    win.document.write(`<html><head><style>body{font-family:Cairo;text-align:center;direction:rtl;}</style></head><body>${content}</body></html>`);
+    setTimeout(() => { win.print(); win.close(); }, 500);
+}
+</script>
+
+</body>
+</html>
