@@ -124,7 +124,7 @@ th {
 
 <div class="header">
   📊 لوحة التحكم أكاديمية وضاح للعلوم
-  <button class="logout-btn" onclick="logout()">🚪 خروج</button>
+  <button class="logout-btn" onclick="goHome()">🏠 الرئيسية</button>
 </div>
  
 <div class="container">
@@ -154,7 +154,7 @@ th {
 
 <script>
 
-const sheetURL = "https://script.google.com/macros/s/AKfycbypM94eQdFgV8zOYvvzg52I1bNFfR84hPr4jFtKTlIPT11Lkbloj-Q3eWfzHmATVlBMWw/exec";
+const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
 
 let allData = [];
 let selectedRow = null;
@@ -179,14 +179,23 @@ function normalizeCourse(course) {
 
 /* تحميل */
 async function loadData() {
-  const res = await fetch(sheetURL);
-  const data = await res.json();
+  try {
 
-  document.getElementById("loading").style.display = "none";
+    const res = await fetch(sheetURL + "?sheet=students");
+    const data = await res.json();
 
-  allData = data;
-  updateStats(data);
-  renderTable(data);
+    allData = Array.isArray(data) ? data : [];
+
+    document.getElementById("loading").style.display = "none";
+
+    updateStats(allData);
+    renderTable(allData);
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("loading").innerHTML =
+      "❌ خطأ في الاتصال";
+  }
 }
 
 /* الإحصائيات */
@@ -347,51 +356,193 @@ document.getElementById("search").addEventListener("input", function() {
 });
 
 /* CRUD (لم يتغير) */
+
+/* =========================
+   ADD STUDENT
+========================= */
 function addStudent() {
+
   let name = prompt("اسم الطفل:");
+  if(name === null) return;
+
   let age = prompt("العمر:");
+  if(age === null) return;
+
   let phone = prompt("الهاتف:");
+  if(phone === null) return;
+
   let course = prompt("الدورة:");
+  if(course === null) return;
 
   fetch(sheetURL, {
-    method: "POST",
-    body: JSON.stringify({name, age, phone, course})
-  }).then(() => setTimeout(loadData, 1000));
+  method: "POST",
+  body: JSON.stringify({
+    action: "addStudent",
+    sheet: "students",
+    name: name,
+    age: age,
+    phone: phone,
+    course: course
+  })
+})
+
+  .then(res => res.json())
+
+  .then(data => {
+
+    console.log(data);
+
+    if(data.success){
+
+      loadData();
+      alert("✅ تمت الإضافة بنجاح");
+
+    } else {
+
+      alert("❌ " + (data.error || "فشل الإضافة"));
+
+    }
+
+  })
+
+  .catch(err => {
+
+    console.error(err);
+    alert("❌ خطأ في الاتصال");
+
+  });
+
 }
 
+
+/* =========================
+   EDIT STUDENT
+========================= */
 function editStudent() {
-  if (!selectedRow) return alert("اختر طالب");
+
+  if (!selectedRow) {
+    alert("اختر طالب");
+    return;
+  }
 
   let name = prompt("اسم الطفل:", selectedRow.name);
+  if(name === null) return;
+
   let age = prompt("العمر:", selectedRow.age);
+  if(age === null) return;
+
   let phone = prompt("الهاتف:", selectedRow.phone);
+  if(phone === null) return;
+
   let course = prompt("الدورة:", selectedRow.course);
+  if(course === null) return;
 
   fetch(sheetURL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "edit",
-      id: selectedRow.id,
-      name, age, phone, course
-    })
-  }).then(() => setTimeout(loadData, 1000));
+  method: "POST",
+  body: JSON.stringify({
+    action: "editStudent",
+    sheet: "students",
+    id: selectedRow.id,
+    name: name,
+    age: age,
+    phone: phone,
+    course: course
+  })
+})
+
+  .then(res => res.json())
+
+  .then(data => {
+
+    console.log(data);
+
+    if(data.success){
+
+      loadData();
+      alert("✅ تم التعديل بنجاح");
+
+    } else {
+
+      alert("❌ " + (data.error || "فشل التعديل"));
+
+    }
+
+  })
+
+  .catch(err => {
+
+    console.error(err);
+    alert("❌ خطأ في الاتصال");
+
+  });
+
 }
 
+
+
+
+/* =========================
+   DELETE STUDENT
+========================= */
 function deleteStudent() {
-  if (!selectedRow) return alert("اختر طالب");
 
-  if (!confirm("هل تريد الحذف؟")) return;
+  if (!selectedRow) {
+    alert("اختر طالب");
+    return;
+  }
+
+  if (!confirm("هل تريد حذف الطالب؟")) {
+    return;
+  }
 
   fetch(sheetURL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "delete",
-      id: selectedRow.id
-    })
-  }).then(() => setTimeout(loadData, 1000));
+  method: "POST",
+  body: JSON.stringify({
+    action: "deleteStudent",
+    sheet: "students",
+    id: selectedRow.id
+  })
+})
+
+  .then(res => res.json())
+
+  .then(data => {
+
+    console.log(data);
+
+    if(data.success){
+
+      loadData();
+      alert("✅ تم الحذف بنجاح");
+
+    } else {
+
+      alert("❌ " + (data.error || "فشل الحذف"));
+
+    }
+
+  })
+
+  .catch(err => {
+
+    console.error(err);
+    alert("❌ خطأ في الاتصال");
+
+  });
+
 }
+
+
+
+
 
 loadData();
+
+
+/* HOME */
+function goHome(){
+  window.location.href = "home.html";
+}
 
 </script>
 
