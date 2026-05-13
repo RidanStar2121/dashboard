@@ -167,6 +167,19 @@ if (!localStorage.getItem("role")) {
   window.location.href = "index.html";
 }
 
+function calculateAge(birthDateString) {
+    if (!birthDateString) return "-";
+    const birthDate = new Date(birthDateString);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    // لتعديل الحساب بدقة إذا لم يأتِ يوم ميلاده بعد في السنة الحالية
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
 function logout() {
   localStorage.removeItem("role");
   window.location.href = "index.html";
@@ -275,10 +288,14 @@ function renderTable(data) {
       selectedRow = row;
     };
 
+    // حساب العمر تلقائياً من تاريخ الميلاد القادم من الشيت
+    // تأكد أن اسم الحقل في الشيت هو birth كما ذكرت
+    let calculatedAge = calculateAge(row.birth); 
+
     tr.innerHTML = `
       <td>${row.id || ""}</td>
       <td>👦 ${row.name || ""}</td>
-      <td>🎂 ${row.age || ""}</td>
+      <td>🎂 ${calculatedAge} سنة</td> <!-- هنا يظهر العمر المحسوب -->
       <td>📱 ${row.phone || ""}</td>
       <td>${row.course || ""}</td>
       <td>${group}</td>
@@ -297,7 +314,7 @@ function runAI(){
 
   let students = [...allData].map(s => ({
     ...s,
-    age: parseInt(s.age)||0
+    age: calculateAge(s.birth) // استخدام الدالة لحساب العمر للتقسيم الذكي
   }));
 
   // ترتيب حسب العمر
