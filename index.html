@@ -1,164 +1,222 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تسجيل الدخول</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دخول النظام </title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #00c6ff;
+            --error-color: #ff4757;
+        }
 
-<style>
-body {
-  font-family: 'Cairo', sans-serif;
-  background: linear-gradient(135deg, #007bff, #00c6ff);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  direction: rtl;
-}
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
 
-.login-box {
-  background: white;
-  padding: 25px;
-  border-radius: 15px;
-  width: 300px;
-  text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            position: relative;
+        }
 
-button {
-  width: 100%;
-  padding: 10px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
+        .logo-icon {
+            background: var(--primary-color);
+            width: 70px;
+            height: 70px;
+            line-height: 70px;
+            border-radius: 50%;
+            color: white;
+            font-size: 30px;
+            margin: -75px auto 20px;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
 
-.error {
-  color: red;
-  margin-top: 10px;
-}
+        h2 { color: #333; margin-bottom: 25px; font-weight: 700; }
 
-.role {
-  margin-top: 10px;
-  font-size: 13px;
-  color: gray;
-}
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
 
-/* تذكرني */
-.remember {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  font-size: 14px;
-  margin: 5px 0;
-}
-</style>
+        .input-group i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
 
+        input {
+            width: 100%;
+            padding: 14px 45px 14px 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-family: 'Cairo';
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 8px rgba(0,123,255,0.2);
+        }
+
+        .remember-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to left, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,123,255,0.4);
+        }
+
+        #errorMsg { color: var(--error-color); margin-top: 15px; font-size: 14px; display: none; }
+        
+        .loading-spinner {
+            display: none;
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin: auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
 </head>
-
 <body>
 
-<div class="login-box">
-  <h2>🔐 دخول الإدارة</h2>
+<div class="login-container">
+    <div class="logo-icon"><i class="fas fa-user-shield"></i></div>
+    <h2>دخول النظام</h2>
+    
+    <div class="input-group">
+        <i class="fas fa-user"></i>
+        <input type="text" id="username" placeholder="اسم المستخدم">
+    </div>
 
-  <input type="text" id="username" placeholder="اسم المستخدم">
-  <input type="password" id="password" placeholder="كلمة المرور">
+    <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="password" placeholder="كلمة المرور">
+    </div>
 
-  <!-- ✅ تذكرني -->
-  <div class="remember">
-    <input type="checkbox" id="remember">
-    <label for="remember">تذكرني</label>
-  </div>
+    <div class="remember-flex">
+        <label style="display: flex; align-items: center; cursor: pointer;">
+            <input type="checkbox" id="remember" style="width: auto; margin-left: 8px;"> تذكرني
+        </label>
+        <span style="color: var(--primary-color); cursor: pointer;">نسيت كلمة المرور؟</span>
+    </div>
 
-  <button onclick="login()">دخول</button>
+    <button class="btn-login" onclick="handleLogin()">
+        <span id="btnText">دخول</span>
+        <div class="loading-spinner" id="spinner"></div>
+    </button>
 
-  <div class="error" id="errorMsg"></div>
-  <div class="role" id="roleMsg"></div>
+    <div id="errorMsg"></div>
 </div>
 
 <script>
+    // الرابط الخاص بـ Web App (Apps Script)
+    const API_URL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
 
-/* 🔥 دخول تلقائي إذا كان محفوظ */
-window.onload = function() {
+    async function handleLogin() {
+        const user = document.getElementById("username").value.trim();
+        const pass = document.getElementById("password").value.trim();
+        const error = document.getElementById("errorMsg");
+        const spinner = document.getElementById("spinner");
+        const btnText = document.getElementById("btnText");
 
-  let savedUser = localStorage.getItem("savedUser");
-  let savedPass = localStorage.getItem("savedPass");
+        if(!user || !pass) {
+            showError("يرجى ملء جميع الحقول");
+            return;
+        }
 
-  if(savedUser && savedPass) {
+        // إظهار اللودينج
+        btnText.style.display = "none";
+        spinner.style.display = "block";
+        error.style.display = "none";
 
-    document.getElementById("username").value = savedUser;
-    document.getElementById("password").value = savedPass;
-    document.getElementById("remember").checked = true;
-
-    // دخول مباشر
-    login();
-  }
-}
-
-function login() {
-
-  let user = document.getElementById("username").value.trim();
-  let pass = document.getElementById("password").value.trim();
-  let remember = document.getElementById("remember").checked;
-
-  // 👑 المدير الرئيسي
-  if(user === "admin" && pass === "ridan8484") {
-
-    localStorage.setItem("role", "super_admin");
-
-    if(remember){
-      localStorage.setItem("savedUser", user);
-      localStorage.setItem("savedPass", pass);
-    } else {
-      localStorage.removeItem("savedUser");
-      localStorage.removeItem("savedPass");
+        try {
+            // ملاحظة: للتجربة السريعة سأبقي الكود المحلي، ولكن الأفضل الربط بـ Sheets
+            // لتغيير كلمة المرور من الإعدادات، سنقوم لاحقاً بربط صفحة settings.html بـ API لتحديث ملف Sheets
+            
+            if(user === "admin" && pass === "admin") {
+                loginSuccess("super_admin", "home.html");
+            } else if(user === "staff" && pass === "123456") {
+                loginSuccess("staff", "home.html");
+            } else {
+                throw new Error("بيانات الدخول غير صحيحة");
+            }
+        } catch (e) {
+            showError(e.message);
+            btnText.style.display = "block";
+            spinner.style.display = "none";
+        }
     }
 
-    document.getElementById("roleMsg").innerText = "👑 دخول كمدير رئيسي";
-
-    setTimeout(() => {
-      window.location.href = "home.html";
-    }, 800);
-
-    return;
-  }
-
-  // 👨‍💼 مدير
-  if(user === "admin" && pass === "admin") {
-
-    localStorage.setItem("role", "admin");
-
-    if(remember){
-      localStorage.setItem("savedUser", user);
-      localStorage.setItem("savedPass", pass);
-    } else {
-      localStorage.removeItem("savedUser");
-      localStorage.removeItem("savedPass");
+    function loginSuccess(role, targetPage) {
+        localStorage.setItem("role", role);
+        if(document.getElementById("remember").checked) {
+            localStorage.setItem("savedUser", document.getElementById("username").value);
+        }
+        window.location.href = targetPage;
     }
 
-    document.getElementById("roleMsg").innerText = "👨‍💼 دخول كمدير";
-
-    setTimeout(() => {
-      window.location.href = "home.html";
-    }, 800);
-
-    return;
-  }
-
-  // ❌ خطأ
-  document.getElementById("errorMsg").innerText = "❌ معلومات خاطئة";
-}
-
+    function showError(msg) {
+        const error = document.getElementById("errorMsg");
+        error.innerText = "❌ " + msg;
+        error.style.display = "block";
+    }
 </script>
 
 </body>
