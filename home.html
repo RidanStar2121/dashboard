@@ -1,180 +1,280 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الرئيسية</title>
+<title>الرئيسية | أكاديمية نذير وضاح</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-body {
-  font-family: 'Cairo', sans-serif;
-  margin: 0;
-  background: #f5f7fa;
-  direction: rtl;
-}
+  :root {
+    --primary: #007bff;
+    --accent-gold: #c5a059;
+    --dark-bg: #1a1a1a;
+  }
 
-/* HEADER */
-.header {
-  background: #007bff;
-  color: white;
-  padding: 15px;
-  text-align: center;
-  font-size: 18px;
-  position: relative;
-}
+  body {
+    font-family: 'Cairo', sans-serif;
+    margin: 0;
+    background: #f0f2f5;
+    direction: rtl;
+  }
 
-.logout-btn {
-  position: absolute;
-  left: 15px;
-  top: 15px;
-  background: #dc3545;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  color: white;
-  cursor: pointer;
-}
+  /* HEADER */
+  .header {
+    background: var(--primary);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    position: relative;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
 
-/* container */
-.container {
-  padding: 20px;
-}
+  .logout-btn {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #dc3545;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-family: 'Cairo';
+    transition: 0.3s;
+  }
 
-/* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
-  gap: 15px;
-}
+  .logout-btn:hover { background: #a71d2a; }
 
-/* CARD */
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: 0.3s;
-  border: 1px solid #eee;
-}
+  /* container */
+  .container { padding: 30px; max-width: 1200px; margin: auto; }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+  }
 
-/* ICON */
-.icon {
-  font-size: 30px;
-  margin-bottom: 10px;
-}
+  /* CARD */
+  .card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 
-/* TITLE */
-.title {
-  font-size: 14px;
-  font-weight: bold;
-}
+  .card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+    border-color: var(--primary);
+  }
 
-/* COLORS */
-.blue { color:#007bff; }
-.green { color:#28a745; }
-.orange { color:#ffc107; }
-.red { color:#dc3545; }
-.cyan { color:#17a2b8; }
-.purple { color:#6f42c1; }
-.dark { color:#343a40; }
+  /* ICON */
+  .icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+  }
+
+  /* TITLE */
+  .title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  /* COLORS & SPECIAL STYLES */
+  .blue { color: #007bff; }
+  .green { color: #28a745; }
+  .orange { color: #fd7e14; }
+  .red { color: #dc3545; }
+  .cyan { color: #17a2b8; }
+  .purple { color: #6f42c1; }
+  .gold { color: var(--accent-gold); }
+  .dark { color: #343a40; }
+
+  /* MODAL STYLE (حول البرنامج) */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 30px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 20px;
+    text-align: center;
+    position: relative;
+    animation: slideIn 0.4s ease;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .close-modal {
+    position: absolute;
+    top: 15px; right: 15px;
+    font-size: 24px; cursor: pointer; color: #999;
+  }
+
+  .dev-avatar {
+    width: 100px; height: 100px;
+    background: #eee; border-radius: 50%;
+    margin-bottom: 15px; border: 3px solid var(--accent-gold);
+  }
 
 </style>
-
 </head>
-
 <body>
 
 <div class="header">
-🏫 نظام إدارة أكاديمية وضاح للعلوم
-<button class="logout-btn" onclick="logout()">🚪 خروج</button>
+  <i class="fas fa-school"></i> نظام إدارة أكاديمية نذير وضاح
+  <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
 </div>
 
 <div class="container">
+  <div class="grid">
 
-<div class="grid">
+    <!-- لوحة التحكم -->
+    <div class="card" onclick="go('dashboard.html')">
+      <div class="icon blue"><i class="fas fa-chart-line"></i></div>
+      <div class="title">لوحة التحكم</div>
+    </div>
 
-<!-- لوحة التحكم -->
-<div class="card" onclick="go('dashboard.html')">
-  <div class="icon blue">📊</div>
-  <div class="title">لوحة التحكم</div>
+    <!-- تسجيل طالب -->
+    <div class="card" onclick="go('add.html')">
+      <div class="icon green"><i class="fas fa-user-plus"></i></div>
+      <div class="title">تسجيل طالب</div>
+    </div>
+
+    <!-- ملفات الطلاب -->
+    <div class="card" onclick="go('students.html')">
+      <div class="icon green"><i class="fas fa-user-graduate"></i></div>
+      <div class="title">ملفات الطلاب</div>
+    </div>
+
+    <!-- الشهادات و الإيجازات (الزر الجديد) -->
+    <div class="card" onclick="go('certificates.html')" style="border: 2px solid var(--accent-gold); background: #fffdf5;">
+      <div class="icon gold"><i class="fas fa-award"></i></div>
+      <div class="title">الشهادات والإيجازات</div>
+    </div>
+
+    <!-- الأساتذة -->
+    <div class="card" onclick="go('teachers.html')">
+      <div class="icon purple"><i class="fas fa-chalkboard-teacher"></i></div>
+      <div class="title">الأساتذة</div>
+    </div>
+
+    <!-- المواد -->
+    <div class="card" onclick="go('courses.html')">
+      <div class="icon orange"><i class="fas fa-book-open"></i></div>
+      <div class="title">المواد والمستويات</div>
+    </div>
+
+    <!-- الحضور -->
+    <div class="card" onclick="go('attendance.html')">
+      <div class="icon cyan"><i class="fas fa-calendar-check"></i></div>
+      <div class="title">الحضور والغيابات</div>
+    </div>
+
+    <!-- الدفع -->
+    <div class="card" onclick="go('payments.html')">
+      <div class="icon green"><i class="fas fa-money-bill-wave"></i></div>
+      <div class="title">الدفع والفواتير</div>
+    </div>
+
+    <!-- التقارير -->
+    <div class="card" onclick="go('reports.html')">
+      <div class="icon dark"><i class="fas fa-file-alt"></i></div>
+      <div class="title">التقارير</div>
+    </div>
+
+    <!-- الإعدادات -->
+    <div class="card" onclick="go('settings.html')">
+      <div class="icon red"><i class="fas fa-cogs"></i></div>
+      <div class="title">الإعدادات</div>
+    </div>
+
+    <!-- حول البرنامج (الزر الجديد) -->
+    <div class="card" onclick="showAbout()">
+      <div class="icon blue"><i class="fas fa-info-circle"></i></div>
+      <div class="title">حول البرنامج</div>
+    </div>
+
+  </div>
 </div>
 
-<!-- تسجيل طالب -->
-<div class="card" onclick="go('add.html')">
-  <div class="icon green">📝</div>
-  <div class="title">تسجيل طالب</div>
-</div>
-
-<!-- الأساتذة -->
-<div class="card" onclick="go('teachers.html')">
-  <div class="icon purple">👨‍🏫</div>
-  <div class="title">الأساتذة</div>
-</div>
-
-<!-- المواد -->
-<div class="card" onclick="go('courses.html')">
-  <div class="icon orange">📚</div>
-  <div class="title">المواد والمستويات</div>
-</div>
-
-<!-- الحضور -->
-<div class="card" onclick="go('attendance.html')">
-  <div class="icon cyan">🕒</div>
-  <div class="title">الحضور والغيابات</div>
-</div>
-
-<!-- الدفع -->
-<div class="card" onclick="go('payments.html')">
-  <div class="icon green">💰</div>
-  <div class="title">الدفع والفواتير</div>
-</div>
-
-<!-- إدارة المجموعات (AI) -->
-<div class="card" onclick="go('groups.html')">
-  <div class="icon blue">🧠</div>
-  <div class="title">تقسيم المجموعات الذكي</div>
-</div>
-
-<!-- التقارير -->
-<div class="card" onclick="go('reports.html')">
-  <div class="icon dark">📈</div>
-  <div class="title">التقارير</div>
-</div>
-
-<!-- الإعدادات -->
-<div class="card" onclick="go('settings.html')">
-  <div class="icon red">⚙️</div>
-  <div class="title">الإعدادات</div>
-</div>
-
-</div>
-
+<!-- نافذة "حول البرنامج" -->
+<div id="aboutModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeAbout()">&times;</span>
+    <img src="https://via.placeholder.com/100" alt="Nadir Ouaddah" class="dev-avatar">
+    <h2 style="margin: 0; color: var(--primary);">نذير وضاح</h2>
+    <p style="color: #666; margin-top: 5px;">مطور برمجيات ومدير وسائط رقمية</p>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+    <p style="text-align: justify; font-size: 14px; line-height: 1.6;">
+      هذا النظام مصمم لإدارة المؤسسات التعليمية والأكاديميات بشكل ذكي. يوفر أدوات متكاملة لتتبع الطلاب، الأساتذة، والعمليات المالية، بالإضافة إلى نظام متطور لتوليد الشهادات الرقمية.
+    </p>
+    <div style="margin-top: 20px; font-weight: bold; color: var(--accent-gold);">
+      <i class="fab fa-facebook"></i> FB/nadir.ouaddah
+    </div>
+    <p style="font-size: 12px; color: #999; margin-top: 20px;">الإصدار 2.0 | 2026</p>
+  </div>
 </div>
 
 <script>
+  /* حماية */
+  if (!localStorage.getItem("role")) {
+    window.location.href = "index.html";
+  }
 
-/* حماية */
-if (!localStorage.getItem("role")) {
-  window.location.href = "index.html";
-}
+  /* تنقل */
+  function go(page){
+    window.location.href = page;
+  }
 
-/* تنقل */
-function go(page){
-  window.location.href = page;
-}
+  /* خروج */
+  function logout(){
+    localStorage.removeItem("role");
+    window.location.href = "index.html";
+  }
 
-/* خروج */
-function logout(){
-  localStorage.removeItem("role");
-  window.location.href = "index.html";
-}
+  /* وظائف النافذة المنبثقة */
+  function showAbout() {
+    document.getElementById('aboutModal').style.display = 'block';
+  }
 
+  function closeAbout() {
+    document.getElementById('aboutModal').style.display = 'none';
+  }
+
+  // إغلاق عند الضغط خارج النافذة
+  window.onclick = function(event) {
+    let modal = document.getElementById('aboutModal');
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
 </script>
 
 </body>
