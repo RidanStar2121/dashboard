@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة الأساتذة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ... (نفس الستايل الخاص بك دون تغيير) ... */
+body{ font-family:'Cairo',sans-serif; margin:0; background:#f5f7fa; direction:rtl; }
+.header{ background:#007bff; color:white; padding:15px; text-align:center; font-size:20px; position:relative; font-weight:bold; }
+.home-btn{ position:absolute; left:15px; top:15px; background:#dc3545; border:none; color:white; padding:8px 12px; border-radius:8px; cursor:pointer; }
+.container{ padding:20px; display:flex; flex-direction:column; align-items:center; }
+.form-box{ width:100%; max-width:800px; background:white; padding:20px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.08); }
+.grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+@media(max-width:700px){ .grid{ grid-template-columns:1fr; } }
+input{ width:100%; padding:12px; border-radius:10px; border:1px solid #ccc; box-sizing:border-box; font-size:14px; }
+.buttons{ display:flex; gap:10px; margin-top:15px; margin-bottom: 20px; }
+button{ padding:12px; border:none; border-radius:10px; cursor:pointer; color:white; font-weight:bold; flex:1; }
+.success{ background:#28a745; }
+.warning{ background:#ffc107; color:black; }
+table{ width:100%; border-collapse:collapse; background:white; border-radius:15px; overflow:hidden; }
+th{ background:#007bff; color:white; padding:12px; }
+td{ padding:10px; text-align:center; border-bottom:1px solid #eee; }
+.action-btn{ padding:6px 10px; border:none; border-radius:6px; cursor:pointer; color:white; font-size:12px; margin: 0 2px; }
+.edit{ background:#ffc107; color:black; }
+.delete{ background:#dc3545; }
+</style>
+</head>
+<body>
+
+<div class="header">
+👨‍🏫 إدارة الأساتذة
+<button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
+</div>
+
+<div class="container">
+<div class="form-box">
+<input type="hidden" id="teacherId">
+<div class="grid">
+<input id="name" placeholder="👤 الاسم الكامل">
+<input id="phone" placeholder="📱 الهاتف">
+<input id="subject" placeholder="📚 المادة">
+<input id="level" placeholder="🎓 المستوى">
+<input id="salary" placeholder="💰 الراتب">
+</div>
+
+<div class="buttons">
+<button class="success" id="saveBtn" onclick="saveTeacher()">💾 حفظ</button>
+<button class="warning" onclick="clearForm()">🔄 جديد</button>
+</div>
+
+<div style="overflow-x:auto; width: 100%;">
+<table id="teachersTable">
+<thead>
+<tr>
+<th>🆔</th>
+<th>👤 الاسم</th>
+<th>📱 الهاتف</th>
+<th>📚 المادة</th>
+<th>🎓 المستوى</th>
+<th>💰 الراتب</th>
+<th>⚙</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<script>
+// ضع رابط الـ Web App الخاص بك هنا
+const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+let allTeachers = [];
+
+async function loadTeachers(){
+  try {
+    const res = await fetch(sheetURL + "?sheet=teachers");
+    const data = await res.json();
+    allTeachers = data;
+    renderTeachers();
+  } catch(e) { console.log("Error loading: " + e); }
+}
+
+function renderTeachers(){
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+
+  allTeachers.forEach(t => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${t.id || ""}</td>
+      <td>${t.name || ""}</td>
+      <td>${t.phone || ""}</td>
+      <td>${t.subject || ""}</td>
+      <td>${t.level || ""}</td>
+      <td>${t.salary || ""}</td>
+      <td>
+        <button class="action-btn edit" onclick='editTeacher("${t.id}")'>✏</button>
+        <button class="action-btn delete" onclick='deleteTeacher("${t.id}")'>🗑</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function saveTeacher(){
+  const id = document.getElementById("teacherId").value;
+  const btn = document.getElementById("saveBtn");
+  
+  const data = {
+    action: id ? "editTeacher" : "addTeacher",
+    sheet: "teachers",
+    id: id,
+    name: document.getElementById("name").value,
+    phone: document.getElementById("phone").value,
+    subject: document.getElementById("subject").value,
+    level: document.getElementById("level").value,
+    salary: document.getElementById("salary").value
+  };
+
+  if(!data.name) { alert("يرجى إدخال الاسم"); return; }
+
+  btn.disabled = true;
+  btn.innerText = "... جاري الحفظ";
+
+  fetch(sheetURL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.success){
+      alert("✅ تم الحفظ بنجاح");
+      clearForm();
+      loadTeachers();
+    } else {
+      alert("❌ خطأ: " + res.error);
+    }
+  })
+  .finally(() => {
+    btn.disabled = false;
+    btn.innerText = "💾 حفظ";
+  });
+}
+
+function editTeacher(id){
+  const t = allTeachers.find(x => String(x.id) === String(id));
+  if(!t) return;
+
+  document.getElementById("teacherId").value = t.id;
+  document.getElementById("name").value = t.name || "";
+  document.getElementById("phone").value = t.phone || "";
+  document.getElementById("subject").value = t.subject || "";
+  document.getElementById("level").value = t.level || "";
+  document.getElementById("salary").value = t.salary || "";
+  
+  window.scrollTo(0,0);
+}
+
+function deleteTeacher(id){
+  if(!confirm("هل أنت متأكد من حذف هذا الأستاذ؟")) return;
+
+  fetch(sheetURL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "deleteTeacher",
+      sheet: "teachers",
+      id: id
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.success){
+      alert("✅ تم الحذف");
+      loadTeachers();
+    } else {
+      alert("❌ فشل الحذف");
+    }
+  });
+}
+
+function clearForm(){
+  document.getElementById("teacherId").value = "";
+  document.getElementById("name").value = "";
+  document.getElementById("phone").value = "";
+  document.getElementById("subject").value = "";
+  document.getElementById("level").value = "";
+  document.getElementById("salary").value = "";
+}
+
+function goHome(){ window.location.href = "home.html"; }
+
+loadTeachers();
+</script>
+</body>
+</html>

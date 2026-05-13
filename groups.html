@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقسيم المجموعات الذكي - نذير وضاح</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; margin: 0; background: #f4f7f6; direction: rtl; }
+        .header { background: #6f42c1; color: white; padding: 15px; text-align: center; position: relative; }
+        .nav-btn { position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; }
+        
+        .container { padding: 20px; max-width: 1400px; margin: auto; display: grid; grid-template-columns: 400px 1fr; gap: 20px; }
+        @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
+
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #6f42c1; }
+        h3 { margin-top: 0; color: #6f42c1; display: flex; align-items: center; gap: 10px; font-size: 18px; }
+
+        /* إعدادات الذكاء الصناعي */
+        .ai-settings { background: #f3f0ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #6f42c1; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #444; }
+        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; box-sizing: border-box; }
+        
+        .btn-ai { background: #6f42c1; color: white; width: 100%; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-ai:hover { background: #5a32a3; transform: scale(1.02); }
+
+        /* عرض المجموعات */
+        .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .group-card { background: white; border-radius: 12px; padding: 15px; border: 1px solid #eee; position: relative; transition: 0.3s; }
+        .group-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .group-header { border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
+        .tag-subject { background: #e7f3ff; color: #007bff; }
+        .tag-count { background: #fff3cd; color: #856404; }
+
+        .student-list { font-size: 13px; color: #666; max-height: 150px; overflow-y: auto; }
+        .student-item { padding: 5px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; }
+
+        /* حالة التحميل */
+        .loader { display: none; text-align: center; padding: 20px; font-weight: bold; color: #6f42c1; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    🧠 محرك تقسيم المجموعات بالذكاء الصناعي
+    <button class="nav-btn" onclick="location.href='home.html'">🏠 الرئيسية</button>
+</div>
+
+<div class="container">
+    
+    <!-- لوحة التحكم في الخوارزمية -->
+    <div class="card">
+        <h3>⚙️ إعدادات التقسيم الذكي</h3>
+        <div class="ai-settings">
+            <p style="font-size: 12px; color: #6f42c1; margin-bottom: 10px;">* سيقوم النظام بتحليل بيانات الطلاب وتوزيعهم حسب المعايير التالية:</p>
+            
+            <div class="form-group">
+                <label>المادة أو الدورة التدريبية:</label>
+                <select id="aiSubject">
+                    <option value="الكل">جميع المواد</option>
+                    <option value="برمجة">دورة البرمجة</option>
+                    <option value="لغات">دورة اللغات</option>
+                    <option value="رياضيات">دروس تدعيمية - رياضيات</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>الحد الأقصى للطلاب في القسم:</label>
+                <input type="number" id="maxInGroup" value="10">
+            </div>
+
+            <div class="form-group">
+                <label>الفئة العمرية (من - إلى):</label>
+                <div style="display: flex; gap: 5px;">
+                    <input type="number" id="ageFrom" placeholder="من" value="12">
+                    <input type="number" id="ageTo" placeholder="إلى" value="14">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>نوع المجموعة (الجنس):</label>
+                <select id="genderType">
+                    <option value="mixed">مختلط (بنات وذكور)</option>
+                    <option value="male">ذكور فقط</option>
+                    <option value="female">بنات فقط</option>
+                </select>
+            </div>
+
+            <button class="btn-ai" onclick="runAiGrouping()">🚀 تشغيل التوزيع الذكي الآن</button>
+        </div>
+
+        <div class="form-group">
+            <label>إنشاء مجموعة يدوية (اسم المجموعة):</label>
+            <input type="text" id="manualGroupName" placeholder="مثال: عباقرة البرمجة A1">
+            <button class="btn-ai" style="background:#28a745; margin-top:10px" onclick="createManualGroup()">➕ إنشاء مجموعة فارغة</button>
+        </div>
+    </div>
+
+    <!-- عرض النتائج والمجموعات -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>📦 المجموعات النشطة حالياً</h3>
+            <span id="totalGroups" class="tag tag-subject" style="font-size: 14px;">0 مجموعة</span>
+        </div>
+
+        <div id="aiLoader" class="loader">⚙️ يقوم المحرك بتحليل بيانات الطلاب وتشكيل الأقسام...</div>
+
+        <div class="groups-grid" id="groupsContainer">
+            <!-- سيتم توليد المجموعات هنا -->
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+    let allStudents = [];
+    let currentGroups = [];
+
+    window.onload = () => {
+        loadInitialData();
+    };
+
+    async function loadInitialData() {
+        document.getElementById('aiLoader').style.display = "block";
+        const [sRes, gRes] = await Promise.all([
+            fetch(`${sheetURL}?action=get&sheet=students`),
+            fetch(`${sheetURL}?action=get&sheet=groups`)
+        ]);
+        allStudents = await sRes.json();
+        currentGroups = await gRes.json();
+        renderGroups();
+        document.getElementById('aiLoader').style.display = "none";
+    }
+
+    function renderGroups() {
+        const container = document.getElementById('groupsContainer');
+        container.innerHTML = "";
+        document.getElementById('totalGroups').innerText = `${currentGroups.length} مجموعة`;
+
+        currentGroups.forEach(group => {
+            const card = document.createElement('div');
+            card.className = "group-card";
+            
+            // حساب نسبة الامتلاء
+            const count = group.currentCount || 0;
+            const max = group.maxStudents || 10;
+            const percent = (count / max) * 100;
+
+            card.innerHTML = `
+                <div class="group-header">
+                    <strong>${group.groupName}</strong>
+                    <span class="tag tag-subject">${group.subject}</span>
+                </div>
+                <div style="font-size: 12px; margin-bottom: 10px;">
+                    <span class="tag tag-count">عدد الطلاب: ${count}/${max}</span>
+                    <span class="tag" style="background:#eee">${group.type === 'male' ? '👨 ذكور' : group.type === 'female' ? '👩 بنات' : '👫 مختلط'}</span>
+                </div>
+                <div style="background: #eee; height: 6px; border-radius: 10px; margin-bottom: 15px;">
+                    <div style="background: ${percent > 90 ? '#dc3545' : '#28a745'}; width: ${percent}%; height: 100%; border-radius: 10px;"></div>
+                </div>
+                <div class="student-list" id="list-${group.id}">
+                    ${renderStudentNames(group.studentIds)}
+                </div>
+                <button onclick="deleteGroup('${group.id}')" style="margin-top:10px; font-size:10px; border:none; color:red; cursor:pointer; background:none">🗑️ حذف المجموعة</button>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function renderStudentNames(idsString) {
+        if(!idsString) return "<p style='color:#ccc'>لا يوجد طلاب بعد</p>";
+        const ids = idsString.split(',');
+        return ids.map(id => {
+            const student = allStudents.find(s => s.id == id);
+            return student ? `<div class="student-item"><span>${student.name}</span> <small>عمر: ${calculateAge(student.birthDate)}</small></div>` : "";
+        }).join('');
+    }
+
+    function calculateAge(birthDate) {
+        if(!birthDate) return "??";
+        const birth = new Date(birthDate);
+        const diff = Date.now() - birth.getTime();
+        const ageDate = new Date(diff); 
+        return Math.abs(ageDate.getUTCFullYear() - 1970);
+    }
+
+    // --- خوارزمية التوزيع الذكي ---
+    async function runAiGrouping() {
+        const subject = document.getElementById('aiSubject').value;
+        const max = parseInt(document.getElementById('maxInGroup').value);
+        const ageF = parseInt(document.getElementById('ageFrom').value);
+        const ageT = parseInt(document.getElementById('ageTo').value);
+        const gender = document.getElementById('genderType').value;
+
+        document.getElementById('aiLoader').style.display = "block";
+
+        // 1. تصفية الطلاب بناءً على المعايير
+        let filtered = allStudents.filter(s => {
+            const age = calculateAge(s.birthDate);
+            const matchesAge = age >= ageF && age <= ageT;
+            const matchesGender = (gender === 'mixed') || (gender === 'male' && s.gender === 'ذكر') || (gender === 'female' && s.gender === 'أنثى');
+            const matchesSubject = (subject === 'الكل') || (s.subject === subject);
+            return matchesAge && matchesGender && matchesSubject;
+        });
+
+        if(filtered.length === 0) {
+            alert("لم يتم العثور على طلاب تنطبق عليهم هذه المعايير!");
+            document.getElementById('aiLoader').style.display = "none";
+            return;
+        }
+
+        // 2. تقسيم الطلاب إلى مجموعات
+        let chunks = [];
+        for (let i = 0; i < filtered.length; i += max) {
+            chunks.push(filtered.slice(i, i + max));
+        }
+
+        // 3. إرسال المجموعات الجديدة للشيت
+        for(let index = 0; index < chunks.length; index++) {
+            const groupData = {
+                action: "addStudent", // نستخدم نفس الـ Action المبرمج مسبقاً
+                sheet: "groups",
+                groupName: `${subject} - فوج ${index + 1} (${gender})`,
+                subject: subject,
+                type: gender,
+                maxStudents: max,
+                minAge: ageF,
+                maxAge: ageT,
+                currentCount: chunks[index].length,
+                studentIds: chunks[index].map(s => s.id).join(','),
+                note: "تم التوزيع بواسطة المحرك الذكي"
+            };
+            await fetch(sheetURL, { method: "POST", body: JSON.stringify(groupData) });
+        }
+
+        alert(`تم بنجاح إنشاء ${chunks.length} مجموعات ذكية!`);
+        location.reload();
+    }
+
+    async function deleteGroup(id) {
+        if(!confirm("هل أنت متأكد من حذف هذه المجموعة؟")) return;
+        // هنا تضيف كود الحذف حسب برمجة الـ Script الخاص بك
+        alert("سيتم حذف المجموعة رقم: " + id);
+    }
+</script>
+
+</body>
+</html>

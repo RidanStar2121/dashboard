@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقارير الاحترافية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1a73e8; --success: #28a745; --danger: #dc3545; --bg: #f4f6f9; --dark: #2c3e50;
+        }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        
+        /* الهيدر مع زر الرئيسية */
+        .header { 
+            background: var(--dark); color: white; padding: 15px 40px; 
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+        }
+        .header h2 { margin: 0; font-size: 20px; letter-spacing: 1px; }
+        .home-btn { 
+            background: var(--primary); color: white; text-decoration: none; 
+            padding: 8px 20px; border-radius: 8px; font-weight: bold; font-size: 14px;
+            transition: 0.3s; border: 1px solid transparent;
+        }
+        .home-btn:hover { background: transparent; border-color: white; }
+
+        .main-container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
+
+        /* الكروت السريعة */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        
+        /* الكرت الخاص بالمدرسة - التعديل الجديد هنا */
+        .school-card { 
+            background: white; border-radius: 15px; padding: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid var(--primary);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .school-card .main-num { font-size: 35px; font-weight: 800; color: var(--dark); margin: 5px 0; }
+        .gender-split { 
+            display: flex; width: 100%; justify-content: space-around; 
+            margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; 
+        }
+        .gender-item { text-align: center; }
+        .gender-item span { display: block; font-size: 12px; color: #777; }
+        .gender-item strong { font-size: 18px; }
+
+        .stat-card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
+        .num { font-size: 28px; font-weight: bold; margin: 10px 0; display: block; }
+
+        /* الرسوم البيانية */
+        .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        @media (max-width: 768px) { .charts-row { grid-template-columns: 1fr; } }
+        
+        .chart-holder { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: 380px; }
+        .chart-holder h3 { margin: 0 0 20px 0; font-size: 16px; color: var(--dark); border-right: 4px solid var(--primary); padding-right: 10px; }
+
+        /* الجدول */
+        .table-card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { background: #f8f9fa; padding: 15px; font-size: 14px; color: #555; text-align: right; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; }
+        
+        .btn-wa { background: #25D366; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2> الذكاء الإداري 💎</h2>
+    <a href="home.html" class="home-btn">🏠 العودة للرئيسية</a>
+</div>
+
+<div class="main-container">
+    
+    <div class="stats-row">
+        <!-- كرت إحصائيات المدرسة الشامل -->
+        <div class="school-card">
+            <h4 style="margin:0; color:#666; font-size: 14px;">إجمالي المسجلين بالمدرسة</h4>
+            <span class="main-num" id="totalStudents">0</span>
+            <div class="gender-split">
+                <div class="gender-item">
+                    <span>إجمالي البنات</span>
+                    <strong style="color:#e91e63" id="femaleCount">0</strong>
+                </div>
+                <div style="width: 1px; background: #eee;"></div>
+                <div class="gender-item">
+                    <span>إجمالي الذكور</span>
+                    <strong style="color:#1a73e8" id="maleCount">0</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card" style="border-top: 5px solid var(--success);">
+            <h4 style="margin:0; color:#666; font-size: 14px;">صافي الربح المالي</h4>
+            <span class="num" id="profitVal" style="color:var(--success)">0 DA</span>
+            <small style="color: #888;">إجمالي المداخيل - الرواتب</small>
+        </div>
+
+        <div class="stat-card" style="border-top: 5px solid var(--danger);">
+            <h4 style="margin:0; color:#666; font-size: 14px;">تنبيهات الغياب الحرجة</h4>
+            <span class="num" id="warnVal" style="color:var(--danger)">0</span>
+            <small style="color: #888;">طلاب تجاوزوا الحد المسموح</small>
+        </div>
+    </div>
+
+    <div class="charts-row">
+        <div class="chart-holder">
+            <h3>📈 تتبع السيولة المالية (Area)</h3>
+            <canvas id="financeLineChart"></canvas>
+        </div>
+        <div class="chart-holder">
+            <h3>📊 توزيع الطلاب حسب التخصص</h3>
+            <canvas id="subjectsPieChart"></canvas>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <h3 style="margin:0; color:var(--danger); display:flex; align-items:center; gap:10px">
+                ⚠️ تقرير الانضباط والمتابعة
+            </h3>
+            <div style="background:#fff5f5; padding:8px 15px; border-radius:10px; border:1px solid #ffe3e3;">
+                <label style="font-size:13px; font-weight:bold;">فلترة الغياب ></label>
+                <input type="number" id="limit" value="3" oninput="updateAttendance()" style="width:40px; border:none; background:transparent; font-weight:bold; text-align:center; outline:none; color:var(--danger)">
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>اسم الطالب</th>
+                    <th>الجنس</th>
+                    <th>الدورة/المادة</th>
+                    <th>عدد الغيابات</th>
+                    <th>إجراء سريع</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+    let db = { students: [], attend: [], pay: [], teachPay: [] };
+
+    window.onload = async () => {
+        try {
+            const res = await Promise.all([
+                fetch(`${API}?action=get&sheet=students`).then(r => r.json()),
+                fetch(`${API}?action=get&sheet=attendance`).then(r => r.json()),
+                fetch(`${API}?action=get&sheet=student_payments`).then(r => r.json()),
+                fetch(`${API}?action=get&sheet=teacher_payments`).then(r => r.json())
+            ]);
+            db = { students: res[0], attend: res[1], pay: res[2], teachPay: res[3] };
+            initDashboard();
+        } catch (e) { console.error("Data Load Error"); }
+    };
+
+    function initDashboard() {
+        const total = db.students.length;
+        const m = db.students.filter(s => s.gender === 'ذكر').length;
+        const f = db.students.filter(s => s.gender === 'أنثى').length;
+        const inc = db.pay.reduce((s, x) => s + Number(x.amount || 0), 0);
+        const exp = db.teachPay.reduce((s, x) => s + Number(x.amount || 0), 0);
+
+        document.getElementById('totalStudents').innerText = total;
+        document.getElementById('maleCount').innerText = m;
+        document.getElementById('femaleCount').innerText = f;
+        document.getElementById('profitVal').innerText = (inc - exp).toLocaleString() + " DA";
+
+        updateAttendance();
+        renderCharts(inc, exp);
+    }
+
+    function updateAttendance() {
+        const lim = document.getElementById('limit').value;
+        const tbody = document.getElementById('attendanceTable');
+        tbody.innerHTML = "";
+        let count = 0;
+
+        db.students.forEach(s => {
+            const abs = db.attend.filter(a => a.studentId == s.id && a.status === 'غائب').length;
+            if(abs >= lim) {
+                count++;
+                tbody.innerHTML += `<tr>
+                    <td><b>${s.name}</b></td>
+                    <td><span style="color:${s.gender === 'ذكر' ? '#1a73e8' : '#e91e63'}">${s.gender || '---'}</span></td>
+                    <td>${s.subject || '---'}</td>
+                    <td style="color:red; font-weight:bold">${abs} أيام</td>
+                    <td><button class="btn-wa" onclick="sendWA('${s.phone}','${s.name}','${abs}')">مراسلة واتساب</button></td>
+                </tr>`;
+            }
+        });
+        document.getElementById('warnVal').innerText = count;
+    }
+
+    function renderCharts(inc, exp) {
+        // الرسم المالي المطور
+        new Chart(document.getElementById('financeLineChart'), {
+            type: 'line',
+            data: {
+                labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
+                datasets: [
+                    { label: 'المداخيل', data: [inc*0.2, inc*0.5, inc*0.8, inc], borderColor: '#28a745', backgroundColor: 'rgba(40, 167, 69, 0.1)', fill: true, tension: 0.3 },
+                    { label: 'المصاريف', data: [exp*0.1, exp*0.4, exp*0.7, exp], borderColor: '#dc3545', backgroundColor: 'rgba(220, 53, 69, 0.1)', fill: true, tension: 0.3 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // رسم التخصصات
+        const subMap = {};
+        db.students.forEach(s => { if(s.subject) subMap[s.subject] = (subMap[s.subject] || 0) + 1; });
+        
+        new Chart(document.getElementById('subjectsPieChart'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(subMap),
+                datasets: [{ data: Object.values(subMap), backgroundColor: ['#4285f4','#ea4335','#fbbc05','#34a853','#673ab7','#00acc1'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    function sendWA(p, n, c) {
+        if(!p) return alert("لا يوجد رقم هاتف لهذا الطالب");
+        const m = encodeURIComponent(`تحية من مدرسة نذير وضاح. نود تنبيهكم بأن الطالب(ة) ${n} تغيب عن الحصص لمدة (${c}) أيام. يرجى مراجعة الإدارة.`);
+        window.open(`https://wa.me/${p}?text=${m}`);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الدورات والمستويات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; margin: 0; background: #f5f7fa; direction: rtl; }
+        .header { background: #007bff; color: white; padding: 15px; text-align: center; position: relative; font-size: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-btn { position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; transition: 0.3s; }
+        .nav-btn:hover { background: rgba(255,255,255,0.4); }
+        
+        .container { padding: 20px; max-width: 1100px; margin: auto; }
+        
+        /* تصميم الفورم العلوي */
+        .course-form { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .form-title { font-weight: bold; margin-bottom: 20px; color: #333; display: flex; align-items: center; gap: 10px; }
+        
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-family: 'Cairo'; font-size: 14px; }
+        input:focus { border-color: #007bff; outline: none; box-shadow: 0 0 5px rgba(0,123,255,0.2); }
+        
+        .actions { margin-top: 20px; display: flex; gap: 10px; }
+        button { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: 'Cairo'; transition: 0.3s; }
+        .btn-add { background: #28a745; color: white; flex: 2; }
+        .btn-clear { background: #6c757d; color: white; flex: 1; }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        /* تصميم الجدول */
+        .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        thead { background: #f8f9fa; border-bottom: 2px solid #eee; }
+        th { padding: 15px; color: #555; font-size: 14px; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; }
+        tr:hover { background: #f9fcff; }
+        
+        .badge-price { background: #e7f3ff; color: #007bff; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
+        .btn-delete { color: #dc3545; background: none; border: 1px solid #dc3545; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        .btn-delete:hover { background: #dc3545; color: white; }
+
+        /* Loader */
+        .loader { display: none; margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    📚 إدارة المواد والمستويات الدراسية
+    <button class="nav-btn" onclick="location.href='home.html'">🏠 الرئيسية</button>
+</div>
+
+<div class="container">
+    
+    <!-- فورم إضافة مادة جديدة -->
+    <div class="course-form">
+        <div class="form-title">✨ إضافة / تعديل دورة تعليمية</div>
+        <div class="grid-inputs">
+            <input type="hidden" id="courseID">
+            <input type="text" id="courseName" placeholder="📖 اسم المادة (مثال: رياضيات)">
+            <input type="text" id="courseLevel" placeholder="🎓 المستوى (مثال: 4 متوسط)">
+            <select id="courseTeacher">
+                <option value="">👤 اختر الأستاذ...</option>
+            </select>
+            <input type="number" id="coursePrice" placeholder="💰 السعر (DA)">
+            <input type="text" id="courseSessions" placeholder="📅 عدد الحصص (أسبوعياً)">
+            <input type="text" id="courseDuration" placeholder="⏳ مدة الحصة (مثال: ساعتان)">
+        </div>
+        <div class="actions">
+            <button class="btn-add" onclick="saveCourse()">💾 حفظ الدورة</button>
+            <button class="btn-clear" onclick="resetForm()">🧹 مسح</button>
+        </div>
+    </div>
+
+    <!-- جدول عرض المواد -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>المادة</th>
+                    <th>المستوى</th>
+                    <th>الأستاذ</th>
+                    <th>السعر</th>
+                    <th>الحصص</th>
+                    <th>المدة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="coursesTableBody">
+                <tr>
+                    <td colspan="8" style="text-align:center; padding:30px; color:#999;">⏳ جاري تحميل البيانات...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+
+    window.onload = () => {
+        loadTeachers();
+        loadCourses();
+    };
+
+    // 1. جلب الأساتذة للقائمة المنسدلة
+    async function loadTeachers() {
+        try {
+            const res = await fetch(`${sheetURL}?action=get&sheet=teachers`);
+            const data = await res.json();
+            const select = document.getElementById("courseTeacher");
+            if (Array.isArray(data)) {
+                data.forEach(t => {
+                    if (t.name) {
+                        let opt = document.createElement("option");
+                        opt.value = t.name;
+                        opt.textContent = t.name;
+                        select.appendChild(opt);
+                    }
+                });
+            }
+        } catch (e) { console.error("Error loading teachers"); }
+    }
+
+    // 2. جلب الدورات وعرضها في الجدول
+    async function loadCourses() {
+        const tbody = document.getElementById("coursesTableBody");
+        try {
+            const res = await fetch(`${sheetURL}?action=get&sheet=courses`);
+            const data = await res.json();
+            tbody.innerHTML = "";
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">لا توجد دورات مسجلة حالياً</td></tr>';
+                return;
+            }
+
+            data.forEach(c => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>#${c.id || '-'}</td>
+                        <td style="font-weight:bold;">${c.course}</td>
+                        <td>${c.level}</td>
+                        <td>${c.teacher}</td>
+                        <td><span class="badge-price">${c.price} DA</span></td>
+                        <td>${c.sessions}</td>
+                        <td>${c.duration}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteCourse('${c.id}')">🗑️ حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:red;">❌ فشل تحميل البيانات. تأكد من وجود جدول باسم "courses"</td></tr>';
+        }
+    }
+
+    // 3. حفظ دورة جديدة
+    async function saveCourse() {
+        const data = {
+            action: "addStudent", // سنستخدم نفس الـ Action ونغير اسم الشيت برمجياً لسهولة التوافق
+            sheet: "courses",
+            course: document.getElementById("courseName").value,
+            level: document.getElementById("courseLevel").value,
+            teacher: document.getElementById("courseTeacher").value,
+            price: document.getElementById("coursePrice").value,
+            sessions: document.getElementById("courseSessions").value,
+            duration: document.getElementById("courseDuration").value
+        };
+
+        if (!data.course || !data.teacher) return alert("يرجى ملأ اسم المادة واختيار الأستاذ");
+
+        try {
+            const res = await fetch(sheetURL, {
+                method: "POST",
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.success) {
+                alert("✅ تم إضافة الدورة بنجاح");
+                resetForm();
+                loadCourses();
+            }
+        } catch (e) { alert("❌ حدث خطأ أثناء الحفظ"); }
+    }
+
+    function resetForm() {
+        const fields = ["courseName", "courseLevel", "courseTeacher", "coursePrice", "courseSessions", "courseDuration"];
+        fields.forEach(id => document.getElementById(id).value = "");
+    }
+
+    // 4. حذف دورة
+    async function deleteCourse(id) {
+        if (!confirm("هل أنت متأكد من حذف هذه الدورة؟")) return;
+        
+        const data = { action: "deleteStudent", sheet: "courses", id: id };
+        try {
+            const res = await fetch(sheetURL, { method: "POST", body: JSON.stringify(data) });
+            const result = await res.json();
+            if (result.success) {
+                alert("🗑️ تم الحذف");
+                loadCourses();
+            }
+        } catch (e) { alert("خطأ في الحذف"); }
+    }
+</script>
+
+</body>
+</html>

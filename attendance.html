@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الحضور المتكاملة - نذير وضاح</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; margin: 0; background: #f5f7fa; direction: rtl; }
+        .header { background: #007bff; color: white; padding: 15px; text-align: center; position: relative; font-size: 18px; }
+        .nav-btn { position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; }
+        
+        .container { padding: 20px; max-width: 1200px; margin: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); position: relative; }
+        h3 { margin-top: 0; color: #007bff; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; font-size: 16px; }
+
+        /* الكاميرا */
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; border: 2px solid #eee; }
+        
+        /* محرك البحث الذكي الجديد */
+        .search-box-container { position: relative; margin-bottom: 15px; }
+        .search-input { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #007bff; box-sizing: border-box; font-family: 'Cairo'; background: #f0f7ff; }
+        .search-suggestions { 
+            position: absolute; top: 100%; left: 0; right: 0; 
+            background: white; border: 1px solid #ddd; border-radius: 0 0 8px 8px;
+            z-index: 1000; max-height: 200px; overflow-y: auto; display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
+        .suggestion-item:hover { background: #e7f3ff; }
+
+        /* الفورم */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; }
+        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; }
+        
+        .btn-save { background: #28a745; color: white; width: 100%; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        
+        /* التتبع والجدول */
+        .full-width { grid-column: 1 / -1; }
+        .filters { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; background: #e9ecef; padding: 15px; border-radius: 10px; }
+        .filters button { background: white; border: 1px solid #007bff; color: #007bff; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
+        .filters button.active { background: #007bff; color: white; }
+
+        .table-container { background: white; border-radius: 10px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; font-size: 13px; }
+        thead { background: #007bff; color: white; }
+        
+        .status-present { color: #28a745; font-weight: bold; }
+        .status-absent { color: #dc3545; font-weight: bold; }
+        .loading-overlay { display: none; text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    📊 إدارة الحضور والغياب (ذكي + يدوي)
+    <button class="nav-btn" onclick="location.href='home.html'">🏠 الرئيسية</button>
+</div>
+
+<div class="container">
+    
+    <!-- الجهة اليمنى: المسح الضوئي والكاميرا -->
+    <div class="card">
+        <h3>🎥 المسح الذكي (QR Code)</h3>
+        <div id="reader"></div>
+        <p id="scanStatus" style="text-align: center; font-weight: bold; margin-top: 10px; color: #666;">في انتظار المسح...</p>
+    </div>
+
+    <!-- الجهة اليسرى: الإدخال اليدوي المطور -->
+    <div class="card">
+        <h3>📝 تسجيل حضور/غياب سريع</h3>
+        
+        <!-- خانة البحث السريع الجديدة -->
+        <div class="search-box-container">
+            <label>🔍 ابحث عن اسم الطالب بسرعة:</label>
+            <input type="text" id="quickSearch" class="search-input" placeholder="اكتب اسم الطالب هنا..." oninput="handleQuickSearch()">
+            <div id="suggestions" class="search-suggestions"></div>
+        </div>
+
+        <div class="form-group" style="display: none;"> <!-- مخفية لكنها مهمة للسكربت -->
+            <select id="studentSelect">
+                <option value="">-- اختر الطالب --</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <label>اسم الطالب المختار:</label>
+                <input type="text" id="displayStudentName" readonly placeholder="لم يتم الاختيار" style="background: #f8f9fa; font-weight: bold;">
+            </div>
+            <div>
+                <label>رقم الطالب (ID):</label>
+                <input type="text" id="studentId" readonly placeholder="ID" style="background: #f8f9fa;">
+            </div>
+        </div>
+
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <label>التاريخ:</label>
+                <input type="date" id="attDate">
+            </div>
+            <div>
+                <label>الحالة:</label>
+                <select id="status">
+                    <option value="حاضر">✅ حاضر</option>
+                    <option value="غائب">❌ غائب</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>ملاحظات:</label>
+            <input type="text" id="note" placeholder="مثال: تأخر 10 دقائق">
+        </div>
+        <button class="btn-save" id="saveBtn" onclick="submitAttendance()">💾 تأكيد وحفظ العملية</button>
+    </div>
+
+    <!-- الجزء السفلي: جدول التتبع التاريخي -->
+    <div class="card full-width">
+        <h3>📅 سجل تتبع الحضور والغياب</h3>
+        <div class="filters">
+            <strong>تصفية الجدول:</strong>
+            <button onclick="filterRecords('all')" class="active" id="btnAll">الكل</button>
+            <button onclick="filterRecords('day')" id="btnDay">اليوم</button>
+            <button onclick="filterRecords('month')" id="btnMonth">هذا الشهر</button>
+            <div style="margin-right: auto;">
+                <input type="text" id="tableSearch" placeholder="🔍 بحث في السجل..." style="width: 200px; padding: 5px;">
+            </div>
+        </div>
+
+        <div id="loader" class="loading-overlay">⏳ جاري جلب السجلات من السحابة...</div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>ID</th>
+                        <th>اسم الطالب</th>
+                        <th>الحالة</th>
+                        <th>ملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody id="attBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+    let studentsData = [];
+    let attendanceHistory = [];
+
+    window.onload = async () => {
+        document.getElementById('attDate').valueAsDate = new Date();
+        await loadInitialData();
+        startScanner();
+    };
+
+    async function loadInitialData() {
+        try {
+            const sRes = await fetch(`${sheetURL}?action=get&sheet=students`);
+            studentsData = await sRes.json();
+            
+            // تعبئة القائمة المخفية للمزامنة
+            const select = document.getElementById('studentSelect');
+            studentsData.forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.name;
+                select.appendChild(opt);
+            });
+
+            await fetchAttendanceHistory();
+        } catch (e) { console.error("Error loading data"); }
+    }
+
+    // --- نظام البحث السريع الجديد ---
+    function handleQuickSearch() {
+        const query = document.getElementById('quickSearch').value.toLowerCase();
+        const container = document.getElementById('suggestions');
+        container.innerHTML = "";
+        
+        if (query.length < 1) {
+            container.style.display = "none";
+            return;
+        }
+
+        const matches = studentsData.filter(s => s.name.toLowerCase().includes(query) || s.id.toString().includes(query));
+
+        if (matches.length > 0) {
+            container.style.display = "block";
+            matches.forEach(match => {
+                const div = document.createElement('div');
+                div.className = "suggestion-item";
+                div.innerHTML = `<strong>${match.name}</strong> <small>(ID: ${match.id})</small>`;
+                div.onclick = () => selectStudent(match);
+                container.appendChild(div);
+            });
+        } else {
+            container.style.display = "none";
+        }
+    }
+
+    function selectStudent(student) {
+        document.getElementById('displayStudentName').value = student.name;
+        document.getElementById('studentId').value = student.id;
+        document.getElementById('studentSelect').value = student.id; // للمزامنة مع الكود القديم
+        document.getElementById('quickSearch').value = student.name;
+        document.getElementById('suggestions').style.display = "none";
+    }
+    // -------------------------------
+
+    async function fetchAttendanceHistory() {
+        document.getElementById('loader').style.display = "block";
+        try {
+            const aRes = await fetch(`${sheetURL}?action=get&sheet=attendance`);
+            attendanceHistory = await aRes.json();
+            renderTable(attendanceHistory);
+        } catch (e) { console.error("Error fetching history"); }
+        document.getElementById('loader').style.display = "none";
+    }
+
+    function startScanner() {
+        const scanner = new Html5Qrcode("reader");
+        scanner.start({ facingMode: "user" }, { fps: 10, qrbox: 250 }, (decoded) => {
+            const student = studentsData.find(s => s.id == decoded || s.name == decoded);
+            if(student) selectStudent(student);
+            playBeep();
+        }).catch(err => console.log("Camera error"));
+    }
+
+    async function submitAttendance() {
+        const btn = document.getElementById('saveBtn');
+        const sName = document.getElementById('displayStudentName').value;
+        const sId = document.getElementById('studentId').value;
+        
+        if (!sId) return alert("يرجى البحث واختيار طالب أولاً");
+
+        const data = {
+            action: "addStudent",
+            sheet: "attendance",
+            studentId: sId,
+            studentName: sName,
+            date: document.getElementById('attDate').value,
+            status: document.getElementById('status').value,
+            note: document.getElementById('note').value
+        };
+
+        btn.disabled = true;
+        btn.innerText = "⏳ جاري الحفظ...";
+        try {
+            const res = await fetch(sheetURL, { method: "POST", body: JSON.stringify(data) });
+            const result = await res.json();
+            if (result.success) {
+                alert("✅ تم تسجيل " + data.status + " للطالب: " + sName);
+                await fetchAttendanceHistory();
+                resetForm();
+            }
+        } catch (e) { alert("خطأ في الاتصال"); }
+        btn.disabled = false;
+        btn.innerText = "💾 تأكيد وحفظ العملية";
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('attBody');
+        tbody.innerHTML = "";
+        data.slice().reverse().forEach(r => {
+            const statusClass = r.status === "حاضر" ? "status-present" : "status-absent";
+            tbody.innerHTML += `
+                <tr>
+                    <td>${r.date}</td>
+                    <td>${r.studentId}</td>
+                    <td>${r.studentName}</td>
+                    <td class="${statusClass}">${r.status}</td>
+                    <td>${r.note || '-'}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function filterRecords(type) {
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        let filtered = attendanceHistory;
+
+        if (type === 'day') {
+            filtered = attendanceHistory.filter(r => r.date === today);
+        } else if (type === 'month') {
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            filtered = attendanceHistory.filter(r => {
+                const d = new Date(r.date);
+                return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+            });
+        }
+        
+        renderTable(filtered);
+        document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
+    }
+
+    document.getElementById('tableSearch').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        const filtered = attendanceHistory.filter(r => 
+            r.studentName.toLowerCase().includes(term) || 
+            r.studentId.toString().includes(term)
+        );
+        renderTable(filtered);
+    });
+
+    function resetForm() {
+        document.getElementById('quickSearch').value = "";
+        document.getElementById('displayStudentName').value = "";
+        document.getElementById('studentId').value = "";
+        document.getElementById('note').value = "";
+        document.getElementById('scanStatus').innerHTML = "في انتظار المسح...";
+    }
+
+    function playBeep() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            osc.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        } catch(e) {}
+    }
+</script>
+
+</body>
+</html>

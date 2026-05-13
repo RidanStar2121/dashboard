@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ملفات الطلاب</title>
+
+<style>
+
+body{
+  font-family:'Cairo',sans-serif;
+  margin:0;
+  background:#f5f7fa;
+  direction:rtl;
+}
+
+/* HEADER */
+.header{
+  background:#007bff;
+  color:white;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  position:relative;
+  font-weight:bold;
+}
+
+.home-btn{
+  position:absolute;
+  left:15px;
+  top:15px;
+  background:#dc3545;
+  border:none;
+  color:white;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* CONTAINER */
+.container{
+  padding:20px;
+  max-width:1400px;
+  margin:auto;
+}
+
+/* TOOLS */
+.tools{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+
+.tools input,
+.tools select{
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  flex:1;
+  min-width:180px;
+}
+
+/* TABLE */
+.table-container{
+  overflow:auto;
+  background:white;
+  border-radius:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th{
+  background:#007bff;
+  color:white;
+  padding:14px;
+  font-size:14px;
+}
+
+td{
+  padding:12px;
+  border-bottom:1px solid #eee;
+  text-align:center;
+  font-size:14px;
+}
+
+tr:hover{
+  background:#f9fbff;
+}
+
+/* PHOTO */
+.student-photo{
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid #007bff;
+}
+
+/* BUTTONS */
+.action-btn{
+  border:none;
+  padding:7px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  margin:2px;
+  color:white;
+  font-size:12px;
+}
+
+.edit{
+  background:#ffc107;
+  color:black;
+}
+
+.delete{
+  background:#dc3545;
+}
+
+.card-btn{
+  background:#17a2b8;
+}
+
+.print{
+  background:#28a745;
+}
+
+.payment{
+  background:#6f42c1;
+}
+
+.attendance{
+  background:#fd7e14;
+}
+
+/* CARD MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.modal-content{
+  background:white;
+  width:340px;
+  border-radius:15px;
+  padding:20px;
+  text-align:center;
+  position:relative;
+}
+
+.close{
+  position:absolute;
+  top:10px;
+  left:10px;
+  cursor:pointer;
+  font-size:20px;
+}
+
+/* STUDENT CARD */
+.student-card{
+  border:2px solid #007bff;
+  border-radius:15px;
+  padding:15px;
+}
+
+.student-card img{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid #007bff;
+}
+
+.card-name{
+  font-size:18px;
+  font-weight:bold;
+  margin-top:10px;
+}
+
+.card-info{
+  margin-top:5px;
+  font-size:14px;
+}
+
+.qr{
+  margin-top:10px;
+}
+
+/* LOADING */
+.loading{
+  text-align:center;
+  color:gray;
+  padding:20px;
+}
+
+/* BADGES */
+.badge{
+  padding:5px 10px;
+  border-radius:20px;
+  color:white;
+  font-size:12px;
+}
+
+.male{
+  background:#007bff;
+}
+
+.female{
+  background:#e83e8c;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+👨‍🎓 ملفات الطلاب
+
+<button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
+</div>
+
+<div class="container">
+
+<!-- TOOLS -->
+<div class="tools">
+
+<input type="text" id="search" placeholder="🔍 بحث بالاسم أو ID">
+
+<select id="filterCourse">
+<option value="">📚 كل الدورات</option>
+</select>
+
+<select id="filterGender">
+<option value="">👦 الجنس</option>
+<option value="ذكر">ذكر</option>
+<option value="أنثى">أنثى</option>
+</select>
+
+</div>
+
+<!-- TABLE -->
+<div class="table-container">
+
+<table id="studentsTable">
+
+<tr>
+<th>📷</th>
+<th>🆔</th>
+<th>👦 الاسم</th>
+<th>📱 الهاتف</th>
+<th>📚 الدورة</th>
+<th>👨‍🏫 الأستاذ</th>
+<th>⚧ الجنس</th>
+<th>⚙ العمليات</th>
+</tr>
+
+</table>
+
+</div>
+
+<div class="loading" id="loading">
+⏳ جاري تحميل بيانات الطلاب...
+</div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="cardModal">
+
+<div class="modal-content">
+
+<div class="close" onclick="closeCard()">❌</div>
+
+<div id="cardContent"></div>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<script>
+
+/* =========================
+   إعدادات
+========================= */
+
+const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+
+let allStudents = [];
+
+/* =========================
+   تحميل البيانات
+========================= */
+
+async function loadStudents(){
+
+  try{
+
+    const res = await fetch(sheetURL + "?sheet=students");
+
+    const data = await res.json();
+
+    allStudents = data;
+
+    document.getElementById("loading").style.display = "none";
+
+    renderStudents(allStudents);
+
+    loadCourses();
+
+  }catch(err){
+
+    console.error(err);
+
+    document.getElementById("loading").innerHTML =
+    "❌ خطأ في تحميل البيانات";
+
+  }
+
+}
+
+/* =========================
+   عرض الطلاب
+========================= */
+function renderStudents(data){
+
+  const table = document.getElementById("studentsTable");
+
+  table.innerHTML = `
+  <tr>
+    <th>📷</th>
+    <th>🆔</th>
+    <th>👦 الاسم</th>
+    <th>🎂 تاريخ الميلاد</th>
+    <th>📘 المستوى</th>
+    <th>📱 الهاتف</th>
+    <th>📚 الدورة</th>
+    <th>👨‍🏫 الأستاذ</th>
+    <th>⚧ الجنس</th>
+    <th>⚙ العمليات</th>
+  </tr>
+  `;
+
+  data.forEach(student => {
+
+    const tr = document.createElement("tr");
+
+    let genderBadge =
+      student.gender === "أنثى"
+      ? `<span class="badge female">أنثى</span>`
+      : `<span class="badge male">ذكر</span>`;
+
+let birthDate = "";
+
+if(student.birth){
+
+  birthDate =
+  new Date(student.birth)
+  .toLocaleDateString("fr-CA");
+
+}
+
+    tr.innerHTML = `
+
+      <td>
+        <img class="student-photo"
+        src="${student.photo || 'https://via.placeholder.com/80'}">
+      </td>
+
+      <td>${student.id || ""}</td>
+
+      <td>${student.name || ""}</td>
+
+      <td>${birthDate}</td>
+
+      <td>${student.level || ""}</td>
+
+      <td>${student.phone || ""}</td>
+
+      <td>${student.course || ""}</td>
+
+      <td>${student.teacher || ""}</td>
+
+      <td>${genderBadge}</td>
+
+      <td>
+
+        <button class="action-btn edit"
+        onclick='editStudentById("${student.id}")'>
+        ✏️
+        </button>
+
+        <button class="action-btn delete"
+        onclick='deleteStudent("${student.id}")'>
+        🗑️
+        </button>
+
+        <button class="action-btn card-btn"
+        onclick='showCardById("${student.id}")'>
+        🎴
+        </button>
+
+        <button class="action-btn print"
+        onclick='printCardById("${student.id}")'>
+        🖨️
+        </button>
+
+        <button class="action-btn payment">
+        💰
+        </button>
+
+        <button class="action-btn attendance">
+        🕒
+        </button>
+
+      </td>
+    `;
+
+    table.appendChild(tr);
+
+  });
+
+}
+
+
+function getStudentById(id){
+
+  return allStudents.find(
+    x => String(x.id) === String(id)
+  );
+
+}
+
+
+
+/* =========================
+   تعديل
+========================= */
+
+function editStudentById(id){
+
+  const student = getStudentById(id);
+
+  if(!student){
+    alert("❌ الطالب غير موجود");
+    return;
+  }
+
+  localStorage.setItem(
+    "editStudent",
+    JSON.stringify(student)
+  );
+
+  window.location.href = "add.html";
+
+}
+
+
+
+/* =========================
+   عرض البطاقة
+========================= */
+
+function showCardById(id){
+
+  const student = getStudentById(id);
+
+  if(!student){
+    alert("❌ الطالب غير موجود");
+    return;
+  }
+
+  showCard(student);
+
+}
+
+
+
+/* =========================
+   طباعة البطاقة
+========================= */
+
+function printCardById(id){
+
+  const student = getStudentById(id);
+
+  if(!student){
+    alert("❌ الطالب غير موجود");
+    return;
+  }
+
+  printCard(student);
+
+}
+
+
+
+
+
+/* =========================
+   تحميل الدورات
+========================= */
+
+function loadCourses(){
+
+  let courses = [...new Set(
+    allStudents.map(x => x.course).filter(Boolean)
+  )];
+
+  let select = document.getElementById("filterCourse");
+
+  courses.forEach(c => {
+
+    let op = document.createElement("option");
+
+    op.value = c;
+    op.textContent = c;
+
+    select.appendChild(op);
+
+  });
+
+}
+
+/* =========================
+   البحث
+========================= */
+
+document.getElementById("search")
+.addEventListener("input", applyFilters);
+
+document.getElementById("filterCourse")
+.addEventListener("change", applyFilters);
+
+document.getElementById("filterGender")
+.addEventListener("change", applyFilters);
+
+function applyFilters(){
+
+  let search =
+    document.getElementById("search")
+    .value.toLowerCase();
+
+  let course =
+    document.getElementById("filterCourse").value;
+
+  let gender =
+    document.getElementById("filterGender").value;
+
+  let filtered = allStudents.filter(x => {
+
+    let okSearch =
+      (x.name || "").toLowerCase().includes(search) ||
+      (x.id || "").toLowerCase().includes(search);
+
+    let okCourse =
+      !course || x.course === course;
+
+    let okGender =
+      !gender || x.gender === gender;
+
+    return okSearch && okCourse && okGender;
+
+  });
+
+  renderStudents(filtered);
+
+}
+
+/* =========================
+   تعديل
+========================= */
+
+function editStudent(student){
+
+  localStorage.setItem(
+    "editStudent",
+    JSON.stringify(student)
+  );
+
+  window.location.href = "add_student.html";
+
+}
+
+/* =========================
+   حذف
+========================= */
+
+function deleteStudent(id){
+
+  if(!confirm("هل تريد حذف الطالب؟")) return;
+
+  fetch(sheetURL,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"deleteStudent",
+      id:id
+    })
+  })
+  .then(r => r.text())
+  .then(() => {
+
+    alert("✅ تم حذف الطالب");
+
+    loadStudents();
+
+  });
+
+}
+
+/* =========================
+   البطاقة
+========================= */
+
+function showCard(student){
+
+  const modal =
+    document.getElementById("cardModal");
+
+  const card =
+    document.getElementById("cardContent");
+
+  modal.style.display = "flex";
+
+  card.innerHTML = `
+
+  <div class="student-card">
+
+    <img src="${student.photo || 'https://via.placeholder.com/100'}">
+
+    <div class="card-name">
+      ${student.name || ""}
+    </div>
+
+    <div class="card-info">
+      🆔 ${student.id || ""}
+    </div>
+
+    <div class="card-info">
+      📚 ${student.course || ""}
+    </div>
+
+    <div class="card-info">
+    🎂 ${student.birth || ""}
+    </div>
+
+    <div class="card-info">
+    📘 ${student.level || ""}
+    </div>
+
+    <div class="card-info">
+      📱 ${student.phone || ""}
+    </div>
+
+    <div class="card-info">
+      👨‍🏫 ${student.teacher || ""}
+    </div>
+
+    <canvas id="qrcode" class="qr"></canvas>
+
+  </div>
+
+  `;
+
+  QRCode.toCanvas(
+    document.getElementById("qrcode"),
+    student.id || student.name
+  );
+
+}
+
+/* =========================
+   إغلاق البطاقة
+========================= */
+
+function closeCard(){
+
+  document.getElementById("cardModal")
+  .style.display = "none";
+
+}
+
+/* =========================
+   طباعة
+========================= */
+
+function printCard(student){
+
+  showCard(student);
+
+  setTimeout(()=>{
+
+    let content =
+    document.getElementById("cardContent").innerHTML;
+
+    let win = window.open("");
+
+    win.document.write(`
+      <html>
+      <head>
+      <title>بطاقة الطالب</title>
+      </head>
+      <body style="font-family:Cairo;text-align:center">
+      ${content}
+      </body>
+      </html>
+    `);
+
+    win.print();
+
+  },500);
+
+}
+
+/* =========================
+   الرئيسية
+========================= */
+
+function goHome(){
+
+  window.location.href = "home.html";
+
+}
+
+/* =========================
+   START
+========================= */
+
+loadStudents();
+
+</script>
+
+</body>
+</html>
