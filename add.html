@@ -22,7 +22,6 @@
         .search-item:hover { background: #f1f1f1; }
         .card-preview { margin-top: 25px; background: white; border-radius: 15px; padding: 20px; border: 2px solid #007bff; text-align: center; }
         .student-card { width: 340px; margin: auto; background: linear-gradient(135deg, #007bff, #00b4ff); color: white; border-radius: 15px; padding: 20px; position: relative; }
-        .student-photo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid white; margin-bottom: 10px; }
         .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
         .info { margin: 5px 0; font-size: 14px; }
         .qr { margin-top: 10px; background: white; display: inline-block; padding: 5px; border-radius: 8px; }
@@ -74,81 +73,65 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <script>
+// الرابط الخاص بك
 const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
 let allStudents = [];
 let selectedID = null;
 
-// تشغيل النظام عند فتح الصفحة
 window.onload = async () => {
-    localStorage.removeItem("editStudent");
-    await loadTeachers();      // خطوة 1: جلب الأساتذة أولاً
-    await loadStudentsList();  // خطوة 2: جلب الطلاب للبحث
-    checkEditMode();           // خطوة 3: التحقق هل نحن في وضع "تعديل"؟
+    // تأكد من عدم وجود بيانات قديمة في الذاكرة
+    await loadTeachers();      
+    await loadStudentsList();  
+    checkEditMode();           
 };
 
-// 1. جلب الأساتذة من جدول teachers فقط
+// 1. جلب الأساتذة (تم التعديل لتكون الطريقة احترافية ومضمونة)
 async function loadTeachers() {
-
     const teacherSelect = document.getElementById("teacher");
-
     try {
-
-        const res = await fetch(sheetURL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                action: "get",
-                sheet: "teachers"
-            })
-        });
-
-        const data = await res.json();
-
+        // نستخدم GET بدلاً من POST لجلب البيانات لضمان تجاوز قيود CORS
+        const response = await fetch(`${sheetURL}?action=get&sheet=teachers`);
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        
         teacherSelect.innerHTML = '<option value="">اختر الأستاذ</option>';
 
         if (Array.isArray(data)) {
-
+            // فلترة ذكية للتأكد من جلب الأسماء فقط واستبعاد أي صفوف فارغة
             data.forEach(t => {
-
-                if (t.name) {
-
+                if (t.name && t.name.trim() !== "") {
                     const option = document.createElement("option");
                     option.value = t.name;
                     option.textContent = t.name;
                     teacherSelect.appendChild(option);
-
                 }
-
             });
-
         }
-
     } catch (err) {
-
-        teacherSelect.innerHTML =
-            '<option value="">⚠️ خطأ في تحميل الأساتذة</option>';
-
+        console.error("Teacher load error:", err);
+        teacherSelect.innerHTML = '<option value="">⚠️ خطأ في تحميل الأساتذة</option>';
     }
 }
 
 // 2. جلب الطلاب للبحث
 async function loadStudentsList() {
     try {
-        const res = await fetch(sheetURL + "?sheet=students&action=get");
+        const res = await fetch(`${sheetURL}?action=get&sheet=students`);
         allStudents = await res.json();
-    } catch (e) { console.error("Students list error"); }
+    } catch (e) { 
+        console.error("Students list error", e); 
+    }
 }
 
-// 3. التحقق من وضع التعديل (القادم من صفحة students.html)
+// 3. التحقق من وضع التعديل
 function checkEditMode() {
     const editData = localStorage.getItem("editStudent");
     if (editData) {
         const student = JSON.parse(editData);
         selectedID = student.id;
         
-        // ملأ الخانات
         document.getElementById("name").value = student.name || "";
         document.getElementById("phone").value = student.phone || "";
         document.getElementById("course").value = student.course || "";
@@ -158,17 +141,16 @@ function checkEditMode() {
         document.getElementById("school").value = student.school || "";
         document.getElementById("level").value = student.level || "";
         
-        // اختيار الأستاذ من القائمة المنسدلة
+        // ننتظر قليلاً للتأكد من تحميل القائمة ثم نختار الأستاذ
         setTimeout(() => {
-            document.getElementById("teacher").value = student.teacher || "";
-        }, 300);
-    } else {
-        // إذا لم يكن هناك تعديل، نتأكد أن الحقول فارغة تماماً
-        clearForm();
+            if (student.teacher) {
+                document.getElementById("teacher").value = student.teacher;
+            }
+        }, 800);
     }
 }
 
-// حفظ الطالب (إضافة أو تعديل)
+// حفظ الطالب
 function saveStudent() {
     const isEdit = !!localStorage.getItem("editStudent");
     const editData = isEdit ? JSON.parse(localStorage.getItem("editStudent")) : null;
@@ -188,8 +170,9 @@ function saveStudent() {
         level: document.getElementById("level").value
     };
 
-    if (!data.name) return alert("يرجى إدخال اسم الطالب على الأقل");
+    if (!data.name) return alert("يرجى إدخال اسم الطالب");
 
+    // عملية الحفظ تبقى POST لأنها عملية كتابة
     fetch(sheetURL, {
         method: "POST",
         body: JSON.stringify(data)
@@ -198,27 +181,31 @@ function saveStudent() {
     .then(res => {
         if (res.success) {
             alert("✅ تم الحفظ بنجاح");
-            localStorage.removeItem("editStudent"); // تنظيف بعد الحفظ
-            clearForm(); // إفراغ الحقول
-            location.reload(); // إعادة تحميل لمزامنة البحث
+            localStorage.removeItem("editStudent");
+            clearForm();
+            location.reload();
         } else {
             alert("❌ خطأ: " + res.error);
         }
-    });
+    })
+    .catch(err => alert("❌ حدث خطأ في الاتصال: " + err));
 }
 
 function clearForm() {
     const ids = ["name", "phone", "course", "birth", "place", "gender", "teacher", "school", "level", "search"];
-    ids.forEach(id => document.getElementById(id).value = "");
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = "";
+    });
     selectedID = null;
 }
 
 function goHome() {
-    localStorage.removeItem("editStudent"); // مسح بيانات التعديل عند الخروج للرئيسية
+    localStorage.removeItem("editStudent");
     window.location.href = "home.html";
 }
 
-// البحث التفاعلي في الصفحة
+// البحث التفاعلي
 document.getElementById("search").addEventListener("input", function() {
     let val = this.value.toLowerCase().trim();
     let box = document.getElementById("results");
@@ -246,12 +233,13 @@ document.getElementById("search").addEventListener("input", function() {
     });
 });
 
-/* وظائف البطاقة والطباعة */
+/* وظائف البطاقة */
 function generateCard() {
     let card = document.getElementById("card");
     let name = document.getElementById("name").value;
     let course = document.getElementById("course").value;
     let teacher = document.getElementById("teacher").value;
+    if(!name) return alert("أدخل اسم الطالب أولاً");
     card.style.display = "block";
     card.innerHTML = `
         <div class="student-card">
@@ -266,8 +254,9 @@ function generateCard() {
 
 function printCard() {
     let content = document.getElementById("card").innerHTML;
+    if(!content) return alert("قم بإنشاء البطاقة أولاً");
     let win = window.open("");
-    win.document.write(`<html><head><style>body{font-family:Cairo;text-align:center;direction:rtl;}</style></head><body>${content}</body></html>`);
+    win.document.write(`<html><head><style>body{font-family:Cairo;text-align:center;direction:rtl;margin-top:50px;}</style></head><body>${content}</body></html>`);
     setTimeout(() => { win.print(); win.close(); }, 500);
 }
 </script>
