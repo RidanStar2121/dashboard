@@ -40,8 +40,31 @@ td{ padding:10px; text-align:center; border-bottom:1px solid #eee; }
 <div class="grid">
 <input id="name" placeholder="👤 الاسم الكامل">
 <input id="phone" placeholder="📱 الهاتف">
-<input id="subject" placeholder="📚 المادة">
-<input id="level" placeholder="🎓 المستوى">
+<select id="subject" placeholder="📚 المادة">
+      <option>📚 إختر المادة</option>
+      <option>🎮 Scratch</option>
+      <option>🤖 روبوتيك</option>
+      <option>🐍 Python</option>
+      <option>🧠 ذكاء اصطناعي</option>
+      <option>رياضيات</option>
+      <option>فرنسية</option>
+      <option>إنجليزية </option>
+      <option>عربية</option>
+      <option>علوم </option>
+      <option>فيزياء </option>
+   </select>
+
+<input id="group_name" placeholder="🧑‍🏫 الفوج">
+
+<select id="level" placeholder="🎓 المستوى">
+      <option>📚 إختر المستوى</option>
+      <option>إبتدائي</option>
+      <option>متوسط</option>
+      <option>ثانوي</option>
+      <option>جامعي</option>
+      <option>دورات</option>
+    </select>
+
 <input id="salary" placeholder="💰 الراتب">
 </div>
 
@@ -60,6 +83,7 @@ td{ padding:10px; text-align:center; border-bottom:1px solid #eee; }
 <th>📚 المادة</th>
 <th>🎓 المستوى</th>
 <th>💰 الراتب</th>
+<th>📝 الفوج</th>
 <th>⚙</th>
 </tr>
 </thead>
@@ -96,6 +120,7 @@ function renderTeachers(){
       <td>${t.subject || ""}</td>
       <td>${t.level || ""}</td>
       <td>${t.salary || ""}</td>
+      <td>${t.group_name || ""}</td>
       <td>
         <button class="action-btn edit" onclick='editTeacher("${t.id}")'>✏</button>
         <button class="action-btn delete" onclick='deleteTeacher("${t.id}")'>🗑</button>
@@ -117,7 +142,8 @@ function saveTeacher(){
     phone: document.getElementById("phone").value,
     subject: document.getElementById("subject").value,
     level: document.getElementById("level").value,
-    salary: document.getElementById("salary").value
+    salary: document.getElementById("salary").value,
+    group_name: document.getElementById("group_name").value
   };
 
   if(!data.name) { alert("يرجى إدخال الاسم"); return; }
@@ -153,8 +179,10 @@ function editTeacher(id){
   document.getElementById("name").value = t.name || "";
   document.getElementById("phone").value = t.phone || "";
   document.getElementById("subject").value = t.subject || "";
+ 
   document.getElementById("level").value = t.level || "";
   document.getElementById("salary").value = t.salary || "";
+  document.getElementById("group_name").value = t.group_name || "";
   
   window.scrollTo(0,0);
 }
@@ -186,8 +214,10 @@ function clearForm(){
   document.getElementById("name").value = "";
   document.getElementById("phone").value = "";
   document.getElementById("subject").value = "";
+  
   document.getElementById("level").value = "";
   document.getElementById("salary").value = "";
+  document.getElementById("group_name").value = "";
 }
 
 function goHome(){ window.location.href = "home.html"; }
