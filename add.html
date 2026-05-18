@@ -3,131 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل طالب</title>
+    <title>تسجيل طالب - نذير وضاح</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Cairo', sans-serif; margin: 0; background: #f5f7fa; direction: rtl; }
         .header { background: #007bff; color: white; padding: 15px; text-align: center; position: relative; font-size: 18px; }
         .logout-btn { position: absolute; left: 15px; top: 15px; background: #dc3545; border: none; padding: 8px 12px; border-radius: 8px; color: white; cursor: pointer; }
         .container { padding: 20px; display: flex; justify-content: center; }
-        .form-box { width: 100%; max-width: 700px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .form-box { width: 100%; max-width: 750px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         @media(max-width:700px){ .grid { grid-template-columns: 1fr; } }
         input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 10px; box-sizing: border-box; font-size: 14px; }
+        
+        /* مربع تسجيل المواد المتعددة */
+        .courses-manager-box { grid-column: span 2; background: #f8fafc; border: 2px dashed #007bff; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        @media(max-width:700px){ .courses-manager-box { grid-column: span 1; } }
+        .courses-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .add-course-btn { background: #28a745; color: white; border: none; padding: 12px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+        .add-course-btn:hover { background: #218838; }
+        
+        /* جدول المواد المختارة */
+        .selected-courses-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: white; border-radius: 8px; overflow: hidden; }
+        .selected-courses-table th, .selected-courses-table td { padding: 10px; text-align: right; border-bottom: 1px solid #eee; font-size: 13px; }
+        .selected-courses-table th { background: #007bff; color: white; }
+        .remove-course { color: #dc3545; cursor: pointer; background: none; border: none; font-size: 16px; }
+
         .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
         button { padding: 12px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; flex: 1; }
         .primary { background: #007bff; } .success { background: #28a745; } .warning { background: #ffc107; color: black; }
         .search-results { background: white; border-radius: 10px; overflow: hidden; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; margin-bottom: 15px; }
         .search-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
         .search-item:hover { background: #f1f1f1; }
+        
         .card-preview { margin-top: 25px; background: white; border-radius: 15px; padding: 20px; border: 2px solid #007bff; text-align: center; }
-        .student-card { width: 340px; margin: auto; background: linear-gradient(135deg, #007bff, #00b4ff); color: white; border-radius: 15px; padding: 20px; position: relative; }
-        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+        .student-card { width: 340px; margin: auto; background: linear-gradient(135deg, #007bff, #00b4ff); color: white; border-radius: 15px; padding: 20px; position: relative; text-align: right; }
+        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; text-align: center; }
         .info { margin: 5px 0; font-size: 14px; }
-        .qr { margin-top: 10px; background: white; display: inline-block; padding: 5px; border-radius: 8px; }
+        .qr { text-align: center; margin-top: 10px; background: white; display: inline-block; padding: 5px; border-radius: 8px; }
+        .card-courses-list { font-size: 12px; background: rgba(255,255,255,0.15); padding: 5px 10px; border-radius: 8px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    📝 تسجيل / تعديل طالب
+    📝 تسجيل / تعديل طالب (متعدد المواد)
     <button class="logout-btn" onclick="goHome()">🏠 الرئيسية</button>
 </div>
 
 <div class="container">
     <div class="form-box">
-        <!-- SEARCH -->
         <input type="text" id="search" placeholder="🔍 بحث سريع في الطلاب المسجلين...">
         <div class="search-results" id="results"></div>
 
-        <!-- FORM -->
         <div class="grid">
             <input id="name" placeholder="👦 الاسم الكامل">
             <input id="phone" placeholder="📱 الهاتف">
-            <select id="course" placeholder="📚 الدورة">
-      <option>🎮 Scratch</option>
-      <option>🤖 روبوتيك</option>
-      <option>🐍 Python</option>
-      <option>🧠 ذكاء اصطناعي</option>
-      <option>رياضيات إبتدائي</option>
-      <option>فرنسية إبتدائي</option>
-      <option>إنجليزية إبتدائي</option>
-      <option>عربية متوسط</option>
-      <option>فرنسية متوسط</option>
-      <option>إنجليزية متوسط</option>
-      <option>علوم متوسط</option>
-      <option>فيزياء متوسط</option>
-      <option>رياضيات متوسط</option>
-      <option>عربية ثانوي</option>
-      <option>فرنسية ثانوي</option>
-      <option>إنجليزية ثانوي</option>
-      <option>علوم ثانوي</option>
-      <option>فيزياء ثانوي</option>
-      <option>رياضيات ثانوي</option>
-
-    </select>
             <input id="birth" type="date">
             <input id="place" placeholder="📍 مكان الميلاد">
+            
             <select id="gender">
                 <option value="">الجنس</option>
                 <option>ذكر</option>
                 <option>أنثى</option>
             </select>
-            <select id="teacher">
-                <option value="">⏳ جاري تحميل قائمة الأساتذة...</option>
-            </select>
+            
             <input id="school" placeholder="🏫 المدرسة">
-            <select id="level" placeholder="📘 المستوى الدراسي">
-
-              <option>إختر المستوى الدراسي</option>
-      <!-- =========================
-     الطور الابتدائي
-========================= -->
-
-<option>1 ابتدائي</option>
-<option>2 ابتدائي</option>
-<option>3 ابتدائي</option>
-<option>4 ابتدائي</option>
-<option>5 ابتدائي</option>
-
-<!-- =========================
-     الطور المتوسط
-========================= -->
-
-<option>1 متوسط</option>
-<option>2 متوسط</option>
-<option>3 متوسط</option>
-<option>4 متوسط</option>
-
-<!-- =========================
-     الطور الثانوي
-========================= -->
-
-<option>1 ثانوي جذع مشترك علوم وتكنولوجيا</option>
-<option>1 ثانوي جذع مشترك آداب</option>
-
-<option>2 ثانوي علوم تجريبية</option>
-<option>2 ثانوي رياضيات</option>
-<option>2 ثانوي تقني رياضي</option>
-<option>2 ثانوي تسيير واقتصاد</option>
-<option>2 ثانوي آداب وفلسفة</option>
-<option>2 ثانوي لغات أجنبية</option>
-
-<option>3 ثانوي علوم تجريبية</option>
-<option>3 ثانوي رياضيات</option>
-<option>3 ثانوي تقني رياضي</option>
-<option>3 ثانوي تسيير واقتصاد</option>
-<option>3 ثانوي آداب وفلسفة</option>
-<option>3 ثانوي لغات أجنبية</option>
-
-    </select>
+            
+            <select id="level">
+                <option value="">إختر المستوى الدراسي</option>
+                <option>1 ابتدائي</option>
+                <option>2 ابتدائي</option>
+                <option>3 ابتدائي</option>
+                <option>4 ابتدائي</option>
+                <option>5 ابتدائي</option>
+                <option>1 متوسط</option>
+                <option>2 متوسط</option>
+                <option>3 متوسط</option>
+                <option>4 متوسط</option>
+                <option>1 ثانوي جذع مشترك علوم وتكنولوجيا</option>
+                <option>1 ثانوي جذع مشترك آداب</option>
+                <option>2 ثانوي علوم تجريبية</option>
+                <option>2 ثانوي رياضيات</option>
+                <option>2 ثانوي تقني رياضي</option>
+                <option>2 ثانوي تسيير واقتصاد</option>
+                <option>2 ثانوي آداب وفلسفة</option>
+                <option>2 ثانوي لغات أجنبية</option>
+                <option>3 ثانوي علوم تجريبية</option>
+                <option>3 ثانوي رياضيات</option>
+                <option>3 ثانوي تقني رياضي</option>
+                <option>3 ثانوي تسيير واقتصاد</option>
+                <option>3 ثانوي آداب وفلسفة</option>
+                <option>3 ثانوي لغات أجنبية</option>
+            </select>
+            
             <input type="file" id="photo">
-        </div>
+
+            <div class="courses-manager-box">
+                <h4 style="margin: 0 0 10px 0; color: #007bff;"><i class="fas fa-book-reader"></i> سلة تسجيل الدورات والمواد الدراسية المتعددة</h4>
+                <div class="courses-row">
+                    <select id="course" style="margin-bottom:0;">
+                        <option value="">📚 اختر المادة أو الدورة</option>
+                        <option>🎮 Scratch</option>
+                        <option>🤖 روبوتيك</option>
+                        <option>🐍 Python</option>
+                        <option>🧠 ذكاء اصطناعي</option>
+                        <option>رياضيات إبتدائي</option>
+                        <option>فرنسية إبتدائي</option>
+                        <option>إنجليزية إبتدائي</option>
+                        <option>عربية متوسط</option>
+                        <option>فرنسية متوسط</option>
+                        <option>إنجليزية متوسط</option>
+                        <option>علوم متوسط</option>
+                        <option>فيزياء متوسط</option>
+                        <option>رياضيات متوسط</option>
+                        <option>عربية ثانوي</option>
+                        <option>فرنسية ثانوي</option>
+                        <option>إنجليزية ثانوي</option>
+                        <option>علوم ثانوي</option>
+                        <option>فيزياء ثانوي</option>
+                        <option>رياضيات ثانوي</option>
+                    </select>
+                    
+                    <select id="teacher" style="margin-bottom:0;">
+                        <option value="">⏳ جاري تحميل قائمة الأساتذة...</option>
+                    </select>
+                    
+                    <button type="button" class="add-course-btn" onclick="addCourseToGrid()"><i class="fas fa-plus"></i> إدراج</button>
+                </div>
+
+                <table class="selected-courses-table">
+                    <thead>
+                        <tr>
+                            <th>المادة المختار</th>
+                            <th>الأستاذ</th>
+                            <th style="width:50px; text-align:center;">حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="selectedCoursesRows">
+                        </tbody>
+                </table>
+            </div>
+            </div>
 
         <div class="buttons">
-            <button class="success" onclick="saveStudent()">💾 حفظ البيانات</button>
-            <button class="warning" onclick="generateCard()">🎴 إنشاء البطاقة</button>
-            <button class="primary" onclick="printCard()">🖨️ طباعة</button>
+            <button class="success" onclick="saveStudent()"><i class="fas fa-save"></i> 💾 حفظ البيانات</button>
+            <button class="warning" onclick="generateCard()"><i class="fas fa-id-card"></i> 🎴 إنشاء البطاقة</button>
+            <button class="primary" onclick="printCard()"><i class="fas fa-print"></i> 🖨️ طباعة</button>
         </div>
 
         <div id="card" class="card-preview" style="display:none"></div>
@@ -137,33 +159,29 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <script>
-// الرابط الخاص بك
 const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
 let allStudents = [];
 let selectedID = null;
 
+// مصفوفة تخزين مؤقتة للمواد المضافة للطالب الحالي في الواجهة
+let currentStudentCourses = [];
+
 window.onload = async () => {
-    // تأكد من عدم وجود بيانات قديمة في الذاكرة
     await loadTeachers();      
     await loadStudentsList();  
     checkEditMode();           
 };
 
-// 1. جلب الأساتذة (تم التعديل لتكون الطريقة احترافية ومضمونة)
+// 1. جلب الأساتذة سحابياً
 async function loadTeachers() {
     const teacherSelect = document.getElementById("teacher");
     try {
-        // نستخدم GET بدلاً من POST لجلب البيانات لضمان تجاوز قيود CORS
         const response = await fetch(`${sheetURL}?action=get&sheet=teachers`);
-        
         if (!response.ok) throw new Error('Network response was not ok');
-        
         const data = await response.json();
         
-        teacherSelect.innerHTML = '<option value="">اختر الأستاذ</option>';
-
+        teacherSelect.innerHTML = '<option value="">👨‍🏫 اختر الأستاذ</option>';
         if (Array.isArray(data)) {
-            // فلترة ذكية للتأكد من جلب الأسماء فقط واستبعاد أي صفوف فارغة
             data.forEach(t => {
                 if (t.name && t.name.trim() !== "") {
                     const option = document.createElement("option");
@@ -179,7 +197,7 @@ async function loadTeachers() {
     }
 }
 
-// 2. جلب الطلاب للبحث
+// 2. جلب قائمة الطلاب للبحث السريع
 async function loadStudentsList() {
     try {
         const res = await fetch(`${sheetURL}?action=get&sheet=students`);
@@ -189,7 +207,65 @@ async function loadStudentsList() {
     }
 }
 
-// 3. التحقق من وضع التعديل
+// 🛠️ وظيفة إضافة مادة وأستاذ إلى الجدول المؤقت بالواجهة
+function addCourseToGrid() {
+    const courseSelect = document.getElementById("course");
+    const teacherSelect = document.getElementById("teacher");
+    
+    const courseVal = courseSelect.value;
+    const teacherVal = teacherSelect.value;
+    
+    if(!courseVal || !teacherVal) {
+        alert("⚠️ من فضلك اختر المادة والأستاذ معاً لإضافتهما للفوج!");
+        return;
+    }
+    
+    // التحقق من عدم تكرار نفس المادة للطالب
+    const exists = currentStudentCourses.some(item => item.course === courseVal);
+    if(exists) {
+        alert("⚠️ هذه المادة مضافة بالفعل في قائمة رغبات الطالب!");
+        return;
+    }
+    
+    // إضافة العناصر للمصفوفة المؤقتة
+    currentStudentCourses.push({ course: courseVal, teacher: teacherVal });
+    
+    // إعادة تحديث عرض الجدول
+    renderCoursesTable();
+    
+    // تصفير الحقول للاختيار التالي
+    courseSelect.value = "";
+    teacherSelect.value = "";
+}
+
+// وظيفة رسم جدول المواد الحالية للطالب
+function renderCoursesTable() {
+    const tbody = document.getElementById("selectedCoursesRows");
+    tbody.innerHTML = "";
+    
+    if(currentStudentCourses.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#999;">لم يتم تسجيل أي مواد أو دورات لهذا الطالب بعد.</td></tr>`;
+        return;
+    }
+    
+    currentStudentCourses.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><b>${item.course}</b></td>
+            <td><span style="color:#555;">${item.teacher}</span></td>
+            <td style="text-align:center;"><button class="remove-course" onclick="removeCourseFromGrid(${index})"><i class="fas fa-trash-alt"></i></button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// حذف مادة من قائمة الطالب المؤقتة بالواجهة
+function removeCourseFromGrid(index) {
+    currentStudentCourses.splice(index, 1);
+    renderCoursesTable();
+}
+
+// 3. التحقق من وضع التعديل وتفكيك النصوص المدمجة القادمة من السيرفر
 function checkEditMode() {
     const editData = localStorage.getItem("editStudent");
     if (editData) {
@@ -198,26 +274,45 @@ function checkEditMode() {
         
         document.getElementById("name").value = student.name || "";
         document.getElementById("phone").value = student.phone || "";
-        document.getElementById("course").value = student.course || "";
         document.getElementById("birth").value = student.birth || "";
         document.getElementById("place").value = student.place || "";
         document.getElementById("gender").value = student.gender || "";
         document.getElementById("school").value = student.school || "";
         document.getElementById("level").value = student.level || "";
         
-        // ننتظر قليلاً للتأكد من تحميل القائمة ثم نختار الأستاذ
-        setTimeout(() => {
-            if (student.teacher) {
-                document.getElementById("teacher").value = student.teacher;
-            }
-        }, 800);
+        // 🎯 تفكيك ذكي ومحترف للمواد والأساتذة المتعددة إذا كانت مسجلة مسبقاً بنظام الفواصل
+        if(student.course && student.teacher) {
+            const coursesArr = student.course.split(" - ");
+            const teachersArr = student.teacher.split(" - ");
+            
+            currentStudentCourses = [];
+            coursesArr.forEach((c, idx) => {
+                if(c.trim() !== "") {
+                    currentStudentCourses.push({
+                        course: c.trim(),
+                        teacher: teachersArr[idx] ? teachersArr[idx].trim() : "غير محدد"
+                    });
+                }
+            });
+            renderCoursesTable();
+        }
+    } else {
+        renderCoursesTable();
     }
 }
 
-// حفظ الطالب
+// تجميع وحفظ الطالب بشكل متوافق تماماً مع الـ Apps Script دون كسره
 function saveStudent() {
     const isEdit = !!localStorage.getItem("editStudent");
     const editData = isEdit ? JSON.parse(localStorage.getItem("editStudent")) : null;
+
+    if(currentStudentCourses.length === 0) {
+        return alert("⚠️ خطأ: يجب إدراج مادة واحدة على الأقل والأستاذ الخاص بها للطالب قبل عملية الحفظ!");
+    }
+
+    // 🎯 السحر البرمجي التوافقي: دمج جميع المواد والأساتذة في نص موحد مفصول بـ ' - '
+    const combinedCourses = currentStudentCourses.map(item => item.course).join(" - ");
+    const combinedTeachers = currentStudentCourses.map(item => item.teacher).join(" - ");
 
     let data = {
         action: isEdit ? "editStudent" : "addStudent",
@@ -225,18 +320,20 @@ function saveStudent() {
         id: isEdit ? editData.id : null,
         name: document.getElementById("name").value,
         phone: document.getElementById("phone").value,
-        course: document.getElementById("course").value,
+        
+        // إرسال البيانات مجمعة لتطابق البنية القديمة في السيرفر دون تعديل في السكريبت
+        course: combinedCourses, 
+        teacher: combinedTeachers,
+        
         birth: document.getElementById("birth").value,
         place: document.getElementById("place").value,
         gender: document.getElementById("gender").value,
-        teacher: document.getElementById("teacher").value,
         school: document.getElementById("school").value,
         level: document.getElementById("level").value
     };
 
     if (!data.name) return alert("يرجى إدخال اسم الطالب");
 
-    // عملية الحفظ تبقى POST لأنها عملية كتابة
     fetch(sheetURL, {
         method: "POST",
         body: JSON.stringify(data)
@@ -244,7 +341,7 @@ function saveStudent() {
     .then(r => r.json())
     .then(res => {
         if (res.success) {
-            alert("✅ تم الحفظ بنجاح");
+            alert("✅ تم تجميع وحفظ بيانات الطالب ودوراته بنجاح باهر!");
             localStorage.removeItem("editStudent");
             clearForm();
             location.reload();
@@ -262,6 +359,8 @@ function clearForm() {
         if(el) el.value = "";
     });
     selectedID = null;
+    currentStudentCourses = [];
+    renderCoursesTable();
 }
 
 function goHome() {
@@ -269,7 +368,7 @@ function goHome() {
     window.location.href = "home.html";
 }
 
-// البحث التفاعلي
+// البحث التفاعلي والذكي
 document.getElementById("search").addEventListener("input", function() {
     let val = this.value.toLowerCase().trim();
     let box = document.getElementById("results");
@@ -284,44 +383,76 @@ document.getElementById("search").addEventListener("input", function() {
     filtered.forEach(s => {
         let div = document.createElement("div");
         div.className = "search-item";
-        div.innerHTML = `👦 ${s.name} | 📚 ${s.course}`;
+        
+        // عرض المواد بشكل ملخص داخل شريط البحث
+        let displayCourse = s.course || "لم يسجل بعد";
+        if(displayCourse.length > 30) displayCourse = displayCourse.substring(0,30) + "...";
+        
+        div.innerHTML = `👦 ${s.name} | 📚 ${displayCourse}`;
         div.onclick = () => {
             document.getElementById("name").value = s.name;
             document.getElementById("phone").value = s.phone;
-            document.getElementById("course").value = s.course;
-            document.getElementById("teacher").value = s.teacher;
+            document.getElementById("birth").value = s.birth || "";
+            document.getElementById("place").value = s.place || "";
+            document.getElementById("gender").value = s.gender || "";
+            document.getElementById("school").value = s.school || "";
+            document.getElementById("level").value = s.level || "";
             selectedID = s.id;
+            
+            // سحب وتحليل دورات الطالب المسترجع فوراً في جدول الواجهة
+            if(s.course && s.teacher) {
+                const coursesArr = s.course.split(" - ");
+                const teachersArr = s.teacher.split(" - ");
+                currentStudentCourses = [];
+                coursesArr.forEach((c, idx) => {
+                    if(c.trim() !== "") {
+                        currentStudentCourses.push({
+                            course: c.trim(),
+                            teacher: teachersArr[idx] ? teachersArr[idx].trim() : "غير محدد"
+                        });
+                    }
+                });
+                renderCoursesTable();
+            }
             box.innerHTML = "";
         };
         box.appendChild(div);
     });
 });
 
-/* وظائف البطاقة */
+/* وظائف البطاقة الاحترافية الشاملة لكافة المواد */
 function generateCard() {
     let card = document.getElementById("card");
     let name = document.getElementById("name").value;
-    let course = document.getElementById("course").value;
-    let teacher = document.getElementById("teacher").value;
     if(!name) return alert("أدخل اسم الطالب أولاً");
+    if(currentStudentCourses.length === 0) return alert("يرجى إدراج مادة واحدة على الأقل لإنشاء البطاقة");
+    
     card.style.display = "block";
+    
+    // تجهيز الهيكل المرئي للمواد والأساتذة للطباعة داخل الكارت
+    let coursesListHTML = currentStudentCourses.map(item => `<div>• ${item.course} (${item.teacher})</div>`).join("");
+
     card.innerHTML = `
         <div class="student-card">
-            <div class="card-title">🎓 بطاقة الطالب</div>
-            <div class="info">👦 الاسم: ${name}</div>
-            <div class="info">📚 الدورة: ${course}</div>
-            <div class="info">👨‍🏫 الأستاذ: ${teacher}</div>
-            <div class="qr"><canvas id="qr"></canvas></div>
+            <div class="card-title">🎓 بطاقة الطالب الموحدة</div>
+            <div class="info">👦 <b>الاسم:</b> ${name}</div>
+            <div class="info" style="margin-top:8px;"><b>📚 الدورات والمواد المسجل بها:</b></div>
+            <div class="card-courses-list">
+                ${coursesListHTML}
+            </div>
+            <div style="text-align:center; margin-top:12px;">
+                <div class="qr"><canvas id="qr"></canvas></div>
+            </div>
         </div>`;
-    QRCode.toCanvas(document.getElementById("qr"), selectedID || name);
+    QRCode.toCanvas(document.getElementById("qr"), selectedID || name, { width: 90, margin: 1 });
 }
 
 function printCard() {
     let content = document.getElementById("card").innerHTML;
     if(!content) return alert("قم بإنشاء البطاقة أولاً");
     let win = window.open("");
-    win.document.write(`<html><head><style>body{font-family:Cairo;text-align:center;direction:rtl;margin-top:50px;}</style></head><body>${content}</body></html>`);
-    setTimeout(() => { win.print(); win.close(); }, 500);
+    win.document.write(`<html><head><title>طباعة البطاقة</title><style>body{font-family:'Cairo';text-align:center;direction:rtl;margin-top:30px; display:flex; justify-content:center;} .student-card { width: 340px; background: linear-gradient(135deg, #007bff, #00b4ff); color: white; border-radius: 15px; padding: 20px; text-align: right; } .card-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; text-align: center; } .info { margin: 5px 0; font-size: 14px; } .qr { text-align: center; margin-top: 10px; background: white; display: inline-block; padding: 5px; border-radius: 8px; } .card-courses-list { font-size: 12px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 8px; margin-top: 5px; }</style></head><body>${content}</body></html>`);
+    setTimeout(() => { win.print(); win.close(); }, 600);
 }
 </script>
 
