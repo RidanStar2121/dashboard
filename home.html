@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الرئيسية | أكاديمية نذير وضاح</title>
+<title>الرئيسية | أكاديمية وضاح للعلوم</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -148,74 +148,68 @@
 <body>
 
 <div class="header">
-  <i class="fas fa-school"></i> نظام إدارة أكاديمية نذير وضاح
+  <i class="fas fa-school"></i> نظام إدارة أكاديمية وضاح للعلوم
   <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
 </div>
 
 <div class="container">
   <div class="grid">
 
-    <!-- لوحة التحكم -->
     <div class="card" onclick="go('dashboard.html')">
       <div class="icon blue"><i class="fas fa-chart-line"></i></div>
       <div class="title">لوحة التحكم</div>
     </div>
 
-    <!-- تسجيل طالب -->
     <div class="card" onclick="go('add.html')">
       <div class="icon green"><i class="fas fa-user-plus"></i></div>
       <div class="title">تسجيل طالب</div>
     </div>
 
-    <!-- ملفات الطلاب -->
     <div class="card" onclick="go('students.html')">
       <div class="icon green"><i class="fas fa-user-graduate"></i></div>
       <div class="title">ملفات الطلاب</div>
     </div>
 
-    <!-- الشهادات و الإيجازات (الزر الجديد) -->
+    <div class="card" onclick="go('groups.html')">
+      <div class="icon cyan"><i class="fas fa-users"></i></div>
+      <div class="title">إدارة الأفواج والمجموعات</div>
+    </div>
+
     <div class="card" onclick="go('certificates.html')" style="border: 2px solid var(--accent-gold); background: #fffdf5;">
       <div class="icon gold"><i class="fas fa-award"></i></div>
       <div class="title">الشهادات والإيجازات</div>
     </div>
 
-    <!-- الأساتذة -->
     <div class="card" onclick="go('teachers.html')">
       <div class="icon purple"><i class="fas fa-chalkboard-teacher"></i></div>
       <div class="title">الأساتذة</div>
     </div>
 
-    <!-- المواد -->
     <div class="card" onclick="go('courses.html')">
       <div class="icon orange"><i class="fas fa-book-open"></i></div>
       <div class="title">المواد والمستويات</div>
     </div>
 
-    <!-- الحضور -->
     <div class="card" onclick="go('attendance.html')">
       <div class="icon cyan"><i class="fas fa-calendar-check"></i></div>
       <div class="title">الحضور والغيابات</div>
     </div>
 
-    <!-- الدفع -->
     <div class="card" onclick="go('payments.html')">
       <div class="icon green"><i class="fas fa-money-bill-wave"></i></div>
       <div class="title">الدفع والفواتير</div>
     </div>
 
-    <!-- التقارير -->
     <div class="card" onclick="go('reports.html')">
       <div class="icon dark"><i class="fas fa-file-alt"></i></div>
       <div class="title">التقارير</div>
     </div>
 
-    <!-- الإعدادات -->
     <div class="card" onclick="go('settings.html')">
       <div class="icon red"><i class="fas fa-cogs"></i></div>
       <div class="title">الإعدادات</div>
     </div>
 
-    <!-- حول البرنامج (الزر الجديد) -->
     <div class="card" onclick="showAbout()">
       <div class="icon blue"><i class="fas fa-info-circle"></i></div>
       <div class="title">حول البرنامج</div>
@@ -224,7 +218,6 @@
   </div>
 </div>
 
-<!-- نافذة "حول البرنامج" -->
 <div id="aboutModal" class="modal">
   <div class="modal-content">
     <span class="close-modal" onclick="closeAbout()">&times;</span>
