@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دخول النظام </title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>دخول النظام | أكاديمية وضاح للعلوم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -111,6 +111,9 @@
             cursor: pointer;
             transition: 0.3s;
             box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .btn-login:hover {
@@ -127,11 +130,9 @@
             border-radius: 50%;
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
-            margin: auto;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
-
     </style>
 </head>
 <body>
@@ -154,7 +155,7 @@
         <label style="display: flex; align-items: center; cursor: pointer;">
             <input type="checkbox" id="remember" style="width: auto; margin-left: 8px;"> تذكرني
         </label>
-        <span style="color: var(--primary-color); cursor: pointer;">نسيت كلمة المرور؟</span>
+        <span style="color: var(--primary-color); cursor: pointer;" onclick="alert('يرجى مراجعة مدير النظام لإعادة تعيين كلمة المرور')">نسيت كلمة المرور؟</span>
     </div>
 
     <button class="btn-login" onclick="handleLogin()">
@@ -166,37 +167,62 @@
 </div>
 
 <script>
-    // الرابط الخاص بـ Web App (Apps Script)
+    // الرابط الموحد للـ Apps Script الخاص بك
     const API_URL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
 
+    // التحقق من وجود اسم مستخدم محفوظ مسبقاً (تذكرني)
+    window.onload = () => {
+        const savedUser = localStorage.getItem("savedUser");
+        if(savedUser) {
+            document.getElementById("username").value = savedUser;
+            document.getElementById("remember").checked = true;
+        }
+    }
+
     async function handleLogin() {
-        const user = document.getElementById("username").value.trim();
-        const pass = document.getElementById("password").value.trim();
+        const userVal = document.getElementById("username").value.trim();
+        const passVal = document.getElementById("password").value.trim();
         const error = document.getElementById("errorMsg");
         const spinner = document.getElementById("spinner");
         const btnText = document.getElementById("btnText");
 
-        if(!user || !pass) {
-            showError("يرجى ملء جميع الحقول");
+        if(!userVal || !passVal) {
+            showError("يرجى ملء جميع الحقول المتاحة");
             return;
         }
 
-        // إظهار اللودينج
+        // تشغيل اللودينج السينمائي
         btnText.style.display = "none";
         spinner.style.display = "block";
         error.style.display = "none";
 
         try {
-            // ملاحظة: للتجربة السريعة سأبقي الكود المحلي، ولكن الأفضل الربط بـ Sheets
-            // لتغيير كلمة المرور من الإعدادات، سنقوم لاحقاً بربط صفحة settings.html بـ API لتحديث ملف Sheets
+            // 🎯 الحل الخارق: نقوم بجلب الحسابات ديناميكياً من شيت users المتوافق مع برمجتك السابقة عبر الـ GET
+            const response = await fetch(`${API_URL}?action=get&sheet=users`);
+            if(!response.ok) throw new Error("فشل الاتصال بقاعدة البيانات السحابية");
             
-            if(user === "admin" && pass === "admin") {
-                loginSuccess("super_admin", "home.html");
-            } else if(user === "staff" && pass === "123456") {
-                loginSuccess("staff", "home.html");
-            } else {
-                throw new Error("بيانات الدخول غير صحيحة");
+            const usersList = await response.json();
+            
+            // إضافة حساب افتراضي طوارئ (مدير) للـ Sheets في حال كان الشيت فارغ تماماً عند أول تجربة
+            if (usersList.length === 0 && userVal === "admin" && passVal === "admin") {
+                loginSuccess("مدير", "admin", "home.html");
+                return;
             }
+
+            // البحث الذكي عن اسم المستخدم والمطابقة الحرفية لكلمة المرور
+            const foundUser = usersList.find(u => u.username && u.username.toString().trim() === userVal);
+
+            if(foundUser) {
+                if(foundUser.password && foundUser.password.toString().trim() === passVal) {
+                    // تم التحقق بنجاح؛ حفظ بيانات الصلاحية والاسم الكامل محلياً بالمتصفح
+                    loginSuccess(foundUser.role, foundUser.full_name || foundUser.username, "home.html");
+                } else {
+                    throw new Error("كلمة المرور غير صحيحة، حاول مجدداً!");
+                }
+            } else {
+                throw new Error("اسم المستخدم هذا غير مسجل بالنظام!");
+            }
+
         } catch (e) {
             showError(e.message);
             btnText.style.display = "block";
@@ -204,10 +230,14 @@
         }
     }
 
-    function loginSuccess(role, targetPage) {
+    function loginSuccess(role, fullName, targetPage) {
         localStorage.setItem("role", role);
+        localStorage.setItem("userFullName", fullName);
+        
         if(document.getElementById("remember").checked) {
-            localStorage.setItem("savedUser", document.getElementById("username").value);
+            localStorage.setItem("savedUser", document.getElementById("username").value.trim());
+        } else {
+            localStorage.removeItem("savedUser");
         }
         window.location.href = targetPage;
     }
