@@ -1,250 +1,498 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقسيم المجموعات الذكي - نذير وضاح</title>
+    <title>إدارة الأفواج والمجموعات - نذير وضاح</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Cairo', sans-serif; margin: 0; background: #f4f7f6; direction: rtl; }
-        .header { background: #6f42c1; color: white; padding: 15px; text-align: center; position: relative; }
-        .nav-btn { position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; }
+        body { font-family: 'Cairo', sans-serif; margin: 0; background: #f5f7fa; direction: rtl; }
+        .header { background: #007bff; color: white; padding: 15px; text-align: center; position: relative; font-size: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .home-btn { position: absolute; left: 15px; top: 12px; background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .home-btn:hover { background: rgba(255,255,255,0.4); }
         
-        .container { padding: 20px; max-width: 1400px; margin: auto; display: grid; grid-template-columns: 400px 1fr; gap: 20px; }
-        @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
+        .container { padding: 20px; display: grid; grid-template-columns: 350px 1fr; gap: 20px; max-width: 1400px; margin: auto; }
+        @media(max-width: 950px) { .container { grid-template-columns: 1fr; } }
 
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 5px solid #6f42c1; }
-        h3 { margin-top: 0; color: #6f42c1; display: flex; align-items: center; gap: 10px; font-size: 18px; }
-
-        /* إعدادات الذكاء الصناعي */
-        .ai-settings { background: #f3f0ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #6f42c1; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #444; }
-        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; box-sizing: border-box; }
+        /* صندوق النموذج */
+        .form-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.06); height: fit-content; }
+        .section-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #f1f1f1; padding-bottom: 8px; }
         
-        .btn-ai { background: #6f42c1; color: white; width: 100%; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-ai:hover { background: #5a32a3; transform: scale(1.02); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        input, select { width: 100%; padding: 11px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 12px; box-sizing: border-box; font-family: 'Cairo'; font-size: 14px; transition: 0.3s; }
+        input:focus, select:focus { border-color: #007bff; outline: none; box-shadow: 0 0 5px rgba(0,123,255,0.15); }
+        
+        .buttons-group { display: flex; gap: 10px; margin-top: 5px; }
+        button { padding: 12px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; font-family: 'Cairo'; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; transition: 0.3s; }
+        button:hover { transform: translateY(-1px); }
+        .btn-primary { background: #007bff; } .btn-primary:hover { background: #0069d9; }
+        .btn-success { background: #28a745; } .btn-success:hover { background: #218838; }
+        .btn-danger { background: #dc3545; } .btn-danger:hover { background: #c82333; }
 
-        /* عرض المجموعات */
-        .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .group-card { background: white; border-radius: 12px; padding: 15px; border: 1px solid #eee; position: relative; transition: 0.3s; }
-        .group-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .group-header { border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
-        .tag-subject { background: #e7f3ff; color: #007bff; }
-        .tag-count { background: #fff3cd; color: #856404; }
+        /* محرك البحث الإحترافي عن الطلاب داخل الفوج */
+        .student-search-area { background: #f8f9fa; padding: 12px; border-radius: 10px; border: 1px solid #e9ecef; margin-bottom: 15px; }
+        .search-wrapper { position: relative; }
+        .search-results { position: absolute; top: 100%; right: 0; width: 100%; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); max-height: 180px; overflow-y: auto; z-index: 100; display: none; border: 1px solid #ddd; }
+        .search-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 13px; }
+        .search-item:hover { background: #e7f3ff; color: #007bff; }
 
-        .student-list { font-size: 13px; color: #666; max-height: 150px; overflow-y: auto; }
-        .student-item { padding: 5px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; }
+        /* قائمة الطلاب المضافين حالياً في الفوج المختار */
+        .added-students-list { max-height: 150px; overflow-y: auto; background: #fff; border: 1px dashed #ccc; border-radius: 10px; padding: 5px; margin-top: 10px; }
+        .added-student-tag { display: flex; justify-content: space-between; align-items: center; background: #e2e3e5; padding: 5px 10px; border-radius: 6px; margin: 4px; font-size: 12px; font-weight: bold; }
+        .added-student-tag i { color: #dc3545; cursor: pointer; }
 
-        /* حالة التحميل */
-        .loader { display: none; text-align: center; padding: 20px; font-weight: bold; color: #6f42c1; }
+        /* عرض المجموعات والأفواج */
+        .display-box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.06); }
+        .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 15px; }
+        
+        /* كارت الفوج الاحترافي */
+        .group-card { background: linear-gradient(145deg, #ffffff, #fdfdfd); border: 1px solid #e2e8f0; border-radius: 15px; padding: 15px; position: relative; transition: 0.3s; box-shadow: 0 3px 6px rgba(0,0,0,0.02); }
+        .group-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: #007bff; }
+        .group-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .group-title { font-size: 16px; font-weight: bold; color: #007bff; }
+        .group-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .badge-male { background: #e1f5fe; color: #0288d1; }
+        .badge-female { background: #fce4ec; color: #c2185b; }
+        .badge-mix { background: #e8f5e9; color: #2e7d32; }
+        
+        .group-details { font-size: 13px; color: #666; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .group-details i { color: #555; width: 16px; }
+        
+        /* مؤشر امتلاء الفوج */
+        .progress-container { background: #eee; border-radius: 10px; height: 8px; margin: 12px 0 5px 0; overflow: hidden; }
+        .progress-bar { background: #28a745; height: 100%; width: 0%; transition: 0.5s; }
+        .progress-text { font-size: 11px; text-align: left; color: #888; display: block; font-weight: bold; }
+
+        .card-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; border-top: 1px solid #f1f1f1; padding-top: 10px; }
+        .action-icon { cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 4px; border: 1px solid #ddd; background: #fff; }
+        .action-edit { color: #ffc107; } .action-edit:hover { background: #fff9e6; }
+        .action-delete { color: #dc3545; } .action-delete:hover { background: #fff5f5; }
+
+        #toast { display: none; position: fixed; bottom: 20px; left: 20px; background: #333; color: white; padding: 12px 25px; border-radius: 10px; z-index: 10000; font-size: 14px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
 <div class="header">
-    🧠 محرك تقسيم المجموعات بالذكاء الصناعي
-    <button class="nav-btn" onclick="location.href='home.html'">🏠 الرئيسية</button>
+    👥 إدارة الأفواج والمجموعات الدراسية
+    <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
 </div>
 
 <div class="container">
-    
-    <!-- لوحة التحكم في الخوارزمية -->
-    <div class="card">
-        <h3>⚙️ إعدادات التقسيم الذكي</h3>
-        <div class="ai-settings">
-            <p style="font-size: 12px; color: #6f42c1; margin-bottom: 10px;">* سيقوم النظام بتحليل بيانات الطلاب وتوزيعهم حسب المعايير التالية:</p>
-            
-            <div class="form-group">
-                <label>المادة أو الدورة التدريبية:</label>
-                <select id="aiSubject">
-                    <option value="الكل">جميع المواد</option>
-                    <option value="برمجة">دورة البرمجة</option>
-                    <option value="لغات">دورة اللغات</option>
-                    <option value="رياضيات">دروس تدعيمية - رياضيات</option>
-                </select>
-            </div>
+    <!-- الجانب الأيمن: إضافة / تعديل فوج -->
+    <div class="form-box">
+        <span class="section-title" id="form-mode-title"><i class="fas fa-plus-circle"></i> إنشاء فوج جديد</span>
+        
+        <input type="hidden" id="groupId">
+        <input type="text" id="groupName" placeholder="✍️ اسم الفوج (مثال: فوج 1 تايم كور)">
+        
+        <select id="subject">
+            <option value="">📚 اختر المادة / الدورة</option>
+            <option>🎮 Scratch</option>
+            <option>🤖 روبوتيك</option>
+            <option>🐍 Python</option>
+            <option>🧠 ذكاء اصطناعي</option>
+            <option>رياضيات</option>
+            <option>فيزياء</option>
+            <option>علوم</option>
+            <option>إنجليزية</option>
+            <option>فرنسية</option>
+            <option>عربية</option>
+        </select>
+        
+        <select id="teacher">
+               <option value="">👨‍🏫 اختر الأستاذ المسؤول عن الفوج</option>
+               <option value="">⏳ جاري تحميل قائمة الأساتذة...</option>
+            </select>
 
-            <div class="form-group">
-                <label>الحد الأقصى للطلاب في القسم:</label>
-                <input type="number" id="maxInGroup" value="10">
-            </div>
+        <select id="type">
+            <option value="مختلط">👥 طبيعة الفوج (مختلط)</option>
+            <option value="ذكور">👦 ذكور فقط</option>
+            <option value="بنات">👧 بنات فقط</option>
+        </select>
 
-            <div class="form-group">
-                <label>الفئة العمرية (من - إلى):</label>
-                <div style="display: flex; gap: 5px;">
-                    <input type="number" id="ageFrom" placeholder="من" value="12">
-                    <input type="number" id="ageTo" placeholder="إلى" value="14">
-                </div>
-            </div>
+        <div class="grid-2">
+            <input type="number" id="maxStudents" placeholder="🔢 أقصى عدد طلاب" value="">
+            <input type="number" id="minAge" placeholder="👶 أدنى سن" value="">
+        </div>
+        <input type="number" id="maxAge" placeholder="🧓 أقصى سن" value="">
+        <input type="text" id="note" placeholder="📝 ملاحظات إضافية...">
 
-            <div class="form-group">
-                <label>نوع المجموعة (الجنس):</label>
-                <select id="genderType">
-                    <option value="mixed">مختلط (بنات وذكور)</option>
-                    <option value="male">ذكور فقط</option>
-                    <option value="female">بنات فقط</option>
-                </select>
+        <!-- قسم إضافة الطلاب الذكي للفوج التفاعلي -->
+        <div class="student-search-area">
+            <span style="font-size: 12px; font-weight: bold; color: #555; display:block; margin-bottom: 5px;">🎯 تسكين الطلاب داخل الفوج:</span>
+            <div class="search-wrapper">
+                <input type="text" id="student-search-input" placeholder="🔍 ابحث باسم الطالب لإضافته للفوج...">
+                <div class="search-results" id="student-results"></div>
             </div>
-
-            <button class="btn-ai" onclick="runAiGrouping()">🚀 تشغيل التوزيع الذكي الآن</button>
+            <div class="added-students-list" id="current-group-students">
+                <!-- الطلاب المضافين تظهر هنا عل شكل تاقات -->
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>إنشاء مجموعة يدوية (اسم المجموعة):</label>
-            <input type="text" id="manualGroupName" placeholder="مثال: عباقرة البرمجة A1">
-            <button class="btn-ai" style="background:#28a745; margin-top:10px" onclick="createManualGroup()">➕ إنشاء مجموعة فارغة</button>
-        </div>
-    </div>
-
-    <!-- عرض النتائج والمجموعات -->
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3>📦 المجموعات النشطة حالياً</h3>
-            <span id="totalGroups" class="tag tag-subject" style="font-size: 14px;">0 مجموعة</span>
-        </div>
-
-        <div id="aiLoader" class="loader">⚙️ يقوم المحرك بتحليل بيانات الطلاب وتشكيل الأقسام...</div>
-
-        <div class="groups-grid" id="groupsContainer">
-            <!-- سيتم توليد المجموعات هنا -->
+        <div class="buttons-group">
+            <button class="btn-success" id="save-btn" onclick="saveGroup()"><i class="fas fa-save"></i> حفظ الفوج</button>
+            <button class="btn-danger" id="cancel-btn" style="display:none;" onclick="resetForm()"><i class="fas fa-times"></i> إلغاء</button>
         </div>
     </div>
 
+    <!-- الجانب الأيسر: استعراض المجموعات الحالية وجدولة البحث والفلترة -->
+    <div class="display-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <span class="section-title" style="border:none; margin:0;"><i class="fas fa-th-large"></i> الأفواج الحالية بالمنظومة</span>
+            <input type="text" id="filter-search" oninput="filterGroups()" placeholder="🔍 تصفية الأفواج باسم الفوج أو المادة..." style="max-width: 300px; margin: 0;">
+        </div>
+        
+        <div class="groups-grid" id="groups-container">
+            <!-- جاري جلب المجموعات بواسطة JavaScript -->
+            <div style="text-align: center; grid-column: 1/-1; color: #888; padding: 40px;">
+                <i class="fas fa-spinner fa-spin fa-2x"></i> <br><br> جاري تحميل بيانات الأفواج والطلاب من Google Sheets...
+            </div>
+        </div>
+    </div>
 </div>
+
+<div id="toast"></div>
 
 <script>
     const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+    
+    let allGroups = [];
     let allStudents = [];
-    let currentGroups = [];
+    let selectedStudentIds = []; // لتخزين معرفات الطلاب في الفوج الحالي أثناء الإنشاء أو التعديل
 
-    window.onload = () => {
-        loadInitialData();
+    window.onload = async () => {
+        await loadInitialData();
     };
 
+    // جلب المجموعات والطلاب معاً لربط البيانات بشكل متناسق وسريع
     async function loadInitialData() {
-        document.getElementById('aiLoader').style.display = "block";
-        const [sRes, gRes] = await Promise.all([
-            fetch(`${sheetURL}?action=get&sheet=students`),
-            fetch(`${sheetURL}?action=get&sheet=groups`)
-        ]);
-        allStudents = await sRes.json();
-        currentGroups = await gRes.json();
-        renderGroups();
-        document.getElementById('aiLoader').style.display = "none";
+        try {
+            // 1. جلب الأفواج
+            const resGroups = await fetch(`${sheetURL}?action=get&sheet=Group`);
+            allGroups = await resGroups.json();
+
+            // 2. جلب الطلاب للاستخدام في محرك البحث التسكيني داخل الأفواج
+            const resStudents = await fetch(`${sheetURL}?action=get&sheet=students`);
+            allStudents = await resStudents.json();
+
+            renderGroups(allGroups);
+            setupStudentSearch();
+        } catch (e) {
+            showToast("❌ خطأ في جلب البيانات من السحابة", "#dc3545");
+            console.error(e);
+        }
     }
 
-    function renderGroups() {
-        const container = document.getElementById('groupsContainer');
+    // بناء الكروت وعرض الأفواج بشكل متناسق واحترافي
+    function renderGroups(groupsList) {
+        const container = document.getElementById("groups-container");
         container.innerHTML = "";
-        document.getElementById('totalGroups').innerText = `${currentGroups.length} مجموعة`;
 
-        currentGroups.forEach(group => {
-            const card = document.createElement('div');
-            card.className = "group-card";
+        if (groupsList.length === 0) {
+            container.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#888; padding:30px;">لا توجد أفواج مطابقة للبحث.</div>`;
+            return;
+        }
+
+        groupsList.forEach(g => {
+            // احتساب نسبة الامتلاء
+            const currentCount = parseInt(g.currentCount) || 0;
+            const maxStudents = parseInt(g.maxStudents) || 1;
+            const fillPercentage = Math.min((currentCount / maxStudents) * 100, 100);
             
-            // حساب نسبة الامتلاء
-            const count = group.currentCount || 0;
-            const max = group.maxStudents || 10;
-            const percent = (count / max) * 100;
+            // تحديد لون شارة نوع الفوج
+            let badgeClass = "badge-mix";
+            if(g.type === "ذكور") badgeClass = "badge-male";
+            if(g.type === "بنات") badgeClass = "badge-female";
 
+            const card = document.createElement("div");
+            card.className = "group-card";
             card.innerHTML = `
-                <div class="group-header">
-                    <strong>${group.groupName}</strong>
-                    <span class="tag tag-subject">${group.subject}</span>
+                <div class="group-card-header">
+                    <span class="group-title">${g.groupName || 'فوج غير مسمى'}</span>
+                    <span class="group-badge ${badgeClass}">${g.type || 'مختلط'}</span>
                 </div>
-                <div style="font-size: 12px; margin-bottom: 10px;">
-                    <span class="tag tag-count">عدد الطلاب: ${count}/${max}</span>
-                    <span class="tag" style="background:#eee">${group.type === 'male' ? '👨 ذكور' : group.type === 'female' ? '👩 بنات' : '👫 مختلط'}</span>
+                <div class="group-details"><i class="fas fa-book-open"></i> <b>المادة:</b> ${g.subject || 'لم تحدد'}</div>
+                <div class="group-details"><i class="fas fa-chalkboard-teacher"></i> <b>الأستاذ المسؤول عن الفوج:</b> ${g.teacher || 'لم يحدد بعد'}</div>
+                <div class="group-details"><i class="fas fa-users"></i> <b>العدد الحالي:</b> ${currentCount} / ${maxStudents} طالب</div>
+                <div class="group-details"><i class="fas fa-calendar-alt"></i> <b>الأعمار المقبولة:</b> من ${g.minAge || 0} إلى ${g.maxAge || 100} سنة</div>
+                ${g.note ? `<div class="group-details"><i class="fas fa-sticky-note"></i> <b>ملاحظة:</b> ${g.note}</div>` : ''}
+                
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: ${fillPercentage}%; background-color: ${fillPercentage >= 100 ? '#dc3545' : '#28a745'}"></div>
                 </div>
-                <div style="background: #eee; height: 6px; border-radius: 10px; margin-bottom: 15px;">
-                    <div style="background: ${percent > 90 ? '#dc3545' : '#28a745'}; width: ${percent}%; height: 100%; border-radius: 10px;"></div>
+                <span class="progress-text">نسبة الامتلاء: ${Math.round(fillPercentage)}%</span>
+
+                <div class="card-actions">
+                    <button class="action-icon action-edit" onclick="editGroupMode('${g.id}')"><i class="fas fa-edit"></i> تعديل</button>
+                    <button class="action-icon action-delete" onclick="deleteGroup('${g.id}')"><i class="fas fa-trash-alt"></i> حذف</button>
                 </div>
-                <div class="student-list" id="list-${group.id}">
-                    ${renderStudentNames(group.studentIds)}
-                </div>
-                <button onclick="deleteGroup('${group.id}')" style="margin-top:10px; font-size:10px; border:none; color:red; cursor:pointer; background:none">🗑️ حذف المجموعة</button>
             `;
             container.appendChild(card);
         });
     }
 
-    function renderStudentNames(idsString) {
-        if(!idsString) return "<p style='color:#ccc'>لا يوجد طلاب بعد</p>";
-        const ids = idsString.split(',');
-        return ids.map(id => {
-            const student = allStudents.find(s => s.id == id);
-            return student ? `<div class="student-item"><span>${student.name}</span> <small>عمر: ${calculateAge(student.birthDate)}</small></div>` : "";
-        }).join('');
-    }
+    // إعداد البحث الذكي التفاعلي عن الطلاب لإضافتهم للفوج الحالي
+    function setupStudentSearch() {
+        const input = document.getElementById("student-search-input");
+        const resultsBox = document.getElementById("student-results");
 
-    function calculateAge(birthDate) {
-        if(!birthDate) return "??";
-        const birth = new Date(birthDate);
-        const diff = Date.now() - birth.getTime();
-        const ageDate = new Date(diff); 
-        return Math.abs(ageDate.getUTCFullYear() - 1970);
-    }
+        input.addEventListener("input", function() {
+            const val = this.value.toLowerCase().trim();
+            resultsBox.innerHTML = "";
+            if (!val) { resultsBox.style.display = "none"; return; }
 
-    // --- خوارزمية التوزيع الذكي ---
-    async function runAiGrouping() {
-        const subject = document.getElementById('aiSubject').value;
-        const max = parseInt(document.getElementById('maxInGroup').value);
-        const ageF = parseInt(document.getElementById('ageFrom').value);
-        const ageT = parseInt(document.getElementById('ageTo').value);
-        const gender = document.getElementById('genderType').value;
+            const filtered = allStudents.filter(s => 
+                (s.name || "").toLowerCase().includes(val) || 
+                (s.id || "").toString().includes(val)
+            );
 
-        document.getElementById('aiLoader').style.display = "block";
-
-        // 1. تصفية الطلاب بناءً على المعايير
-        let filtered = allStudents.filter(s => {
-            const age = calculateAge(s.birthDate);
-            const matchesAge = age >= ageF && age <= ageT;
-            const matchesGender = (gender === 'mixed') || (gender === 'male' && s.gender === 'ذكر') || (gender === 'female' && s.gender === 'أنثى');
-            const matchesSubject = (subject === 'الكل') || (s.subject === subject);
-            return matchesAge && matchesGender && matchesSubject;
+            if(filtered.length > 0) {
+                resultsBox.style.display = "block";
+                filtered.forEach(s => {
+                    const item = document.createElement("div");
+                    item.className = "search-item";
+                    item.innerHTML = `👦 ${s.name} (${s.level || 'مستوى غير محدد'})`;
+                    item.onclick = () => {
+                        addStudentToCurrentList(s.id, s.name);
+                        input.value = "";
+                        resultsBox.style.display = "none";
+                    };
+                    resultsBox.appendChild(item);
+                });
+            } else {
+                resultsBox.style.display = "none";
+            }
         });
 
-        if(filtered.length === 0) {
-            alert("لم يتم العثور على طلاب تنطبق عليهم هذه المعايير!");
-            document.getElementById('aiLoader').style.display = "none";
+        // إغلاق قائمة البحث عند الضغط في أي مكان خارجها
+        document.addEventListener("click", (e) => {
+            if (e.target !== input) resultsBox.style.display = "none";
+        });
+    }
+
+    // إضافة الطالب لقائمة الفوج المؤقتة المعروضة في الفورم
+    function addStudentToCurrentList(id, name) {
+        if(selectedStudentIds.includes(id.toString())) {
+            showToast("⚠️ هذا الطالب مضاف بالفعل في هذا الفوج", "#ffc107");
             return;
         }
-
-        // 2. تقسيم الطلاب إلى مجموعات
-        let chunks = [];
-        for (let i = 0; i < filtered.length; i += max) {
-            chunks.push(filtered.slice(i, i + max));
-        }
-
-        // 3. إرسال المجموعات الجديدة للشيت
-        for(let index = 0; index < chunks.length; index++) {
-            const groupData = {
-                action: "addStudent", // نستخدم نفس الـ Action المبرمج مسبقاً
-                sheet: "groups",
-                groupName: `${subject} - فوج ${index + 1} (${gender})`,
-                subject: subject,
-                type: gender,
-                maxStudents: max,
-                minAge: ageF,
-                maxAge: ageT,
-                currentCount: chunks[index].length,
-                studentIds: chunks[index].map(s => s.id).join(','),
-                note: "تم التوزيع بواسطة المحرك الذكي"
-            };
-            await fetch(sheetURL, { method: "POST", body: JSON.stringify(groupData) });
-        }
-
-        alert(`تم بنجاح إنشاء ${chunks.length} مجموعات ذكية!`);
-        location.reload();
+        selectedStudentIds.push(id.toString());
+        renderSelectedStudentsTags();
     }
 
+    // حذف طالب من القائمة المؤقتة للفوج
+    function removeStudentFromCurrentList(id) {
+        selectedStudentIds = selectedStudentIds.filter(sid => sid !== id.toString());
+        renderSelectedStudentsTags();
+    }
+
+    // تحديث التاقات المرئية للطلاب المضافين في الفورم
+    function renderSelectedStudentsTags() {
+        const box = document.getElementById("current-group-students");
+        box.innerHTML = "";
+        selectedStudentIds.forEach(id => {
+            const studentObj = allStudents.find(s => s.id.toString() === id.toString());
+            const name = studentObj ? studentObj.name : `طالب برقم (${id})`;
+            
+            const tag = document.createElement("div");
+            tag.className = "added-student-tag";
+            tag.innerHTML = `<span>${name}</span> <i class="fas fa-times" onclick="removeStudentFromCurrentList('${id}')"></i>`;
+            box.appendChild(tag);
+        });
+    }
+
+   
+    // حفظ الفوج (إضافة أو تعديل) وإرساله للسحابة
+async function saveGroup() {
+    const id = document.getElementById("groupId").value;
+    const groupName = document.getElementById("groupName").value.trim();
+    const subject = document.getElementById("subject").value;
+    const type = document.getElementById("type").value;
+    const maxStudents = document.getElementById("maxStudents").value;
+    const minAge = document.getElementById("minAge").value;
+    const maxAge = document.getElementById("maxAge").value;
+    const note = document.getElementById("note").value;
+    
+    // 1. السطر الجديد المضاف لجلب اسم الأستاذ المختار
+    const teacher = document.getElementById("teacher").value; 
+
+    const studentIdsStr = selectedStudentIds.join(","); 
+    const currentCountNum = selectedStudentIds.length;
+
+    if (!groupName || !subject || !teacher) {
+        showToast("⚠️ يرجى ملء اسم الفوج، المادة، واختيار الأستاذ", "#ffc107");
+        return;
+    }
+
+    const isEdit = id !== "";
+    
+    const payload = {
+        action: isEdit ? "editStudent" : "addStudent",
+        sheet: "Group",
+        id: isEdit ? id : null,
+        groupName: groupName,
+        subject: subject,
+        type: type,
+        maxStudents: Number(maxStudents),
+        minAge: Number(minAge),
+        maxAge: Number(maxAge),
+        currentCount: currentCountNum,
+        studentIds: studentIdsStr,
+        note: note,
+        
+        // 2. السطر الجديد المضاف لإرسال الأستاذ إلى عمود teacher في الشيت
+        teacher: teacher 
+    };
+
+    // بقية كود الدالة المعتاد للإرسال عبر الـ fetch (بدون أي تغيير) ...
+
+    const btn = document.getElementById("save-btn");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ سحابياً...';
+
+    try {
+        const response = await fetch(sheetURL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        if(res.success) {
+            showToast("✅ تم حفظ الفوج وتسكين الطلاب بنجاح!", "#28a745");
+            resetForm();
+            await loadInitialData(); 
+        } else {
+            // إذا استمر السكريبت في الرفض، ستخبرنا الرسالة هنا بالسبب الدقيق
+            showToast("❌ خطأ من السيرفر: " + (res.error || "خطأ في الإجراء"), "#dc3545");
+        }
+    } catch(err) {
+        showToast("❌ خطأ في الاتصال بالشبكة", "#dc3545");
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> حفظ الفوج';
+    }
+}
+
+    // الدخول في وضع تعديل الفوج وضخ البيانات في الـ Form
+    function editGroupMode(id) {
+        const group = allGroups.find(g => g.id.toString() === id.toString());
+        if(!group) return;
+
+        document.getElementById("form-mode-title").innerHTML = `<i class="fas fa-edit"></i> تعديل بيانات الفوج: ${group.groupName}`;
+        document.getElementById("groupId").value = group.id;
+        document.getElementById("groupName").value = group.groupName || "";
+        document.getElementById("subject").value = group.subject || "";
+        document.getElementById("type").value = group.type || "مختلط";
+        document.getElementById("maxStudents").value = group.maxStudents || 15;
+        document.getElementById("minAge").value = group.minAge || 6;
+        document.getElementById("maxAge").value = group.maxAge || 18;
+        document.getElementById("note").value = group.note || "";
+        document.getElementById("teacher").value = group.teacher || "";
+
+        // جلب الطلاب المسجلين بالفوج حالياً
+        if (group.studentIds) {
+            selectedStudentIds = group.studentIds.toString().split(",").filter(sid => sid.trim() !== "");
+        } else {
+            selectedStudentIds = [];
+        }
+        renderSelectedStudentsTags();
+
+        document.getElementById("cancel-btn").style.display = "inline-flex";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // حذف الفوج
     async function deleteGroup(id) {
-        if(!confirm("هل أنت متأكد من حذف هذه المجموعة؟")) return;
-        // هنا تضيف كود الحذف حسب برمجة الـ Script الخاص بك
-        alert("سيتم حذف المجموعة رقم: " + id);
+        if(!confirm("هل أنت متأكد تماماً من حذف هذا الفوج؟ (لن يتم حذف الطلاب، بل الفوج فقط)")) return;
+
+        // السكريبت الموحد يدعم الحذف السريع عبر إرسال نفس دالة الحذف أو التعديل بقيم فارغة أو مخصصة
+        const payload = {
+            action: "deleteUser", // أو المسمى المعتمد لديك للحذف delete row
+            sheet: "Group",
+            id: id
+        };
+
+        try {
+            const response = await fetch(sheetURL, { method: "POST", body: JSON.stringify(payload) });
+            showToast("🗑️ تم حذف الفوج بنجاح", "#dc3545");
+            await loadInitialData();
+        } catch (e) {
+            showToast("❌ فشل الحذف، تواصل مع المطور", "#dc3545");
+        }
     }
+
+    // تصفية الأفواج الحية في المربعات فورياً أثناء الكتابة في خانة البحث العلوية
+    function filterGroups() {
+        const query = document.getElementById("filter-search").value.toLowerCase().trim();
+        const filtered = allGroups.filter(g => 
+            (g.groupName || "").toLowerCase().includes(query) || 
+            (g.subject || "").toLowerCase().includes(query)
+        );
+        renderGroups(filtered);
+    }
+
+    function resetForm() {
+        document.getElementById("form-mode-title").innerHTML = `<i class="fas fa-plus-circle"></i> إنشاء فوج جديد`;
+        document.getElementById("groupId").value = "";
+        document.getElementById("groupName").value = "";
+        document.getElementById("subject").value = "";
+        document.getElementById("type").value = "مختلط";
+        document.getElementById("maxStudents").value = "15";
+        document.getElementById("minAge").value = "6";
+        document.getElementById("maxAge").value = "18";
+        document.getElementById("note").value = "";
+        selectedStudentIds = [];
+        document.getElementById("current-group-students").innerHTML = "";
+        document.getElementById("cancel-btn").style.display = "none";
+    }
+
+    function goHome() {
+        window.location.href = "home.html";
+    }
+
+    function showToast(msg, bg) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.style.background = bg;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    }
+// أضف هذا السطر داخل دالة window.onload لتبدأ مع فتح الصفحة
+window.onload = async () => {
+    await loadTeachers(); // جلب الأساتذة أولاً
+    await loadInitialData(); // ثم جلب المجموعات والطلاب
+};
+
+// دالة جلب الأساتذة من شيت الاساتذة وضخها في القائمة المنسدلة
+async function loadTeachers() {
+    const teacherSelect = document.getElementById("teacher");
+    try {
+        const response = await fetch(`${sheetURL}?action=get&sheet=teachers`);
+        const data = await response.json();
+        
+        teacherSelect.innerHTML = '<option value="">👨‍🏫 اختر الأستاذ المسؤول عن الفوج</option>';
+
+        if (Array.isArray(data)) {
+            data.forEach(t => {
+                if (t.name && t.name.trim() !== "") {
+                    const option = document.createElement("option");
+                    option.value = t.name;
+                    option.textContent = t.name;
+                    teacherSelect.appendChild(option);
+                }
+            });
+        }
+    } catch (err) {
+        console.error("Teacher load error:", err);
+        teacherSelect.innerHTML = '<option value="">⚠️ خطأ في تحميل قائمة الأساتذة</option>';
+    }
+}
+
+
+
 </script>
 
 </body>
