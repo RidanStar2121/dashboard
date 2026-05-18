@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إعدادات النظام | أكاديمية نذير وضاح</title>
+    <title>إعدادات النظام | أكاديمية وضاح للعلوم</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Cairo', sans-serif; margin: 0; background: #f5f7fa; direction: rtl; }
         .header { background: #007bff; color: white; padding: 15px; text-align: center; position: relative; font-size: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .back-btn { position: absolute; left: 15px; top: 12px; background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; text-decoration: none; font-size: 14px; }
         
         .container { padding: 30px; display: flex; justify-content: center; }
-        .settings-wrapper { width: 100%; max-width: 900px; display: grid; grid-template-columns: 250px 1fr; gap: 20px; }
+        .settings-wrapper { width: 100%; max-width: 950px; display: grid; grid-template-columns: 250px 1fr; gap: 20px; }
         
         @media(max-width: 750px) { .settings-wrapper { grid-template-columns: 1fr; } }
 
@@ -28,8 +28,8 @@
         
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: #444; }
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-family: 'Cairo'; transition: 0.3s; }
-        input:focus { border-color: #007bff; outline: none; box-shadow: 0 0 5px rgba(0,123,255,0.2); }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-family: 'Cairo'; transition: 0.3s; font-size: 14px; }
+        input:focus, select:focus { border-color: #007bff; outline: none; box-shadow: 0 0 5px rgba(0,123,255,0.2); }
 
         .save-btn { width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
         .save-btn:hover { background: #218838; transform: translateY(-2px); }
@@ -39,8 +39,12 @@
         .ai-status i { font-size: 24px; color: #ffc107; }
         .ai-status p { margin: 0; font-size: 13px; color: #856404; }
 
+        /* ستايل لوحة إدارة المستخدمين للمدير */
+        .users-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px dashed #007bff; }
+        @media(max-width: 600px) { .users-grid { grid-template-columns: 1fr; } }
+        
         /* التنبيهات */
-        #toast { display: none; position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px 25px; border-radius: 10px; z-index: 1000; animation: slideUp 0.5s ease; }
+        #toast { display: none; position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px 25px; border-radius: 10px; z-index: 1000; animation: slideUp 0.5s ease; font-size: 14px; }
         @keyframes slideUp { from { transform: translateY(100px); } to { transform: translateY(0); } }
     </style>
 </head>
@@ -54,114 +58,242 @@
 <div class="container">
     <div class="settings-wrapper">
         <div class="settings-nav">
-            <div class="nav-item active" onclick="showTab('general')"><i class="fas fa-school"></i> عام</div>
-            <div class="nav-item" onclick="showTab('security')"><i class="fas fa-shield-alt"></i> الأمان</div>
+            <div class="nav-item active" onclick="showTab('general', this)"><i class="fas fa-school"></i> عام</div>
+            <div class="nav-item" onclick="showTab('security', this)"><i class="fas fa-shield-alt"></i> الأمان والشخصي</div>
+            <div class="nav-item" id="nav-users-manage" style="display:none;" onclick="showTab('users', this)"><i class="fas fa-users-cog"></i> إدارة الحسابات</div>
         </div>
 
         <div class="settings-content" id="tab-content">
-            <!-- سيتم تحميل المحتوى هنا -->
-        </div>
+            </div>
     </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
+    // الرابط الموحد للـ Web App (Apps Script) الخاص بك دون أي تعديل في السيرفر
     const API_URL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
     
-    // تخزين مؤقت للبيانات
+    // قراءة الصلاحيات الحالية المخزنة في المتصفح عند تسجيل الدخول
+    const currentRole = localStorage.getItem("role") || "موظف";
+    const currentLoggedUser = localStorage.getItem("savedUser") || "";
+
+    // تخزين مؤقت لإعدادات المنظومة الافتراضية
     let currentSettings = {
-        schoolName: "أكاديمية نذير وضاح",
+        schoolName: "أكاديمية وضاح للعلوم",
         schoolPhone: "06xxxxxxxx",
-        schoolAddress: "سكيكدة، الجزائر",
-        adminUser: "admin"
+        schoolAddress: "سكيكدة، الجزائر"
     };
 
     window.onload = () => {
+        // إظهار لوحة تحكم الحسابات إذا كان المتصل "مدير"
+        if(currentRole === "مدير") {
+            document.getElementById("nav-users-manage").style.display = "flex";
+        }
         showTab('general');
-        // هنا يمكن إضافة Fetch لجلب البيانات الحقيقية من الشيت عند البداية
     };
 
-    function showTab(tabName) {
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        event?.currentTarget?.classList.add('active');
+    function showTab(tabName, element) {
+        if(element) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        }
 
         const content = document.getElementById('tab-content');
         let html = '';
 
         if(tabName === 'general') {
             html = `
-                <h3 class="section-title"><i class="fas fa-info-circle"></i> معلومات المدرسة</h3>
-                <div class="form-group"><label>اسم المدرسة:</label><input type="text" id="schoolName" value="${currentSettings.schoolName}"></div>
-                <div class="form-group"><label>الهاتف:</label><input type="text" id="schoolPhone" value="${currentSettings.schoolPhone}"></div>
-                <div class="form-group"><label>العنوان:</label><input type="text" id="schoolAddress" value="${currentSettings.schoolAddress}"></div>
-                <button class="save-btn" onclick="saveGeneral()"><i class="fas fa-save"></i> حفظ إعدادات المدرسة</button>
+                <h3 class="section-title"><i class="fas fa-info-circle"></i> معلومات الأكاديمية والمدرسة</h3>
+                <div class="form-group"><label>اسم المؤسسة / الأكاديمية:</label><input type="text" id="schoolName" value="${currentSettings.schoolName}"></div>
+                <div class="form-group"><label>رقم الهاتف الرسمي:</label><input type="text" id="schoolPhone" value="${currentSettings.schoolPhone}"></div>
+                <div class="form-group"><label>العنوان الجغرافي للاتصال:</label><input type="text" id="schoolAddress" value="${currentSettings.schoolAddress}"></div>
+                <button class="save-btn" id="btn-save" onclick="saveGeneral()"><i class="fas fa-save"></i> حفظ إعدادات المؤسسة</button>
             `;
-        } else if(tabName === 'security') {
+        } 
+        else if(tabName === 'security') {
             html = `
-                <h3 class="section-title"><i class="fas fa-user-shield"></i> الأمان وتغيير كلمة المرور</h3>
-                <div class="form-group"><label>اسم المستخدم الحالي:</label><input type="text" id="adminUser" value="${currentSettings.adminUser}"></div>
-                <div class="form-group"><label>كلمة المرور الجديدة:</label><input type="password" id="newPass" placeholder="اتركها فارغة إذا لم ترد التغيير"></div>
+                <h3 class="section-title"><i class="fas fa-user-shield"></i> الأمان وتغيير كلمة المرور الخاصة بك</h3>
+                <div class="form-group"><label>اسم المستخدم الحالي المتصل:</label><input type="text" id="myUsername" value="${currentLoggedUser}" disabled style="background:#eee; cursor:not-allowed;"></div>
+                <div class="form-group"><label>كلمة المرور الجديدة المتفوقة:</label><input type="password" id="myNewPass" placeholder="أدخل كلمة مرور جديدة قوية ونشطة"></div>
                 <div class="ai-status" style="background:#e8f4fd; border-color:#b8daff; color:#004085">
                     <i class="fas fa-info-circle"></i>
-                    <p>عند تغيير كلمة المرور، ستحتاج لاستخدام الكلمة الجديدة في المرة القادمة عند تسجيل الدخول.</p>
+                    <p>هذا الإجراء سيقوم بتحديث كلمة المرور الخاصة بحسابك الحالي في ملف الشيت بنجاح دون المساس بقواعد البيانات الأخرى.</p>
                 </div>
-                <button class="save-btn" onclick="saveSecurity()" style="background:#007bff"><i class="fas fa-key"></i> تحديث بيانات الدخول</button>
+                <button class="save-btn" id="btn-save" onclick="updateMyPassword()" style="background:#007bff"><i class="fas fa-key"></i> تحديث كلمة مروري الحالية</button>
+            `;
+        } 
+        else if(tabName === 'users') {
+            html = `
+                <h3 class="section-title"><i class="fas fa-user-plus"></i> لوحة إنشاء حساب مستخدم / موظف جديد (خاص بالمدير)</h3>
+                <div class="users-grid">
+                    <div class="form-group"><label>الاسم الكامل للموظف:</label><input type="text" id="regFullName" placeholder="مثال: محمد أحمد"></div>
+                    <div class="form-group"><label>اسم المستخدم (Username):</label><input type="text" id="regUser" placeholder="مثال: staff2026"></div>
+                    <div class="form-group"><label>كلمة المرور المبدئية:</label><input type="password" id="regPass" placeholder="كلمة مرور الدخول"></div>
+                    <div class="form-group">
+                        <label>رتبة وصلاحية الحساب:</label>
+                        <select id="regRole">
+                            <option value="موظف">موظف (إدخال وتعديل طلاب)</option>
+                            <option value="مستخدم">مستخدم (عرض وتقارير فقط)</option>
+                            <option value="مدير">مدير (صلاحيات كاملة للمنظومة)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="save-btn" id="btn-save" onclick="createNewUser()" style="background:#28a745"><i class="fas fa-user-check"></i> اعتماد وإنشاء الحساب في الشيت</button>
             `;
         }
         content.innerHTML = html;
     }
 
+    // 1. دالة حفظ إعدادات المؤسسة العامة
     async function saveGeneral() {
-        const data = {
-            action: "editSettings", // إجراء جديد يجب إضافته للسكريبت
+        const payload = {
+            action: "editStudent", // توجيه متوافق مع دالة تعديل الأسطر بالسيرفر
             sheet: "settings",
+            id: "SYSTEM_CONFIG",   // معرف موحد ثابت للسطر الأول الخاص بالإعدادات
             schoolName: document.getElementById('schoolName').value,
             schoolPhone: document.getElementById('schoolPhone').value,
             schoolAddress: document.getElementById('schoolAddress').value
         };
-        await sendData(data);
+        
+        await sendData(payload, "تم تحديث إعدادات المؤسسة بنجاح سحابي!");
+        // تحديث البيانات محلياً للواجهة
+        currentSettings.schoolName = payload.schoolName;
+        currentSettings.schoolPhone = payload.schoolPhone;
+        currentSettings.schoolAddress = payload.schoolAddress;
     }
 
-    async function saveSecurity() {
-        const newPass = document.getElementById('newPass').value;
+    // 2. دالة تعديل كلمة المرور للمستخدم الحالي المتصل (متوافقة 100%)
+    async function updateMyPassword() {
+        const newPass = document.getElementById('myNewPass').value.trim();
         if(!newPass) {
-            showToast("يرجى كتابة كلمة مرور جديدة أولاً", "#dc3545");
+            showToast("⚠️ يرجى كتابة كلمة المرور الجديدة أولاً", "#dc3545");
             return;
         }
 
-        const data = {
-            action: "editUser", 
-            sheet: "users",
-            id: "admin", // أو الـ ID الخاص بحسابك في الشيت
-            password: newPass,
-            username: document.getElementById('adminUser').value
-        };
-        await sendData(data);
+        startLoading();
+
+        try {
+            // جلب الأسطر الحالية من شيت الـ users لاستخراج سطر المستخدم الحالي
+            const res = await fetch(`${API_URL}?action=get&sheet=users`);
+            const users = await res.json();
+            const myAccount = users.find(u => u.username && u.username.toString().trim() === currentLoggedUser);
+
+            if(!myAccount) {
+                showToast("❌ خطأ: لم يتم العثور على بيانات حسابك الحالي بالشيت", "#dc3545");
+                stopLoading("<i class='fas fa-key'></i> تحديث كلمة مروري الحالية");
+                return;
+            }
+
+            // بناء الهيكل التوافقي مع آلية التعديل الافتراضية للسكريبت القديم الخاص بك
+            const payload = {
+                action: "editStudent", 
+                sheet: "users",
+                id: myAccount.id, // استخدام المعرف الفريد المستخرج للسطر
+                username: myAccount.username,
+                password: newPass, // استبدال كلمة المرور القديمة بالجديدة
+                role: myAccount.role,
+                full_name: myAccount.full_name
+            };
+
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if(result.success) {
+                showToast("✅ تم تحديث كلمة مرورك الشخصية بنجاح مبهر!", "#28a745");
+                document.getElementById('myNewPass').value = "";
+            } else {
+                showToast("❌ خطأ من السيرفر: " + result.error, "#dc3545");
+            }
+        } catch(err) {
+            showToast("❌ فشل الاتصال بقاعدة البيانات السحابية", "#dc3545");
+        } finally {
+            stopLoading("<i class='fas fa-key'></i> تحديث كلمة مروري الحالية");
+        }
     }
 
-    async function sendData(payload) {
-        const btn = document.querySelector('.save-btn');
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاتصال بالسحابة...';
+    // 3. دالة إضافة وإنشاء حساب مستخدم جديد (متاحة للمدير فقط ومتوافقة مع السكريبت)
+    async function createNewUser() {
+        const fullName = document.getElementById("regFullName").value.trim();
+        const username = document.getElementById("regUser").value.trim();
+        const password = document.getElementById("regPass").value.trim();
+        const role = document.getElementById("regRole").value;
+
+        if(!fullName || !username || !password) {
+            showToast("⚠️ يرجى ملء كافة حقول إنشاء الحساب الجديد", "#dc3545");
+            return;
+        }
+
+        startLoading();
+
+        // إجبار السكريبت القديم على إضافة البيانات في صفحة الحسابات عبر دالة addStudent العامة لديه
+        const payload = {
+            action: "addStudent", 
+            sheet: "users",      
+            id: "U-" + Date.now(), // توليد معرف تلقائي رقمي فريد يوضع في عمود الـ id الأساسي للشيت الجديد
+            username: username,
+            password: password,
+            role: role,
+            full_name: fullName
+        };
 
         try {
             const response = await fetch(API_URL, {
                 method: "POST",
                 body: JSON.stringify(payload)
             });
-            
-            showToast("✅ تم الحفظ وتحديث البيانات بنجاح!", "#28a745");
-            // تحديث القيم المحلية
-            if(payload.schoolName) currentSettings.schoolName = payload.schoolName;
-            if(payload.username) currentSettings.adminUser = payload.username;
-            
-        } catch (error) {
-            showToast("❌ حدث خطأ أثناء الاتصال بالخادم", "#dc3545");
+            const result = await response.json();
+            if(result.success) {
+                showToast("✅ تم إنشاء الحساب والموظف الجديد بنجاح  users!", "#28a745");
+                // تصفير الخانات بعد النجاح للاستخدام القادم
+                document.getElementById("regFullName").value = "";
+                document.getElementById("regUser").value = "";
+                document.getElementById("regPass").value = "";
+            } else {
+                showToast("❌ فشل الحفظ: " + result.error, "#dc3545");
+            }
+        } catch(err) {
+            showToast("❌ حدث خطأ غير متوقع أثناء الاتصال بالخادم", "#dc3545");
         } finally {
+            stopLoading("<i class='fas fa-user-check'></i> اعتماد وإنشاء الحساب ");
+        }
+    }
+
+    // دالة التوصيل السريع والإرسال العام للبيانات
+    async function sendData(payload, successMessage) {
+        startLoading();
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            showToast(successMessage, "#28a745");
+        } catch (error) {
+            showToast("❌ حدث خطأ أثناء الاتصال بالخادم السحابي", "#dc3545");
+        } finally {
+            stopLoading("<i class='fas fa-save'></i> حفظ الإعدادات");
+        }
+    }
+
+    // تأثيرات اللودينج السينمائية للأزرار أثناء رفع البيانات السحابية
+    let originalBtnHTML = "";
+    function startLoading() {
+        const btn = document.getElementById('btn-save');
+        if(btn) {
+            originalBtnHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري مزامنة التسجيل بدقة...';
+        }
+    }
+
+    function stopLoading(defaultHTML) {
+        const btn = document.getElementById('btn-save');
+        if(btn) {
             btn.disabled = false;
-            btn.innerHTML = originalText;
+            btn.innerHTML = originalBtnHTML || defaultHTML;
         }
     }
 
@@ -170,7 +302,7 @@
         toast.innerText = msg;
         toast.style.background = bg;
         toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
 </script>
 
