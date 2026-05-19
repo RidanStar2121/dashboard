@@ -1,228 +1,486 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إدارة الأساتذة</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-<style>
-/* ... (نفس الستايل الخاص بك دون تغيير) ... */
-body{ font-family:'Cairo',sans-serif; margin:0; background:#f5f7fa; direction:rtl; }
-.header{ background:#007bff; color:white; padding:15px; text-align:center; font-size:20px; position:relative; font-weight:bold; }
-.home-btn{ position:absolute; left:15px; top:15px; background:#dc3545; border:none; color:white; padding:8px 12px; border-radius:8px; cursor:pointer; }
-.container{ padding:20px; display:flex; flex-direction:column; align-items:center; }
-.form-box{ width:100%; max-width:800px; background:white; padding:20px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.08); }
-.grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-@media(max-width:700px){ .grid{ grid-template-columns:1fr; } }
-input{ width:100%; padding:12px; border-radius:10px; border:1px solid #ccc; box-sizing:border-box; font-size:14px; }
-.buttons{ display:flex; gap:10px; margin-top:15px; margin-bottom: 20px; }
-button{ padding:12px; border:none; border-radius:10px; cursor:pointer; color:white; font-weight:bold; flex:1; }
-.success{ background:#28a745; }
-.warning{ background:#ffc107; color:black; }
-table{ width:100%; border-collapse:collapse; background:white; border-radius:15px; overflow:hidden; }
-th{ background:#007bff; color:white; padding:12px; }
-td{ padding:10px; text-align:center; border-bottom:1px solid #eee; }
-.action-btn{ padding:6px 10px; border:none; border-radius:6px; cursor:pointer; color:white; font-size:12px; margin: 0 2px; }
-.edit{ background:#ffc107; color:black; }
-.delete{ background:#dc3545; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأساتذة الاحترافية - نذير وضاح</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            margin: 0; 
+            background: var(--bg-main); 
+            color: var(--text-main);
+            direction: rtl; 
+        }
+
+        .header { 
+            background: var(--primary); 
+            color: white; 
+            padding: 18px 24px; 
+            text-align: center; 
+            font-size: 20px; 
+            font-weight: 700; 
+            position: relative; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        
+        .home-btn { 
+            position: absolute; 
+            left: 20px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            background: var(--danger); 
+            border: none; 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-family: 'Cairo';
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .home-btn:hover { background: #b91c1c; }
+
+        .container { padding: 30px; max-width: 1400px; margin: auto; }
+
+        /* بطاقات الإحصائيات الذكية */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .stat-card span { font-size: 13px; color: #64748b; font-weight: 600; }
+        .stat-card b { font-size: 22px; color: var(--accent); }
+
+        /* واجهة النماذج والبيانات */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+        @media(max-width: 1024px){ .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 24px; 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+            height: fit-content;
+        }
+        
+        h3 { margin-top: 0; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 12px; font-size: 17px; font-weight: 700; }
+
+        .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        
+        input, select { 
+            width: 100%; 
+            padding: 11px 14px; 
+            border-radius: 8px; 
+            border: 1px solid #cbd5e1; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            font-family: 'Cairo';
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 211, 0.1); }
+
+        .teacher-groups-display {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #475569;
+            min-height: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; flex: 1; font-family: 'Cairo'; font-size: 14px; transition: 0.2s; }
+        .btn-save { background: var(--success); }
+        .btn-save:hover { background: #059669; }
+        .btn-clear { background: var(--warning); color: #1e293b; }
+        .btn-clear:hover { background: #d97706; color: white; }
+
+        /* منطقة الفلترة والبحث المباشر */
+        .search-box {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        /* الجداول الاحترافية */
+        .table-container { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 850px; }
+        th { background: #f1f5f9; color: var(--text-main); padding: 14px; font-weight: 700; font-size: 14px; border-bottom: 2px solid var(--border-color); }
+        td { padding: 12px 14px; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        tbody tr:hover { background: #f8fafc; }
+
+        /* تاقات الأفواج الديناميكية */
+        .group-badge-tag {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 2px;
+            border: 1px solid #bae6fd;
+        }
+        .no-groups { color: #94a3b8; font-size: 12px; font-style: italic; }
+
+        /* أزرار العمليات والربط المالي السريع */
+        .action-btn { padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; color: white; font-size: 12px; font-family: 'Cairo'; font-weight: 600; margin: 0 2px; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; }
+        .edit { background: #3b82f6; }
+        .edit:hover { background: #2563eb; }
+        .delete { background: var(--danger); }
+        .delete:hover { background: #dc2626; }
+        .pay-link { background: var(--success); color: white; }
+        .pay-link:hover { background: #059669; }
+    </style>
 </head>
 <body>
 
 <div class="header">
-👨‍🏫 إدارة الأساتذة
-<button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
+    👨‍🏫 وحدة إدارة وجدولة الأساتذة الاحترافية
+    <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
 </div>
 
 <div class="container">
-<div class="form-box">
-<input type="hidden" id="teacherId">
-<div class="grid">
-<input id="name" placeholder="👤 الاسم الكامل">
-<input id="phone" placeholder="📱 الهاتف">
-<select id="subject" placeholder="📚 المادة">
-      <option>📚 إختر المادة</option>
-      <option>🎮 Scratch</option>
-      <option>🤖 روبوتيك</option>
-      <option>🐍 Python</option>
-      <option>🧠 ذكاء اصطناعي</option>
-      <option>رياضيات</option>
-      <option>فرنسية</option>
-      <option>إنجليزية </option>
-      <option>عربية</option>
-      <option>علوم </option>
-      <option>فيزياء </option>
-   </select>
+    
+    <div class="stats-container">
+        <div class="stat-card">
+            <span>👥 إجمالي الأساتذة النشطين</span>
+            <b id="totalTeachersCount">0</b>
+        </div>
+        <div class="stat-card">
+            <span>💰 كتلة الرواتب الشهريّة الإجمالية</span>
+            <b id="totalSalariesSum">0 DA</b>
+        </div>
+        <div class="stat-card">
+            <span>📚 المواد المدرجة بالمنظومة</span>
+            <b id="totalSubjectsCount">0</b>
+        </div>
+    </div>
 
-<input id="group_name" placeholder="🧑‍🏫 الفوج">
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3>📝 بيانات الأستاذ</h3>
+            <input type="hidden" id="teacherId">
+            <div class="grid">
+                <input id="name" placeholder="👤 الاسم الكامل للأستاذ">
+                <input id="phone" placeholder="📱 رقم الهاتف">
+                
+                <select id="subject">
+                    <option value="">📚 اختر المادة المدرسة...</option>
+                    <option value="Scratch">🎮 Scratch</option>
+                    <option value="روبوتيك">🤖 روبوتيك</option>
+                    <option value="Python">🐍 Python</option>
+                    <option value="ذكاء اصطناعي">🧠 ذكاء اصطناعي</option>
+                    <option value="رياضيات">رياضيات</option>
+                    <option value="فرنسية">فرنسية</option>
+                    <option value="إنجليزية">إنجليزية</option>
+                    <option value="عربية">عربية</option>
+                    <option value="علوم">علوم</option>
+                    <option value="فيزياء">فيزياء</option>
+                </select>
 
-<select id="level" placeholder="🎓 المستوى">
-      <option>📚 إختر المستوى</option>
-      <option>إبتدائي</option>
-      <option>متوسط</option>
-      <option>ثانوي</option>
-      <option>جامعي</option>
-      <option>دورات</option>
-    </select>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 12px; font-weight: bold; color: #64748b;">🏫 الأفواج المرتبطة بالأستاذ حالياً (تلقائي):</label>
+                    <div class="teacher-groups-display" id="teacherGroupsFormList">
+                        <span class="no-groups">اختر أستاذاً معدلاً أو مسجلاً لعرض أفواده الحركية...</span>
+                    </div>
+                </div>
 
-<input id="salary" placeholder="💰 الراتب">
-</div>
+                <select id="level">
+                    <option value="">🎓 اختر الطور / المستوى...</option>
+                    <option value="إبتدائي">إبتدائي</option>
+                    <option value="متوسط">متوسط</option>
+                    <option value="ثانوي">ثانوي</option>
+                    <option value="جامعي">جامعي</option>
+                    <option value="دورات">دورات خاصة</option>
+                </select>
 
-<div class="buttons">
-<button class="success" id="saveBtn" onclick="saveTeacher()">💾 حفظ</button>
-<button class="warning" onclick="clearForm()">🔄 جديد</button>
-</div>
+                <input type="number" id="salary" placeholder="💰 قيمة الراتب المتفق عليه (DA)">
+            </div>
 
-<div style="overflow-x:auto; width: 100%;">
-<table id="teachersTable">
-<thead>
-<tr>
-<th>🆔</th>
-<th>👤 الاسم</th>
-<th>📱 الهاتف</th>
-<th>📚 المادة</th>
-<th>🎓 المستوى</th>
-<th>💰 الراتب</th>
-<th>📝 الفوج</th>
-<th>⚙</th>
-</tr>
-</thead>
-<tbody id="tableBody"></tbody>
-</table>
-</div>
-</div>
+            <div class="buttons">
+                <button class="btn btn-save" id="saveBtn" onclick="saveTeacher()">💾 حفظ البيانات</button>
+                <button class="btn btn-clear" onclick="clearForm()">🔄 جديد</button>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="search-box">
+                <input type="text" id="tableSearch" placeholder="🔍 فلترة وبحث سريع بالاسم، المادة، أو الفوج الذكي..." oninput="filterTeachersTable()">
+            </div>
+            
+            <div class="table-container">
+                <table id="teachersTable">
+                    <thead>
+                        <tr>
+                            <th>🆔</th>
+                            <th>👤 الاسم</th>
+                            <th>📱 الهاتف</th>
+                            <th>📚 المادة</th>
+                            <th>🎓 المستوى</th>
+                            <th>💰 الراتب</th>
+                            <th>🏫 الأفواج المسؤولة عنها</th>
+                            <th>⚙️ إجراءات لوحة التحكم</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="8" style="padding: 30px; color: #64748b;">⏳ جاري جلب ملفات الأساتذة ومزامنة الأفواج الذكية...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-// ضع رابط الـ Web App الخاص بك هنا
 const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
 let allTeachers = [];
+let allGroups = [];
 
-async function loadTeachers(){
-  try {
-    const res = await fetch(sheetURL + "?sheet=teachers");
-    const data = await res.json();
-    allTeachers = data;
-    renderTeachers();
-  } catch(e) { console.log("Error loading: " + e); }
+async function loadInitialData(){
+    try {
+        // 1. جلب الأساتذة
+        const resTeachers = await fetch(sheetURL + "?sheet=teachers");
+        allTeachers = await resTeachers.json();
+        
+        // 2. جلب الأفواج من شيت Group لعمل المزامنة العكسية التلقائية
+        const resGroups = await fetch(sheetURL + "?action=get&sheet=Group");
+        allGroups = await resGroups.json();
+
+        calculateStats();
+        renderTeachers(allTeachers);
+    } catch(e) { 
+        console.error("Error loading data:", e); 
+        document.getElementById("tableBody").innerHTML = "<tr><td colspan='8' style='color:red;'>❌ فشل تحميل البيانات، تحقق من اتصال السيرفر.</td></tr>";
+    }
 }
 
-function renderTeachers(){
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = "";
+// دالة ذكية للبحث عن كل المجموعات التابعة لأستاذ معين عبر اسمه
+function getTeacherGroups(teacherName) {
+    if (!teacherName) return [];
+    return allGroups.filter(g => g.teacher && g.teacher.trim().toLowerCase() === teacherName.trim().toLowerCase());
+}
 
-  allTeachers.forEach(t => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${t.id || ""}</td>
-      <td>${t.name || ""}</td>
-      <td>${t.phone || ""}</td>
-      <td>${t.subject || ""}</td>
-      <td>${t.level || ""}</td>
-      <td>${t.salary || ""}</td>
-      <td>${t.group_name || ""}</td>
-      <td>
-        <button class="action-btn edit" onclick='editTeacher("${t.id}")'>✏</button>
-        <button class="action-btn delete" onclick='deleteTeacher("${t.id}")'>🗑</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
+function calculateStats() {
+    document.getElementById("totalTeachersCount").innerText = allTeachers.length;
+    
+    let totalSalaries = 0;
+    let subjectsSet = new Set();
+    
+    allTeachers.forEach(t => {
+        totalSalaries += parseFloat(t.salary || 0);
+        if(t.subject) subjectsSet.add(t.subject);
+    });
+    
+    document.getElementById("totalSalariesSum").innerText = totalSalaries.toLocaleString() + " DA";
+    document.getElementById("totalSubjectsCount").innerText = subjectsSet.size;
+}
+
+function renderTeachers(dataArray){
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+
+    if(dataArray.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='8' style='padding:20px; color:#64748b;'>لا توجد نتائج مطابقة للبحث الحركي.</td></tr>";
+        return;
+    }
+
+    dataArray.forEach(t => {
+        const tr = document.createElement("tr");
+        
+        // جلب أفواج الأستاذ بطريقة مؤتمتة ذكية بالكامل من شيت المجموعات
+        const teacherGroups = getTeacherGroups(t.name);
+        let groupsBadgesHtml = "";
+        
+        if(teacherGroups.length > 0) {
+            teacherGroups.forEach(g => {
+                groupsBadgesHtml += `<span class="group-badge-tag">🏫 ${g.groupName}</span>`;
+            });
+        } else {
+            groupsBadgesHtml = `<span class="no-groups">لا توجد أفواج حالياً</span>`;
+        }
+
+        const payPageURL = `payments.html?studentId=${t.id}&studentName=${encodeURIComponent(t.name)}`;
+
+        tr.innerHTML = `
+            <td><b>${t.id || ""}</b></td>
+            <td><b>${t.name || ""}</b></td>
+            <td>${t.phone || "-"}</td>
+            <td><span style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-size:13px;">${t.subject || ""}</span></td>
+            <td>${t.level || ""}</td>
+            <td style="font-weight:bold; color:var(--accent);">${parseFloat(t.salary || 0).toLocaleString()} DA</td>
+            <td><div style="max-width:250px; margin:auto;">${groupsBadgesHtml}</div></td>
+            <td>
+                <button class="action-btn edit" onclick='editTeacher("${t.id}")'>✏️ تعديل</button>
+                <button class="action-btn delete" onclick='deleteTeacher("${t.id}")'>🗑️ حذف</button>
+                <a class="action-btn pay-link" href="${payPageURL}">💰 راتب</a>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function filterTeachersTable() {
+    const query = document.getElementById("tableSearch").value.toLowerCase().trim();
+    if(!query) {
+        renderTeachers(allTeachers);
+        return;
+    }
+    
+    const filtered = allTeachers.filter(t => {
+        // البحث يشمل الأفواد الديناميكية المرتبطة به أيضاً!
+        const teacherGroups = getTeacherGroups(t.name);
+        const hasGroupMatch = teacherGroups.some(g => g.groupName && g.groupName.toLowerCase().includes(query));
+
+        return (t.name && t.name.toLowerCase().includes(query)) ||
+               (t.subject && t.subject.toLowerCase().includes(query)) ||
+               hasGroupMatch ||
+               (t.id && String(t.id).includes(query));
+    });
+    renderTeachers(filtered);
 }
 
 function saveTeacher(){
-  const id = document.getElementById("teacherId").value;
-  const btn = document.getElementById("saveBtn");
-  
-  const data = {
-    action: id ? "editTeacher" : "addTeacher",
-    sheet: "teachers",
-    id: id,
-    name: document.getElementById("name").value,
-    phone: document.getElementById("phone").value,
-    subject: document.getElementById("subject").value,
-    level: document.getElementById("level").value,
-    salary: document.getElementById("salary").value,
-    group_name: document.getElementById("group_name").value
-  };
+    const id = document.getElementById("teacherId").value;
+    const btn = document.getElementById("saveBtn");
+    
+    const data = {
+        action: id ? "editTeacher" : "addTeacher",
+        sheet: "teachers",
+        id: id,
+        name: document.getElementById("name").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        subject: document.getElementById("subject").value,
+        level: document.getElementById("level").value,
+        salary: document.getElementById("salary").value,
+        group_name: "" // نتركها فارغة لأن النظام أصبح يقرأ الأفواج ديناميكياً من شيت المجموعات مباشرة
+    };
 
-  if(!data.name) { alert("يرجى إدخال الاسم"); return; }
+    if(!data.name) { alert("⚠️ يرجى إدخال اسم الأستاذ الكامل أولاً"); return; }
+    if(!data.subject) { alert("⚠️ من فضلك حدد المادة المدرسة"); return; }
 
-  btn.disabled = true;
-  btn.innerText = "... جاري الحفظ";
+    btn.disabled = true;
+    btn.innerText = "⏳ جاري حفظ وتأمين البيانات...";
 
-  fetch(sheetURL, {
-    method: "POST",
-    body: JSON.stringify(data)
-  })
-  .then(r => r.json())
-  .then(res => {
-    if(res.success){
-      alert("✅ تم الحفظ بنجاح");
-      clearForm();
-      loadTeachers();
-    } else {
-      alert("❌ خطأ: " + res.error);
-    }
-  })
-  .finally(() => {
-    btn.disabled = false;
-    btn.innerText = "💾 حفظ";
-  });
+    fetch(sheetURL, {
+        method: "POST",
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.success){
+            alert("✅ تم حفظ السجل وتحديث البيانات المزامنة بنجاح");
+            clearForm();
+            loadInitialData();
+        } else {
+            alert("❌ خطأ بالنظام: " + res.error);
+        }
+    })
+    .catch(err => alert("❌ حدث خطأ غير متوقع بالاتصال."))
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerText = "💾 حفظ البيانات";
+    });
 }
 
-function editTeacher(id){
-  const t = allTeachers.find(x => String(x.id) === String(id));
-  if(!t) return;
+function editTeacher(id) {
+    const t = allTeachers.find(x => String(x.id) === String(id));
+    if(!t) return;
 
-  document.getElementById("teacherId").value = t.id;
-  document.getElementById("name").value = t.name || "";
-  document.getElementById("phone").value = t.phone || "";
-  document.getElementById("subject").value = t.subject || "";
- 
-  document.getElementById("level").value = t.level || "";
-  document.getElementById("salary").value = t.salary || "";
-  document.getElementById("group_name").value = t.group_name || "";
-  
-  window.scrollTo(0,0);
+    document.getElementById("teacherId").value = t.id;
+    document.getElementById("name").value = t.name || "";
+    document.getElementById("phone").value = t.phone || "";
+    document.getElementById("subject").value = t.subject || "";
+    document.getElementById("level").value = t.level || "";
+    document.getElementById("salary").value = t.salary || "";
+    
+    // عرض الأفواج التابعة له داخل صندوق الـ Form بشكل تفاعلي سريع عند الضغط على تعديل
+    const formGroupsBox = document.getElementById("teacherGroupsFormList");
+    const currentGroups = getTeacherGroups(t.name);
+    formGroupsBox.innerHTML = "";
+    
+    if(currentGroups.length > 0) {
+        currentGroups.forEach(g => {
+            formGroupsBox.innerHTML += `<span class="group-badge-tag">🏫 ${g.groupName}</span>`;
+        });
+    } else {
+        formGroupsBox.innerHTML = `<span class="no-groups">هذا الأستاذ غير مسكن في أي فوج حالياً</span>`;
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function deleteTeacher(id){
-  if(!confirm("هل أنت متأكد من حذف هذا الأستاذ؟")) return;
+    if(!confirm("⚠️ تنبيه: هل أنت متأكد تماماً من حذف هذا الأستاذ نهائياً من قاعدة البيانات؟")) return;
 
-  fetch(sheetURL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "deleteTeacher",
-      sheet: "teachers",
-      id: id
+    fetch(sheetURL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "deleteTeacher",
+            sheet: "teachers",
+            id: id
+        })
     })
-  })
-  .then(r => r.json())
-  .then(res => {
-    if(res.success){
-      alert("✅ تم الحذف");
-      loadTeachers();
-    } else {
-      alert("❌ فشل الحذف");
-    }
-  });
+    .then(r => r.json())
+    .then(res => {
+        if(res.success){
+            alert("🗑️ تم حذف السجل وتحديث الميزانية بنجاح");
+            loadInitialData();
+        } else {
+            alert("❌ فشلت عملية الحذف");
+        }
+    });
 }
 
 function clearForm(){
-  document.getElementById("teacherId").value = "";
-  document.getElementById("name").value = "";
-  document.getElementById("phone").value = "";
-  document.getElementById("subject").value = "";
-  
-  document.getElementById("level").value = "";
-  document.getElementById("salary").value = "";
-  document.getElementById("group_name").value = "";
+    document.getElementById("teacherId").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("subject").value = "";
+    document.getElementById("level").value = "";
+    document.getElementById("salary").value = "";
+    document.getElementById("teacherGroupsFormList").innerHTML = `<span class="no-groups">اختر أستاذاً معدلاً أو مسجلاً لعرض أفواده الحركية...</span>`;
 }
 
 function goHome(){ window.location.href = "home.html"; }
 
-loadTeachers();
+// تشغيل جلب البيانات الفوري بمجرد إقلاع الواجهة
+loadInitialData();
 </script>
 </body>
 </html>
