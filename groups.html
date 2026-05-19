@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الأفواج والمجموعات - نذير وضاح</title>
+    <title>إدارة الأفواج والمجموعات - أكاديمية وضاح للعلوم</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -47,7 +47,7 @@
         .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 15px; }
         
         /* كارت الفوج الاحترافي */
-        .group-card { background: linear-gradient(145deg, #ffffff, #fdfdfd); border: 1px solid #e2e8f0; border-radius: 15px; padding: 15px; position: relative; transition: 0.3s; box-shadow: 0 3px 6px rgba(0,0,0,0.02); }
+        .group-card { background: linear-gradient(145deg, #ffffff, #fdfdfd); border: 1px solid #e2e8f0; border-radius: 15px; padding: 15px; position: relative; transition: 0.3s; box-shadow: 0 3px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; }
         .group-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: #007bff; }
         .group-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .group-title { font-size: 16px; font-weight: bold; color: #007bff; }
@@ -64,8 +64,32 @@
         .progress-bar { background: #28a745; height: 100%; width: 0%; transition: 0.5s; }
         .progress-text { font-size: 11px; text-align: left; color: #888; display: block; font-weight: bold; }
 
+        /* منطقة استعراض طلاب الفوج داخل الكارت المخصصة للدفع السريع */
+        .card-students-inside { margin-top: 12px; background: #f8fafc; border-radius: 8px; padding: 8px; border: 1px solid #edf2f7; max-height: 120px; overflow-y: auto; }
+        .card-student-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; border-bottom: 1px dashed #e2e8f0; font-size: 12px; }
+        .card-student-row:last-child { border-bottom: none; }
+        .btn-pay-fast { 
+    background: #28a745; 
+    color: white; 
+    border: none; 
+    padding: 2px 10px; 
+    border-radius: 5px; 
+    font-size: 11px; 
+    font-family: 'Cairo'; 
+    cursor: pointer; 
+    display: inline-flex; /* يمنع الزر من أخذ السطر كاملاً */
+    align-items: center; 
+    gap: 4px; 
+    transition: 0.2s; 
+    font-weight: bold; 
+    width: auto; /* يجبر الزر على أخذ حجم نصه فقط */
+    flex: none; /* يلغي أي تمدد موروث من الأزرار الكبيرة */
+}
+.btn-pay-fast:hover { background: #218838; transform: scale(1.05); }
+        .btn-pay-fast:hover { background: #218838; transform: scale(1.05); }
+
         .card-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; border-top: 1px solid #f1f1f1; padding-top: 10px; }
-        .action-icon { cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 4px; border: 1px solid #ddd; background: #fff; }
+        .action-icon { cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 4px; border: 1px solid #ddd; background: #fff; font-family: 'Cairo'; }
         .action-edit { color: #ffc107; } .action-edit:hover { background: #fff9e6; }
         .action-delete { color: #dc3545; } .action-delete:hover { background: #fff5f5; }
 
@@ -80,7 +104,6 @@
 </div>
 
 <div class="container">
-    <!-- الجانب الأيمن: إضافة / تعديل فوج -->
     <div class="form-box">
         <span class="section-title" id="form-mode-title"><i class="fas fa-plus-circle"></i> إنشاء فوج جديد</span>
         
@@ -119,7 +142,6 @@
         <input type="number" id="maxAge" placeholder="🧓 أقصى سن" value="">
         <input type="text" id="note" placeholder="📝 ملاحظات إضافية...">
 
-        <!-- قسم إضافة الطلاب الذكي للفوج التفاعلي -->
         <div class="student-search-area">
             <span style="font-size: 12px; font-weight: bold; color: #555; display:block; margin-bottom: 5px;">🎯 تسكين الطلاب داخل الفوج:</span>
             <div class="search-wrapper">
@@ -127,8 +149,7 @@
                 <div class="search-results" id="student-results"></div>
             </div>
             <div class="added-students-list" id="current-group-students">
-                <!-- الطلاب المضافين تظهر هنا عل شكل تاقات -->
-            </div>
+                </div>
         </div>
 
         <div class="buttons-group">
@@ -137,7 +158,6 @@
         </div>
     </div>
 
-    <!-- الجانب الأيسر: استعراض المجموعات الحالية وجدولة البحث والفلترة -->
     <div class="display-box">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <span class="section-title" style="border:none; margin:0;"><i class="fas fa-th-large"></i> الأفواج الحالية بالمنظومة</span>
@@ -145,7 +165,6 @@
         </div>
         
         <div class="groups-grid" id="groups-container">
-            <!-- جاري جلب المجموعات بواسطة JavaScript -->
             <div style="text-align: center; grid-column: 1/-1; color: #888; padding: 40px;">
                 <i class="fas fa-spinner fa-spin fa-2x"></i> <br><br> جاري تحميل بيانات الأفواج والطلاب من Google Sheets...
             </div>
@@ -162,8 +181,10 @@
     let allStudents = [];
     let selectedStudentIds = []; // لتخزين معرفات الطلاب في الفوج الحالي أثناء الإنشاء أو التعديل
 
+    // أضف هذا السطر داخل دالة window.onload لتبدأ مع فتح الصفحة
     window.onload = async () => {
-        await loadInitialData();
+        await loadTeachers(); // جلب الأساتذة أولاً
+        await loadInitialData(); // ثم جلب المجموعات والطلاب
     };
 
     // جلب المجموعات والطلاب معاً لربط البيانات بشكل متناسق وسريع
@@ -206,23 +227,53 @@
             if(g.type === "ذكور") badgeClass = "badge-male";
             if(g.type === "بنات") badgeClass = "badge-female";
 
+            // استخراج وعرض الطلاب المسجلين فعلياً في هذا الفوج مع زر الدفع السريع المباشر
+            let studentsHtml = "";
+            if (g.studentIds && g.studentIds.toString().trim() !== "") {
+                const idsArray = g.studentIds.toString().split(",");
+                idsArray.forEach(id => {
+                    const studentObj = allStudents.find(s => s.id.toString() === id.toString().trim());
+                    if (studentObj) {
+                        studentsHtml += `
+                            <div class="card-student-row">
+                                <span>👤 ${studentObj.name}</span>
+                                <button class="btn-pay-fast" onclick="goToPayments('${studentObj.id}', '${encodeURIComponent(studentObj.name)}')">
+                                    <i class="fas fa-credit-card"></i> 💳 دفع
+                                </button>
+                            </div>
+                        `;
+                    }
+                });
+            }
+
+            if (studentsHtml === "") {
+                studentsHtml = `<div style="color:#aaa; font-size:11px; text-align:center; padding:5px;">لا يوجد تلاميذ مسجلين حالياً في هذا الفوج</div>`;
+            }
+
             const card = document.createElement("div");
             card.className = "group-card";
             card.innerHTML = `
-                <div class="group-card-header">
-                    <span class="group-title">${g.groupName || 'فوج غير مسمى'}</span>
-                    <span class="group-badge ${badgeClass}">${g.type || 'مختلط'}</span>
+                <div>
+                    <div class="group-card-header">
+                        <span class="group-title">${g.groupName || 'فوج غير مسمى'}</span>
+                        <span class="group-badge ${badgeClass}">${g.type || 'مختلط'}</span>
+                    </div>
+                    <div class="group-details"><i class="fas fa-book-open"></i> <b>المادة:</b> ${g.subject || 'لم تحدد'}</div>
+                    <div class="group-details"><i class="fas fa-chalkboard-teacher"></i> <b>الأستاذ المسؤول عن الفوج:</b> ${g.teacher || 'لم يحدد بعد'}</div>
+                    <div class="group-details"><i class="fas fa-users"></i> <b>العدد الحالي:</b> ${currentCount} / ${maxStudents} طالب</div>
+                    <div class="group-details"><i class="fas fa-calendar-alt"></i> <b>الأعمار المقبولة:</b> من ${g.minAge || 0} إلى ${g.maxAge || 100} سنة</div>
+                    ${g.note ? `<div class="group-details"><i class="fas fa-sticky-note"></i> <b>ملاحظة:</b> ${g.note}</div>` : ''}
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${fillPercentage}%; background-color: ${fillPercentage >= 100 ? '#dc3545' : '#28a745'}"></div>
+                    </div>
+                    <span class="progress-text">نسبة الامتلاء: ${Math.round(fillPercentage)}%</span>
+                    
+                    <div class="card-students-inside">
+                        <div style="font-size:11px; font-weight:bold; color:#007bff; margin-bottom:5px;"><i class="fas fa-user-graduates"></i> تلاميذ الفوج والدفع السريع:</div>
+                        ${studentsHtml}
+                    </div>
                 </div>
-                <div class="group-details"><i class="fas fa-book-open"></i> <b>المادة:</b> ${g.subject || 'لم تحدد'}</div>
-                <div class="group-details"><i class="fas fa-chalkboard-teacher"></i> <b>الأستاذ المسؤول عن الفوج:</b> ${g.teacher || 'لم يحدد بعد'}</div>
-                <div class="group-details"><i class="fas fa-users"></i> <b>العدد الحالي:</b> ${currentCount} / ${maxStudents} طالب</div>
-                <div class="group-details"><i class="fas fa-calendar-alt"></i> <b>الأعمار المقبولة:</b> من ${g.minAge || 0} إلى ${g.maxAge || 100} سنة</div>
-                ${g.note ? `<div class="group-details"><i class="fas fa-sticky-note"></i> <b>ملاحظة:</b> ${g.note}</div>` : ''}
-                
-                <div class="progress-container">
-                    <div class="progress-bar" style="width: ${fillPercentage}%; background-color: ${fillPercentage >= 100 ? '#dc3545' : '#28a745'}"></div>
-                </div>
-                <span class="progress-text">نسبة الامتلاء: ${Math.round(fillPercentage)}%</span>
 
                 <div class="card-actions">
                     <button class="action-icon action-edit" onclick="editGroupMode('${g.id}')"><i class="fas fa-edit"></i> تعديل</button>
@@ -231,6 +282,11 @@
             `;
             container.appendChild(card);
         });
+    }
+
+    // الدالة الذكية للتوجه المباشر لصفحة payments.html وتمرير بيانات الطالب
+    function goToPayments(studentId, studentName) {
+        window.location.href = `payments.html?studentId=${studentId}&studentName=${studentName}`;
     }
 
     // إعداد البحث الذكي التفاعلي عن الطلاب لإضافتهم للفوج الحالي
@@ -305,76 +361,69 @@
 
    
     // حفظ الفوج (إضافة أو تعديل) وإرساله للسحابة
-async function saveGroup() {
-    const id = document.getElementById("groupId").value;
-    const groupName = document.getElementById("groupName").value.trim();
-    const subject = document.getElementById("subject").value;
-    const type = document.getElementById("type").value;
-    const maxStudents = document.getElementById("maxStudents").value;
-    const minAge = document.getElementById("minAge").value;
-    const maxAge = document.getElementById("maxAge").value;
-    const note = document.getElementById("note").value;
-    
-    // 1. السطر الجديد المضاف لجلب اسم الأستاذ المختار
-    const teacher = document.getElementById("teacher").value; 
+    async function saveGroup() {
+        const id = document.getElementById("groupId").value;
+        const groupName = document.getElementById("groupName").value.trim();
+        const subject = document.getElementById("subject").value;
+        const type = document.getElementById("type").value;
+        const maxStudents = document.getElementById("maxStudents").value;
+        const minAge = document.getElementById("minAge").value;
+        const maxAge = document.getElementById("maxAge").value;
+        const note = document.getElementById("note").value;
+        const teacher = document.getElementById("teacher").value; 
 
-    const studentIdsStr = selectedStudentIds.join(","); 
-    const currentCountNum = selectedStudentIds.length;
+        const studentIdsStr = selectedStudentIds.join(","); 
+        const currentCountNum = selectedStudentIds.length;
 
-    if (!groupName || !subject || !teacher) {
-        showToast("⚠️ يرجى ملء اسم الفوج، المادة، واختيار الأستاذ", "#ffc107");
-        return;
-    }
-
-    const isEdit = id !== "";
-    
-    const payload = {
-        action: isEdit ? "editStudent" : "addStudent",
-        sheet: "Group",
-        id: isEdit ? id : null,
-        groupName: groupName,
-        subject: subject,
-        type: type,
-        maxStudents: Number(maxStudents),
-        minAge: Number(minAge),
-        maxAge: Number(maxAge),
-        currentCount: currentCountNum,
-        studentIds: studentIdsStr,
-        note: note,
-        
-        // 2. السطر الجديد المضاف لإرسال الأستاذ إلى عمود teacher في الشيت
-        teacher: teacher 
-    };
-
-    // بقية كود الدالة المعتاد للإرسال عبر الـ fetch (بدون أي تغيير) ...
-
-    const btn = document.getElementById("save-btn");
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ سحابياً...';
-
-    try {
-        const response = await fetch(sheetURL, {
-            method: "POST",
-            body: JSON.stringify(payload)
-        });
-        const res = await response.json();
-
-        if(res.success) {
-            showToast("✅ تم حفظ الفوج وتسكين الطلاب بنجاح!", "#28a745");
-            resetForm();
-            await loadInitialData(); 
-        } else {
-            // إذا استمر السكريبت في الرفض، ستخبرنا الرسالة هنا بالسبب الدقيق
-            showToast("❌ خطأ من السيرفر: " + (res.error || "خطأ في الإجراء"), "#dc3545");
+        if (!groupName || !subject || !teacher) {
+            showToast("⚠️ يرجى ملء اسم الفوج، المادة، واختيار الأستاذ", "#ffc107");
+            return;
         }
-    } catch(err) {
-        showToast("❌ خطأ في الاتصال بالشبكة", "#dc3545");
-        console.error(err);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save"></i> حفظ الفوج';
+
+        const isEdit = id !== "";
+        
+        const payload = {
+            action: isEdit ? "editStudent" : "addStudent",
+            sheet: "Group",
+            id: isEdit ? id : null,
+            groupName: groupName,
+            subject: subject,
+            type: type,
+            maxStudents: Number(maxStudents),
+            minAge: Number(minAge),
+            maxAge: Number(maxAge),
+            currentCount: currentCountNum,
+            studentIds: studentIdsStr,
+            note: note,
+            teacher: teacher 
+        };
+
+        const btn = document.getElementById("save-btn");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ سحابياً...';
+
+        try {
+            const response = await fetch(sheetURL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            const res = await response.json();
+
+            if(res.success) {
+                showToast("✅ تم حفظ الفوج وتسكين الطلاب بنجاح!", "#28a745");
+                resetForm();
+                await loadInitialData(); 
+            } else {
+                showToast("❌ خطأ من السيرفر: " + (res.error || "خطأ في الإجراء"), "#dc3545");
+            }
+        } catch(err) {
+            showToast("❌ خطأ في الاتصال بالشبكة", "#dc3545");
+            console.error(err);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> حفظ الفوج';
+        }
     }
-}
 
     // الدخول في وضع تعديل الفوج وضخ البيانات في الـ Form
     function editGroupMode(id) {
@@ -408,9 +457,8 @@ async function saveGroup() {
     async function deleteGroup(id) {
         if(!confirm("هل أنت متأكد تماماً من حذف هذا الفوج؟ (لن يتم حذف الطلاب، بل الفوج فقط)")) return;
 
-        // السكريبت الموحد يدعم الحذف السريع عبر إرسال نفس دالة الحذف أو التعديل بقيم فارغة أو مخصصة
         const payload = {
-            action: "deleteUser", // أو المسمى المعتمد لديك للحذف delete row
+            action: "deleteUser", 
             sheet: "Group",
             id: id
         };
@@ -460,39 +508,32 @@ async function saveGroup() {
         toast.style.display = 'block';
         setTimeout(() => { toast.style.display = 'none'; }, 3500);
     }
-// أضف هذا السطر داخل دالة window.onload لتبدأ مع فتح الصفحة
-window.onload = async () => {
-    await loadTeachers(); // جلب الأساتذة أولاً
-    await loadInitialData(); // ثم جلب المجموعات والطلاب
-};
 
-// دالة جلب الأساتذة من شيت الاساتذة وضخها في القائمة المنسدلة
-async function loadTeachers() {
-    const teacherSelect = document.getElementById("teacher");
-    try {
-        const response = await fetch(`${sheetURL}?action=get&sheet=teachers`);
-        const data = await response.json();
-        
-        teacherSelect.innerHTML = '<option value="">👨‍🏫 اختر الأستاذ المسؤول عن الفوج</option>';
+    // دالة جلب الأساتذة من شيت الاساتذة وضخها في القائمة المنسدلة
+    async function loadTeachers() {
+        const teacherSelect = document.getElementById("teacher");
+        try {
+            const response = await fetch(`${sheetURL}?action=get&sheet=teachers`);
+            const data = await response.json();
+            
+            teacherSelect.innerHTML = '<option value="">👨‍🏫 اختر الأستاذ المسؤول عن الفوج</option>';
 
-        if (Array.isArray(data)) {
-            data.forEach(t => {
-                if (t.name && t.name.trim() !== "") {
-                    const option = document.createElement("option");
-                    option.value = t.name;
-                    option.textContent = t.name;
-                    teacherSelect.appendChild(option);
-                }
-            });
+            if (Array.isArray(data)) {
+                data.forEach(t => {
+                    if (t.name && t.name.trim() !== "") {
+                        const option = document.createElement("option");
+                        option.value = t.name;
+                        option.textContent = t.name;
+                        option.teacherSelect = t.name;
+                        teacherSelect.appendChild(option);
+                    }
+                });
+            }
+        } catch (err) {
+            console.error("Teacher load error:", err);
+            teacherSelect.innerHTML = '<option value="">⚠️ خطأ في تحميل قائمة الأساتذة</option>';
         }
-    } catch (err) {
-        console.error("Teacher load error:", err);
-        teacherSelect.innerHTML = '<option value="">⚠️ خطأ في تحميل قائمة الأساتذة</option>';
     }
-}
-
-
-
 </script>
 
 </body>
