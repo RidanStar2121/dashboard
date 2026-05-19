@@ -3,337 +3,432 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الشهادات الاحترافي </title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <title>نظام الشهادات الاحترافي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Amiri:ital,wght@0,400;0,700;1,700&family=Reem+Kufi:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary-dark: #2c3e50;
-            --accent-gold: #c5a059;
-            --soft-white: #f9f9f9;
-            --success-green: #27ae60;
+            --royal-navy: #0f172a;
+            --luxury-gold: #c5a059;
+            --gold-light: #f4ebd9;
+            --dark-charcoal: #1e293b;
+            --pure-white: #ffffff;
+            --border-color: #cbd5e1;
         }
 
         body {
             font-family: 'Cairo', sans-serif;
             margin: 0;
-            background: #eef2f3;
-            color: #333;
+            padding: 0;
+            background: #f8fafc;
+            color: var(--dark-charcoal);
         }
 
-        /* الهيدر */
+        /* هيدر النظام الفخم */
         .header {
-            background: var(--primary-dark);
+            background: linear-gradient(135deg, var(--royal-navy), #1e293b);
             color: white;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-bottom: 3px solid var(--luxury-gold);
         }
 
+        .header h2 { margin: 0; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        
         .nav-btn {
-            float: left;
-            background: var(--accent-gold);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
-            padding: 8px 20px;
-            border-radius: 5px;
+            padding: 10px 22px;
+            border-radius: 10px;
             text-decoration: none;
             font-size: 14px;
-            transition: 0.3s;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
+        .nav-btn:hover { background: var(--luxury-gold); color: var(--royal-navy); border-color: var(--luxury-gold); }
 
-        /* الحاوية الرئيسية */
+        /* الحاوية الرئيسية المتجاوبة */
         .main-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 40px;
             padding: 40px;
-            justify-content: center;
+            max-width: 1700px;
+            margin: 0 auto;
+            box-sizing: border-box;
         }
+        @media (max-width: 1200px) { .main-container { grid-template-columns: 1fr; } }
 
-        /* لوحة التحكم */
+        /* لوحة التحكم الجانبية */
         .controls-panel {
-            flex: 1;
-            min-width: 350px;
-            max-width: 400px;
             background: white;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(15,23,42,0.04);
+            border: 1px solid var(--border-color);
+            height: fit-content;
         }
 
-        .search-box {
-            position: relative;
-            margin-bottom: 25px;
+        .panel-section-title {
+            font-size: 16px; font-weight: 800; color: var(--royal-navy); margin-bottom: 20px;
+            border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;
         }
+
+        .search-box { position: relative; margin-bottom: 25px; }
+        
+        label { font-size: 13px; font-weight: 700; color: #475569; display: block; margin-top: 15px; }
 
         input, select {
             width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            border: 2px solid #eee;
-            border-radius: 10px;
-            font-family: 'Cairo';
-            box-sizing: border-box;
-            transition: 0.3s;
-        }
-
-        input:focus { border-color: var(--accent-gold); outline: none; }
-
-        .search-results {
-            position: absolute;
-            width: 100%;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            z-index: 100;
-            max-height: 250px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .search-item {
-            padding: 12px;
-            border-bottom: 1px solid #f1f1f1;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .search-item:hover { background: #fff9ed; color: var(--accent-gold); }
-
-        .btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-        .btn {
             padding: 14px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 16px;
-            transition: 0.3s;
+            margin-top: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-family: 'Cairo';
+            font-size: 14px;
+            box-sizing: border-box;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
         }
-        .btn-print { background: var(--primary-dark); color: white; }
-        .btn-download { background: var(--success-green); color: white; }
-        .btn:hover { transform: scale(1.02); filter: brightness(1.1); }
+        input:focus, select:focus { border-color: var(--luxury-gold); outline: none; background: white; box-shadow: 0 0 0 4px rgba(197,160,89,0.15); }
 
-        /* --- تصميم الشهادة الملكي --- */
-        .certificate-container {
-            flex: 2;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #d1d1d1;
-            padding: 50px;
-            border-radius: 20px;
-            min-width: 850px;
+        /* نتائج البحث الذكية */
+        .search-results {
+            position: absolute; width: 100%; background: white; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; max-height: 220px;
+            overflow-y: auto; display: none; border: 1px solid var(--border-color); margin-top: 5px;
+        }
+        .search-item { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .search-item:hover { background: var(--gold-light); color: var(--royal-navy); font-weight: bold; }
+
+        .btn-group { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 25px; }
+        .btn {
+            padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; transition: all 0.2s ease; font-family: 'Cairo';
+        }
+        .btn-print { background: var(--royal-navy); color: white; }
+        .btn-download { background: #16a34a; color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); filter: brightness(1.1); }
+
+        /* --- منطقة معاينة وتصميم الشهادة المتزن لـ A4 --- */
+        .certificate-viewport {
+            display: flex; justify-content: center; align-items: flex-start; overflow-x: auto; padding: 10px;
         }
 
+        /* قياسات ورق A4 لاندسكيب حقيقي وثابت برمجياً لمنع الاختفاء والتشوه */
         #certificate {
-            width: 800px;
-            height: 570px;
+            width: 1123px;
+            height: 794px;
+            min-width: 1123px;
+            min-height: 794px;
             background: white;
             position: relative;
             box-sizing: border-box;
-            padding: 30px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+            padding: 40px;
             background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+            background-color: #fdfbf7;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        /* الإطار الذهبي الخارجي */
-        #certificate::before {
-            content: "";
-            position: absolute;
-            top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border: 5px solid var(--accent-gold);
-        }
-
-        .inner-border {
-            border: 2px solid var(--accent-gold);
+        /* الإطار الخارجي والداخلي الفخم */
+        .outer-gold-border {
+            border: 4px dashed var(--luxury-gold);
             height: 100%;
             width: 100%;
-            padding: 40px;
             box-sizing: border-box;
-            position: relative;
-            text-align: center;
-        }
-
-        /* زخارف الزوايا */
-        .corner {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border: 15px solid var(--accent-gold);
-            z-index: 1;
-        }
-        .top-left { top: -5px; left: -5px; border-right: none; border-bottom: none; }
-        .top-right { top: -5px; right: -5px; border-left: none; border-bottom: none; }
-        .bottom-left { bottom: -5px; left: -5px; border-right: none; border-top: none; }
-        .bottom-right { bottom: -5px; right: -5px; border-left: none; border-top: none; }
-
-        .cert-header h1 {
-            font-family: 'Amiri', serif;
-            font-size: 50px;
-            margin: 0;
-            color: #222;
-        }
-
-        .cert-header h3 {
-            font-size: 18px;
-            letter-spacing: 4px;
-            color: var(--accent-gold);
-            margin-bottom: 30px;
-        }
-
-        .cert-body p { font-size: 20px; margin: 10px 0; color: #555; }
-
-        .student-name {
-            font-family: 'Amiri', serif;
-            font-size: 45px;
-            color: var(--primary-dark);
-            margin: 15px 0;
-            display: inline-block;
-            border-bottom: 3px double var(--accent-gold);
-            min-width: 300px;
-        }
-
-        .course-name { color: #000; font-weight: bold; font-size: 24px; }
-
-        .cert-footer {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .qr-box {
-            text-align: center;
-            background: white;
             padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .signature p {
-            border-top: 2px solid #333;
-            width: 150px;
-            padding-top: 5px;
-            font-weight: bold;
+        .inner-luxury-border {
+            border: 2px solid var(--luxury-gold);
+            height: 100%;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 40px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.4);
         }
 
+        /* زخارف الأركان الملكية المتطورة */
+        .corner-decoration {
+            position: absolute; width: 60px; height: 60px;
+            border: 8px solid var(--luxury-gold); z-index: 2;
+        }
+        .c-tl { top: -4px; left: -4px; border-right: none; border-bottom: none; }
+        .c-tr { top: -4px; right: -4px; border-left: none; border-bottom: none; }
+        .c-bl { bottom: -4px; left: -4px; border-right: none; border-top: none; }
+        .c-br { bottom: -4px; right: -4px; border-left: none; border-top: none; }
+
+        /* محتويات الشهادة - معالجة التوازن المرن لمنع الاختفاء */
+        .cert-header-block { text-align: center; width: 100%; }
+        .cert-header-block h1 {
+            font-family: 'Reem Kufi', serif; font-size: 52px; margin: 0; color: var(--royal-navy);
+            letter-spacing: 2px; font-weight: 700;
+        }
+        .cert-header-block .sub-title {
+            font-size: 15px; font-weight: 700; letter-spacing: 6px; color: var(--luxury-gold);
+            margin: 5px 0 0 0; font-family: 'Cairo';
+        }
+
+        /* خط زخرفي فاصل متزن */
+        .divider-line {
+            width: 250px; height: 2px; background: linear-gradient(to right, transparent, var(--luxury-gold), transparent); margin: 20px auto;
+        }
+
+        .cert-body-block {
+            text-align: center; width: 100%; flex-grow: 1; display: flex;
+            flex-direction: column; justify-content: center; gap: 12px;
+        }
+        .cert-body-block p { font-size: 22px; margin: 0; color: #475569; font-weight: 600; }
+
+        /* الاسم الكلي للـطالب - حماية تامة ضد التمدد واختفاء الحواف */
+        .student-name-container {
+            padding: 5px 20px; margin: 10px auto; max-width: 90%; min-width: 500px; text-align: center;
+        }
+        .student-name {
+            font-family: 'Amiri', serif; font-size: 48px; font-weight: 700; color: var(--royal-navy);
+            display: inline-block; border-bottom: 3px double var(--luxury-gold);
+            padding-bottom: 5px; word-wrap: break-word; line-height: 1.3;
+        }
+
+        /* اسم الدورة التدريبية */
+        .course-name-display {
+            color: #000000; font-weight: 800; font-size: 28px; margin: 10px 0;
+            font-family: 'Cairo'; text-shadow: 0px 1px 1px rgba(0,0,0,0.05);
+        }
+
+        .grade-display {
+            font-size: 20px; font-weight: 700; color: var(--luxury-gold); margin: 0;
+        }
+        
+        .date-display { font-size: 15px; color: #64748b; font-weight: bold; margin-top: 5px; }
+
+        /* تذييل الشهادة الموزع بدقة هندسية ثابتة */
+        .cert-footer-block {
+    width: 100%; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-end; 
+    margin-top: 5px;
+    padding-bottom: 45px; /* تم رفع المسافة هنا لدفع التوقيع بالكامل للأعلى */
+}
+
+        .footer-widget { width: 220px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+
+        .qr-widget { text-align: right; align-items: flex-start; }
+        .qr-border { background: white; padding: 6px; border: 1px solid var(--luxury-gold); border-radius: 8px; display: inline-block; }
+        .cert-id-text { font-size: 11px; color: #64748b; font-weight: bold; margin-top: 5px; font-family: monospace; }
+
+        .stamp-widget img { opacity: 0.85; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.05)); }
+
+        /* رفع عناصر التوقيع بشكل هندسي متناسق ومنع النزول للهامش */
+        .signature-widget { 
+    text-align: center; 
+    align-items: center; 
+    margin-bottom: 35px; /* زيادة الهامش السفلي الخاص بالتوقيع لرفعه عن الحدود المنقطة */
+}
+        .signature-name { font-family: 'Amiri', serif; font-size: 24px; font-weight: bold; color: var(--royal-navy); margin-bottom: 4px; }
+        .signature-line { border-top: 2px solid var(--luxury-gold); width: 160px; padding-top: 6px; font-size: 13px; font-weight: 700; color: #475569; }
+
+        /* --- قواعد محرك هندسة الطباعة الفورية لورق A4 --- */
         @media print {
-            body * { visibility: hidden; }
-            #certificate, #certificate * { visibility: visible; }
-            #certificate { position: absolute; top: 0; left: 0; box-shadow: none; border: none; }
+            body { background: white; margin: 0; padding: 0; }
+            .header, .controls-panel { display: none !important; }
+            .main-container { padding: 0 !important; margin: 0 !important; display: block !important; }
+            .certificate-viewport { overflow: visible !important; padding: 0 !important; }
+            #certificate {
+                position: absolute; left: 0; top: 0; box-shadow: none !important; border: none !important;
+                width: 1123px; height: 794px; page-break-after: avoid; page-break-inside: avoid;
+                -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            }
+            @page { size: A4 landscape; margin: 0; }
         }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <a href="home.html" class="nav-btn"><i class="fas fa-home"></i> العودة</a>
-    <h2><i class="fas fa-award"></i> نظام إدارة وتوليد الشهادات الاحترافية</h2>
+    <h2><i class="fas fa-crown" style="color: var(--luxury-gold);"></i> <span id="navSchoolName">أكاديمية وضاح للعلوم</span> - نظام الشهادات الذكي</h2>
+    <a href="home.html" class="nav-btn"><i class="fas fa-arrow-right"></i> العودة للوحة التحكم</a>
 </div>
 
 <div class="main-container">
-    <!-- التحكم -->
+    
     <div class="controls-panel">
+        <div class="panel-section-title">
+            <i class="fas fa-sliders-h"></i> محرك تعبئة البيانات الفوري
+        </div>
+        
         <div class="search-box">
-            <label><i class="fas fa-search"></i> البحث عن طالب في السجل:</label>
-            <input type="text" id="searchInput" placeholder="ابحث بالاسم أو الرقم..." oninput="searchStudent()">
+            <label><i class="fas fa-search"></i> ابحث عن الطالب بقاعدة البيانات الحية:</label>
+            <input type="text" id="searchInput" placeholder="اكتب اسم الطالب للبحث السريع..." oninput="searchStudent()">
             <div id="results" class="search-results"></div>
         </div>
 
         <div class="edit-form">
-            <label>الاسم الكامل:</label>
-            <input type="text" id="editName" placeholder="سيظهر هنا تلقائياً" oninput="updateCert()">
-            
-            <label>المادة / الدورة:</label>
-            <input type="text" id="editSubject" placeholder="سيظهر هنا تلقائياً" oninput="updateCert()">
+            <label style="color: var(--luxury-gold); font-weight: 800;"><i class="fas fa-school"></i> اسم المدرسة / المؤسسة التدريبية:</label>
+            <input type="text" id="editSchool" value="أكاديمية وضاح للعلوم" oninput="updateCertData()">
 
-            <label>التقدير:</label>
-            <select id="editGrade" onchange="updateCert()">
+            <label style="color: var(--luxury-gold); font-weight: 800;"><i class="fas fa-pen-nib"></i> اسم صاحب التوقيع (المدير العام):</label>
+            <input type="text" id="editSignature" value="نذير وضاح" oninput="updateCertData()">
+            
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0 10px 0;">
+
+            <label>اسم الطالب الكامل بالشهادة:</label>
+            <input type="text" id="editName" placeholder="سيتم جلبه تلقائياً أو اكتبه هنا" oninput="updateCertData()">
+            
+            <label>اسم المادة التدريبية / التخصص:</label>
+<input type="text" id="editSubject" list="coursesList" placeholder="اختر دورة أو اكتب اسماً مخصصاً..." oninput="updateCertData()">
+<datalist id="coursesList">
+    <option value="Scratch 🎮"></option>
+    <option value="روبوتيك 🤖"></option>
+    <option value="Python 🐍"></option>
+    <option value="ذكاء اصطناعي 🧠"></option>
+    
+    <option value="رياضيات إبتدائي"></option>
+    <option value="فرنسية إبتدائي"></option>
+    <option value="إنجليزية إبتدائي"></option>
+    
+    <option value="عربية متوسط"></option>
+    <option value="فرنسية متوسط"></option>
+    <option value="إنجليزية متوسط"></option>
+    <option value="علوم متوسط"></option>
+    <option value="فيزياء متوسط"></option>
+    <option value="رياضيات متوسط"></option>
+    
+    <option value="عربية ثانوي"></option>
+    <option value="فرنسية ثانوي"></option>
+    <option value="إنجليزية ثانوي"></option>
+    <option value="علوم ثانوي"></option>
+    <option value="فيزياء ثانوي"></option>
+    <option value="رياضيات ثانوي"></option>
+</datalist>
+
+            <label>درجة التقدير والنجاح:</label>
+            <select id="editGrade" onchange="updateCertData()">
                 <option value="بدرجة إمتياز">إمتياز</option>
                 <option value="بتقدير جيد جداً">جيد جداً</option>
                 <option value="بتقدير جيد">جيد</option>
-                <option value="بدرجة مشاركة">مشاركة</option>
+                <option value="بدرجة مشاركة وحضور">مشاركة وحضور</option>
             </select>
 
-            <label>تاريخ الإصدار:</label>
-            <input type="date" id="editDate" oninput="updateCert()">
+            <label>تاريخ إصدار وتوقيع الشهادة:</label>
+            <input type="date" id="editDate" oninput="updateCertData()">
         </div>
 
         <div class="btn-group">
             <button class="btn btn-print" onclick="window.print()">
-                <i class="fas fa-print"></i> طباعة كـ PDF
+                <i class="fas fa-print"></i> إصدار وطباعة كـ PDF (A4)
             </button>
-            <button class="btn btn-download" onclick="downloadImage()">
-                <i class="fas fa-image"></i> تصدير كصورة PNG
+            <button class="btn btn-download" onclick="exportCertificateAsPNG()">
+                <i class="fas fa-file-download"></i> حفظ وتصدير كصورة عالي الدقة PNG
             </button>
         </div>
     </div>
 
-    <!-- الشهادة -->
-    <div class="certificate-container">
+    <div class="certificate-viewport">
         <div id="certificate">
-            <div class="corner top-left"></div>
-            <div class="corner top-right"></div>
-            <div class="corner bottom-left"></div>
-            <div class="corner bottom-right"></div>
-            
-            <div class="inner-border">
-                <div class="cert-header">
-                    <h1>شهادة نجاح وتفوق</h1>
-                    <h3>SUCCESS CERTIFICATE</h3>
-                </div>
-
-                <div class="cert-body">
-                    <p>تشهد أكاديمية وضاح للعلوم بأن الطالب(ة):</p>
-                    <div class="student-name" id="certName">فـلان بـن فـلان</div>
-                    <p>قد أكمل بنجاح متطلبات التدريب في:</p>
-                    <div class="course-name" id="certSubject">اسم المادة أو الدورة</div>
-                    <p id="certGradeDisp">بدرجة إمتياز</p>
-                    <p>تاريخ الإصدار: <span id="certDateDisp">2026/05/11</span></p>
-                </div>
-
-                <div class="cert-footer">
-                    <div class="qr-box">
-                        <img id="qrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=NadirOuaddah" width="90">
-                        <div style="font-size: 9px; color: #777; margin-top: 5px;">ID: <span id="certId">0000</span></div>
+            <div class="outer-gold-border">
+                
+                <div class="corner-decoration c-tl"></div>
+                <div class="corner-decoration c-tr"></div>
+                <div class="corner-decoration c-bl"></div>
+                <div class="corner-decoration c-br"></div>
+                
+                <div class="inner-luxury-border">
+                    
+                    <div class="cert-header-block">
+                        <h1>شهادة نجاح وتفوق</h1>
+                        <div class="sub-title">CERTIFICATE OF ACHIEVEMENT</div>
+                        <div class="divider-line"></div>
                     </div>
 
-                    <div class="stamp">
-                        <img src="https://i.imgur.com/83p5H1B.png" width="110" style="opacity: 0.7; filter: sepia(1);">
+                    <div class="cert-body-block">
+                        <p>تشهد <span id="certSchoolDisplay" style="color: var(--royal-navy); font-weight: 700;">أكاديمية وضاح للعلوم</span> للتدريب والتعليم بأن الطالب(ة):</p>
+                        <div class="student-name-container">
+                            <div class="student-name" id="certName">نذير وضاح</div>
+                        </div>
+                        <p>قد اجتاز بنجاح واقتدار كافة متطلبات الدورة التدريبية في:</p>
+                        <div class="course-name-display" id="certSubject">تطوير المواقع والأنظمة البرمجية الذكية</div>
+                        <div class="grade-display" id="certGradeDisp">بدرجة إمتياز</div>
+                        <div class="date-display">تحريراً في: <span id="certDateDisp">2026/05/19</span></div>
                     </div>
 
-                    <div class="signature">
-                        <div style="font-family: 'Amiri'; font-size: 20px;">نذير وضاح</div>
-                        <p>توقيع المدير العام</p>
+                    <div class="cert-footer-block">
+                        
+                        <div class="footer-widget qr-widget">
+                            <div class="qr-border">
+                                <img id="qrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=85x85&data=NadirOuaddah" width="85" height="85">
+                            </div>
+                            <div class="cert-id-text">Verification ID: <span id="certId">N-041</span></div>
+                        </div>
+
+                        <div class="footer-widget stamp-widget">
+                            <img src="https://i.imgur.com/83p5H1B.png" width="115" alt="Stamp" style="opacity: 0.9; filter: contrast(1.1) sepia(0.2);">
+                        </div>
+
+                        <div class="footer-widget signature-widget">
+                              
+                            <div class="signature-name" id="certSignatureDisplay">نذير وضاح</div>
+
+                           
+                            <div class="signature-line">توقيع المدير العام للـمؤسسة</div>
+                           
+                        </div>
+                        
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
+
 </div>
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
     let allStudents = [];
 
-    // جلب البيانات
     window.onload = async () => {
         const searchInput = document.getElementById('searchInput');
-        searchInput.placeholder = "جاري الاتصال بقاعدة البيانات...";
+        searchInput.placeholder = "⏳ جاري جلب ومزامنة سجلات الطلاب الحية...";
+        
+        if(localStorage.getItem('savedSchool')) {
+            document.getElementById('editSchool').value = localStorage.getItem('savedSchool');
+        }
+        if(localStorage.getItem('savedSignature')) {
+            document.getElementById('editSignature').value = localStorage.getItem('savedSignature');
+        }
+
+        document.getElementById('editDate').valueAsDate = new Date();
+        updateCertData();
+
         try {
             const response = await fetch(`${API_URL}?action=get&sheet=students`);
             allStudents = await response.json();
-            searchInput.placeholder = "ابحث عن اسم الطالب...";
+            searchInput.placeholder = "🔍 اكتب اسم الطالب أو الكود لبدء الإنشاء الفوري...";
         } catch (e) {
-            searchInput.placeholder = "فشل التحميل، تأكد من الـ API";
+            console.error(e);
+            searchInput.placeholder = "❌ فشل الاتصال بالـ Sheets، يرجى فحص الـ API.";
         }
     };
 
@@ -349,48 +444,89 @@
 
         if (filtered.length > 0) {
             resDiv.innerHTML = filtered.map(s => `
-                <div class="search-item" onclick="selectStudent('${s.id}', '${s.name}', '${s.subject || 'دورة تقنية'}')">
-                    <i class="fas fa-user-graduate"></i> ${s.name} <small>(${s.id})</small>
+                <div class="search-item" onclick="selectAndPopulateStudent('${s.id}', '${s.name}', '${s.subject || 'دورة تخصصية احترافية'}')">
+                    <i class="fas fa-graduation-cap" style="color:var(--luxury-gold);"></i> <b>${s.name}</b> <small style="color:#64748b;">(رقم السجل: ${s.id})</small>
                 </div>
             `).join('');
+            resDiv.style.display = 'block';
+        } else {
+            resDiv.innerHTML = `<div class="search-item" style="color:#dc3545; text-align:center;">⚠️ لا يوجد طالب متطابق بهذا الاسم</div>`;
             resDiv.style.display = 'block';
         }
     }
 
-    function selectStudent(id, name, subject) {
+    function selectAndPopulateStudent(id, name, subject) {
         document.getElementById('editName').value = name;
         document.getElementById('editSubject').value = subject;
         document.getElementById('editDate').valueAsDate = new Date();
         document.getElementById('certId').innerText = id;
-        updateCert();
+        
+        updateCertData();
+        
         document.getElementById('results').style.display = 'none';
         document.getElementById('searchInput').value = name;
     }
 
-    function updateCert() {
-        const name = document.getElementById('editName').value || "فـلان بـن فـلان";
-        const subject = document.getElementById('editSubject').value || "اسم المادة";
+    function updateCertData() {
+        const schoolName = document.getElementById('editSchool').value.trim() || "أكاديمية وضاح للعلوم";
+        const signatureName = document.getElementById('editSignature').value.trim() || "نذير وضاح";
+        const name = document.getElementById('editName').value.trim() || "فـلان بـن فـلان الـفـلاني";
+        const subject = document.getElementById('editSubject').value.trim() || "اسم الدورة التدريبية الشاملة";
         const grade = document.getElementById('editGrade').value;
-        const date = document.getElementById('editDate').value || new Date().toISOString().split('T')[0];
-        const id = document.getElementById('certId').innerText;
+        const dateInput = document.getElementById('editDate').value;
+        
+        localStorage.setItem('savedSchool', schoolName);
+        localStorage.setItem('savedSignature', signatureName);
 
+        let formattedDate = dateInput;
+        if (dateInput) {
+            const d = new Date(dateInput);
+            formattedDate = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+        } else {
+            const d = new Date();
+            formattedDate = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        document.getElementById('navSchoolName').innerText = schoolName;
+        document.getElementById('certSchoolDisplay').innerText = schoolName;
+        document.getElementById('certSignatureDisplay').innerText = signatureName;
         document.getElementById('certName').innerText = name;
         document.getElementById('certSubject').innerText = subject;
         document.getElementById('certGradeDisp').innerText = grade;
-        document.getElementById('certDateDisp').innerText = date;
+        document.getElementById('certDateDisp').innerText = formattedDate;
 
-        // تحديث الـ QR Code ليعرض رابط تحقق أو بيانات الطالب
-        const qrData = `Student:${name}|Subject:${subject}|Date:${date}|VerifyBy:NadirOuaddah`;
-        document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrData)}`;
+        const qrContent = `🎯 Verified Certificate\n---------------------\nIssued By: ${schoolName}\nHolder: ${name}\nCourse: ${subject}\nGrade: ${grade}\nDate: ${formattedDate}\nSigned by: ${signatureName}`;
+        document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=85x85&data=${encodeURIComponent(qrContent)}`;
     }
 
-    function downloadImage() {
-        const cert = document.getElementById('certificate');
-        html2canvas(cert, { scale: 3, useCORS: true }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `Certificate_${document.getElementById('editName').value}.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
+    function exportCertificateAsPNG() {
+        const targetCert = document.getElementById('certificate');
+        const studentName = document.getElementById('editName').value.trim() || "Student";
+        
+        const btnDownload = document.querySelector('.btn-download');
+        const originalText = btnDownload.innerHTML;
+        btnDownload.innerHTML = `<i class="fas fa-spinner fa-spin"></i> جاري معالجة الرندر الملكي بدقة 3x...`;
+        btnDownload.style.opacity = "0.7";
+
+        html2canvas(targetCert, {
+            scale: 3, 
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: null
+        }).then(canvas => {
+            const outputLink = document.createElement('a');
+            outputLink.download = `شهادة_تفوق_${studentName}.png`;
+            outputLink.href = canvas.toDataURL("image/png");
+            outputLink.click();
+            
+            btnDownload.innerHTML = originalText;
+            btnDownload.style.opacity = "1";
+        }).catch(err => {
+            console.error("Render error: ", err);
+            alert("❌ حدث خطأ غير متوقع أثناء معالجة رندر الصورة السحابي.");
+            btnDownload.innerHTML = originalText;
+            btnDownload.style.opacity = "1";
         });
     }
 </script>
