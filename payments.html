@@ -1,57 +1,251 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الخزينة الذكية - نذير وضاح</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; margin: 0; background: #f0f2f5; direction: rtl; }
-        .header { background: #1a73e8; color: white; padding: 15px; text-align: center; position: relative; }
-        .nav-btn { position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; }
-        
-        .container { padding: 20px; max-width: 1300px; margin: auto; display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
-        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } }
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --success-bg: #d1fae5;
+            --warning: #f59e0b;
+            --warning-bg: #fef3c7;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+        }
 
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        h3 { margin-top: 0; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; font-size: 17px; }
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            margin: 0; 
+            background: var(--bg-main); 
+            color: var(--text-main);
+            direction: rtl; 
+        }
 
-        .search-area { background: #e8f0fe; padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
-        .search-input { width: 100%; padding: 10px; border: 2px solid #1a73e8; border-radius: 8px; box-sizing: border-box; font-family: 'Cairo'; }
+        /* الهيدر المحترف */
+        .header { 
+            background: #1e293b; 
+            color: white; 
+            padding: 18px 24px; 
+            text-align: center; 
+            font-size: 20px;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: relative; 
+        }
         
-        .form-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #555; }
-        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; box-sizing: border-box; }
-        
-        .balance-card { background: #fff3e0; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 5px solid #ff9800; font-size: 13px; line-height: 1.6; }
+        .nav-btn { 
+            position: absolute; 
+            left: 20px; 
+            top: 50%; 
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.1); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            color: white; 
+            font-family: 'Cairo';
+            font-weight: 600;
+            cursor: pointer; 
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
 
-        .btn-pay { background: #28a745; color: white; width: 100%; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        .btn-pay:hover { background: #218838; }
+        /* الحاوية وتوزيع العناصر */
+        .container { 
+            padding: 30px; 
+            max-width: 1400px; 
+            margin: auto; 
+            display: grid; 
+            grid-template-columns: 420px 1fr; 
+            gap: 30px; 
+        }
+        @media (max-width: 1024px) { .container { grid-template-columns: 1fr; padding: 15px; } }
+
+        /* تصميم الكروت */
+        .card { 
+            background: var(--card-bg); 
+            padding: 24px; 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); 
+        }
+        
+        h3 { 
+            margin-top: 0; 
+            color: var(--text-main); 
+            border-bottom: 2px solid var(--border-color); 
+            padding-bottom: 12px; 
+            font-size: 18px; 
+            font-weight: 700;
+        }
+
+        /* منطقة البحث الذكي */
+        .search-area { 
+            background: #f1f5f9; 
+            padding: 16px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            position: relative; 
+            border: 1px solid var(--border-color);
+        }
+        
+        .search-input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #cbd5e1; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-family: 'Cairo'; 
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .search-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 211, 0.15);
+        }
+        
+        /* مجموعات النماذج الحقول */
+        .form-group { margin-bottom: 16px; }
+        label { 
+            display: block; 
+            margin-bottom: 6px; 
+            font-weight: 600; 
+            font-size: 13px; 
+            color: var(--text-main); 
+        }
+        
+        input, select { 
+            width: 100%; 
+            padding: 11px 14px; 
+            border-radius: 8px; 
+            border: 1px solid #cbd5e1; 
+            font-family: 'Cairo'; 
+            font-size: 14px;
+            color: var(--text-main);
+            box-sizing: border-box; 
+            transition: all 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        /* كشف الحساب السريع */
+        .balance-card { 
+            background: #fffbeb; 
+            padding: 16px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            border-right: 5px solid var(--warning); 
+            font-size: 14px; 
+            line-height: 1.6; 
+            color: #78350f;
+        }
+
+        /* زر التسجيل الكبير */
+        .btn-pay { 
+            background: var(--success); 
+            color: white; 
+            width: 100%; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            font-size: 16px; 
+            transition: all 0.2s; 
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+        }
+        .btn-pay:hover { 
+            background: #059669; 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+        }
 
         .full-width { grid-column: 1 / -1; }
-        .tabs { display: flex; gap: 5px; background: #eee; padding: 5px; border-radius: 10px; }
-        .tab { padding: 8px 20px; border-radius: 8px; cursor: pointer; border: none; font-family: 'Cairo'; font-weight: bold; }
-        .tab.active { background: #1a73e8; color: white; }
-
-        .table-container { background: white; border-radius: 10px; overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th, td { padding: 12px 15px; text-align: right; border-bottom: 1px solid #eee; font-size: 13px; }
-        thead { background: #f8f9fa; }
-
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-        .paid { background: #d4edda; color: #155724; }
-        .partial { background: #fff3cd; color: #856404; }
-        .debt { background: #f8d7da; color: #721c24; }
         
-        #suggestions { position: absolute; z-index: 100; background: white; width: calc(100% - 30px); border: 1px solid #ddd; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; max-height: 200px; overflow-y: auto; }
-        .s-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-        .s-item:hover { background: #f0f7ff; }
+        /* التبويبات الاحترافية */
+        .tabs { 
+            display: flex; 
+            gap: 6px; 
+            background: #e2e8f0; 
+            padding: 4px; 
+            border-radius: 8px; 
+        }
+        
+        .tab { 
+            padding: 8px 20px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            border: none; 
+            font-family: 'Cairo'; 
+            font-weight: 700; 
+            font-size: 13px;
+            background: transparent;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .tab.active { 
+            background: var(--card-bg); 
+            color: var(--primary); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* الجداول الاحترافية */
+        .table-container { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color);
+            overflow-x: auto; 
+            margin-top: 20px; 
+        }
+        
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th, td { padding: 14px 18px; text-align: right; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        thead { background: #f1f5f9; color: var(--text-main); font-weight: 700; }
+        tbody tr:hover { background: #f8fafc; }
+
+        /* شارات الحالة الملونة */
+        .badge { padding: 5px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .paid { background: var(--success-bg); color: #065f46; }
+        .partial { background: var(--warning-bg); color: #92400e; }
+        .debt { background: var(--danger-bg); color: #991b1b; }
+        
+        /* قائمة الاقتراحات المنسدلة */
+        #suggestions { 
+            position: absolute; 
+            z-index: 100; 
+            background: white; 
+            width: calc(100% - 32px); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+            display: none; 
+            max-height: 220px; 
+            overflow-y: auto; 
+            margin-top: 4px;
+        }
+        
+        .s-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 14px; transition: background 0.15s; }
+        .s-item:hover { background: #f0fdf4; color: var(--success); font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    💰 إدارة السيولة والمديونية (الطلاب والأساتذة)
+    💰 إدارة السيولة والمديونية (الخزينة الذكية)
     <button class="nav-btn" onclick="location.href='home.html'">🏠 الرئيسية</button>
 </div>
 
@@ -62,23 +256,23 @@
         
         <div class="search-area">
             <label>🔍 ابحث عن الاسم (طالب/أستاذ):</label>
-            <input type="text" id="mainSearch" class="search-input" placeholder="اكتب للاختيار..." oninput="searchFinance()">
+            <input type="text" id="mainSearch" class="search-input" placeholder="اكتب للاختيار البشري المباشر..." oninput="searchFinance()">
             <div id="suggestions"></div>
         </div>
 
         <div id="financeForm">
             <div class="form-group">
-                <input type="text" id="targetName" readonly style="background:#f1f3f4; font-weight: bold; color: #1a73e8; border: none;" placeholder="الاسم سيظهر هنا">
+                <input type="text" id="targetName" readonly style="background:#f8fafc; font-weight: bold; color: var(--primary); border: 1px dashed #cbd5e1;" placeholder="الاسم سيظهر هنا تلقائياً">
                 <input type="hidden" id="targetId">
                 <input type="hidden" id="targetType">
             </div>
 
             <div class="balance-card" id="balanceInfo">
-                بانتظار اختيار الاسم لحساب الأرصدة...
+                بانتظار اختيار الاسم لحساب الأرصدة التلقائية...
             </div>
 
             <div class="form-group">
-                <label>نوع المعاملة:</label>
+                <label>نوع المعاملة المعتمد:</label>
                 <select id="payType">
                     <option value="شهري">دفع شهري (طالب)</option>
                     <option value="دورة">دفع دورة (طالب)</option>
@@ -99,30 +293,30 @@
             </div>
 
             <div class="form-group">
-                <label>المتبقي بذمة (المركز/الشخص):</label>
-                <input type="number" id="remaining" readonly style="background:#fff2f2; color: #d93025; font-weight: bold;">
+                <label>المتبقي بذمة الشخص (DA):</label>
+                <input type="number" id="remaining" readonly style="background:#fef2f2; color: var(--danger); font-weight: bold; border-color: #fca5a5;">
             </div>
 
             <div class="form-group">
-                <label>الفترة الزمنية (اختياري):</label>
+                <label>الفترة الزمنية المحددة:</label>
                 <input type="text" id="period" placeholder="مثال: شهر ماي 2026">
             </div>
 
             <div class="form-group">
-                <label>ملاحظات إضافية:</label>
-                <input type="text" id="note" placeholder="مثال: دفع عبر بريدي موب">
+                <label>ملاحظات إضافية وتوثيق الخزينة:</label>
+                <input type="text" id="note" placeholder="مثال: دفع عبر بريدي موب / نقداً">
             </div>
 
-            <button class="btn-pay" onclick="processPayment()">💾 تسجيل المعاملة وتحديث الرصيد</button>
+            <button class="btn-pay" onclick="processPayment()">💾 تسجيل المعاملة وتحديث الرصيد الحالي</button>
         </div>
     </div>
 
     <div class="card full-width">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <h3>📊 سجل ميزانية المؤسسة</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <h3>📊 سجل ميزانية وحسابات المؤسسة</h3>
             <div class="tabs">
-                <button class="tab active" onclick="switchTab('student_payments', this)">حسابات الطلاب</button>
-                <button class="tab" onclick="switchTab('teacher_payments', this)">حسابات الأساتذة</button>
+                <button class="tab active" onclick="switchTab('student_payments', this)">حسابات الطلاب الحاليين</button>
+                <button class="tab" onclick="switchTab('teacher_payments', this)">حسابات الأساتذة والمستحقات</button>
             </div>
         </div>
 
@@ -139,18 +333,40 @@
     const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
     let students = [], teachers = [], currentTab = 'student_payments';
 
+    // دالة التحميل الموحدة والنظيفة عند فتح الصفحة
     window.onload = async () => {
         await loadData();
         switchTab('student_payments', document.querySelector('.tab.active'));
+        
+        // هندسة استقبال البيانات وضخها تلقائياً بشكل سليم ومصحح بنسبة 100%
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramStudentId = urlParams.get('studentId');
+        const paramStudentName = urlParams.get('studentName');
+
+        if (paramStudentId && paramStudentName) {
+            const decodedName = decodeURIComponent(paramStudentName);
+            
+            // ضخ البيانات المباشرة داخل عناصر النموذج الصحيحة بالصفحة
+            document.getElementById('targetName').value = decodedName;
+            document.getElementById('targetId').value = paramStudentId;
+            document.getElementById('targetType').value = 'student';
+            document.getElementById('mainSearch').value = decodedName;
+            document.getElementById('payType').value = 'شهري';
+            
+            // استدعاء دالة الحساب فوراً من الشيت لعرض كشف حساب الطالب القادم
+            calculateDebt(decodedName, 'student');
+        }
     };
 
     async function loadData() {
-        const [sRes, tRes] = await Promise.all([
-            fetch(`${sheetURL}?action=get&sheet=students`),
-            fetch(`${sheetURL}?action=get&sheet=teachers`)
-        ]);
-        students = await sRes.json();
-        teachers = await tRes.json();
+        try {
+            const [sRes, tRes] = await Promise.all([
+                fetch(`${sheetURL}?action=get&sheet=students`),
+                fetch(`${sheetURL}?action=get&sheet=teachers`)
+            ]);
+            students = await sRes.json();
+            teachers = await tRes.json();
+        } catch(e) { console.error("خطأ في جلب بيانات الطلاب والأساتذة الأساسية من السيرفر", e); }
     }
 
     function searchFinance() {
@@ -182,24 +398,30 @@
     }
 
     async function calculateDebt(name, type) {
-        const sheetName = type === 'student' ? 'student_payments' : 'teacher_payments';
-        const res = await fetch(`${sheetURL}?action=get&sheet=${sheetName}`);
-        const history = await res.json();
-        const records = history.filter(r => (r.studentName === name || r.teacherName === name));
-        
-        let paid = 0, total = 0;
-        records.forEach(r => {
-            paid += parseFloat(r.amount || 0);
-            total = parseFloat(r.totalRequired || total);
-        });
+        document.getElementById('balanceInfo').innerHTML = `⏳ جاري مراجعة وتحليل السجلات المالية لـ ${name}...`;
+        try {
+            const sheetName = type === 'student' ? 'student_payments' : 'teacher_payments';
+            const res = await fetch(`${sheetURL}?action=get&sheet=${sheetName}`);
+            const history = await res.json();
+            const records = history.filter(r => (r.studentName === name || r.teacherName === name));
+            
+            let paid = 0, total = 0;
+            records.forEach(r => {
+                paid += parseFloat(r.amount || 0);
+                total = parseFloat(r.totalRequired || total);
+            });
 
-        const rem = total - paid;
-        document.getElementById('balanceInfo').innerHTML = `
-            📌 <b>كشف حساب:</b> ${name}<br>
-            💰 الإجمالي المستحق: ${total} DA | ✅ المدفوع سابقاً: ${paid} DA<br>
-            ⚠️ المتبقي حالياً: <b style="color:red">${rem} DA</b>
-        `;
-        document.getElementById('totalRequired').value = total;
+            const rem = total - paid;
+            document.getElementById('balanceInfo').innerHTML = `
+                📌 <b>كشف حساب معتمد:</b> ${name}<br>
+                💰 الإجمالي المستحق: <span style="font-weight:bold">${total} DA</span> | ✅ المسدد سابقاً: <span style="color:green;font-weight:bold">${paid} DA</span><br>
+                ⚠️ الباقي بذمته حالياً: <b style="color:var(--danger)">${rem} DA</b>
+            `;
+            document.getElementById('totalRequired').value = rem; // يقترح تلقائياً تصفية المبلغ المتبقي كإجمالي مطلوب
+            autoCalcRemaining();
+        } catch(e) {
+            document.getElementById('balanceInfo').innerHTML = "❌ تعذر حساب ديون هذا الحساب حالياً.";
+        }
     }
 
     function autoCalcRemaining() {
@@ -224,40 +446,45 @@
 
     async function loadPaymentsTable() {
         const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = "<tr><td colspan='8' style='text-align:center'>⏳ مزامنة البيانات المالية...</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='7' style='text-align:center; color: var(--text-muted); padding: 30px;'>⏳ جاري مزامنة وتأمين البيانات المالية مع الخادم...</td></tr>";
         
         try {
             const res = await fetch(`${sheetURL}?action=get&sheet=${currentTab}`);
             const data = await res.json();
             tbody.innerHTML = "";
             
+            if(data.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='7' style='text-align:center; padding:20px;'>لا توجد سجلات مالية مسجلة هنا بعد.</td></tr>";
+                return;
+            }
+
             data.reverse().forEach(p => {
                 const rem = parseFloat(p.remaining || 0);
                 const isStudent = currentTab === 'student_payments';
                 
                 let statusBadge = "";
                 if(isStudent){
-                    if(rem <= 0) statusBadge = '<span class="badge paid">مسدد</span>';
-                    else if(rem < p.totalRequired) statusBadge = '<span class="badge partial">جزئي</span>';
-                    else statusBadge = '<span class="badge debt">دين</span>';
+                    if(rem <= 0) statusBadge = '<span class="badge paid">مسدد بالكامل</span>';
+                    else if(rem < p.totalRequired) statusBadge = '<span class="badge partial">تسديد جزئي</span>';
+                    else statusBadge = '<span class="badge debt">دين معلق</span>';
                 }
 
                 tbody.innerHTML += `<tr>
                     <td>${p.date}</td>
                     <td><b>${isStudent ? p.studentName : p.teacherName}</b></td>
-                    <td>${p.amount} DA</td>
+                    <td style="color:var(--success); font-weight:600;">${p.amount} DA</td>
                     <td>${p.totalRequired} DA</td>
-                    <td style="color:${rem>0?'red':'green'}">${rem} DA</td>
+                    <td style="color:${rem > 0 ? 'var(--danger)' : 'var(--success)'}; font-weight:700;">${rem} DA</td>
                     <td>${isStudent ? p.type : p.period}</td>
-                    <td>${isStudent ? statusBadge : p.note}</td>
+                    <td>${isStudent ? statusBadge : (p.note || '-')}</td>
                 </tr>`;
             });
-        } catch(e) { tbody.innerHTML = "فشل التحميل"; }
+        } catch(e) { tbody.innerHTML = "<tr><td colspan='7' style='text-align:center; color:var(--danger);'>❌ فشل تحميل البيانات المزامنة، يرجى إعادة المحاولة.</td></tr>"; }
     }
 
     async function processPayment() {
         const type = document.getElementById('targetType').value;
-        if(!document.getElementById('targetId').value) return alert("اختر اسماً أولاً");
+        if(!document.getElementById('targetId').value) return alert("من فضلك اختر اسماً بشكل صحيح من قائمة الاقتراحات");
 
         const data = {
             action: "addStudent", 
@@ -267,7 +494,7 @@
             totalRequired: document.getElementById('totalRequired').value,
             remaining: document.getElementById('remaining').value,
             note: document.getElementById('note').value,
-            period: document.getElementById('period').value || new Date().getMonth() + 1
+            period: document.getElementById('period').value || (new Date().getMonth() + 1)
         };
 
         if(type === 'student') {
@@ -279,12 +506,14 @@
             data.type = document.getElementById('payType').value;
         }
 
-        const res = await fetch(sheetURL, { method: "POST", body: JSON.stringify(data) });
-        const result = await res.json();
-        if(result.success) {
-            alert("✅ تم تحديث السجل المالي");
-            location.reload();
-        }
+        try {
+            const res = await fetch(sheetURL, { method: "POST", body: JSON.stringify(data) });
+            const result = await res.json();
+            if(result.success) {
+                alert("✅ تم تحديث وتأمين السجل المالي بالخزينة الذكية بنجاح!");
+                location.reload();
+            }
+        } catch(e) { alert("حدث خطأ أثناء معالجة وحفظ البيانات، تحقق من اتصالك."); }
     }
 </script>
 </body>
