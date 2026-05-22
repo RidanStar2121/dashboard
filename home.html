@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الرئيسية</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>الرئيسية | نظام الإدارة الأكاديمي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -68,7 +68,7 @@
     box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3);
   }
 
-  /* PREMIUM HUB (WELCOME & WIDGETS) */
+  /* PREMIUM HUB */
   .premium-hub {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -132,7 +132,7 @@
   .badge-staff { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
   .badge-viewer { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
 
-  /* WIDGET CARD (CLOCK & WEATHER) */
+  /* WIDGET CARD */
   .widget-card {
     background: white;
     border-radius: 20px;
@@ -166,7 +166,7 @@
 
   /* CONTAINER & GRID */
   .container { padding: 0 30px 40px 30px; max-width: 1250px; margin: auto; }
-
+  
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -182,12 +182,17 @@
     cursor: pointer;
     transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(0, 0, 0, 0.03);
-    display: flex;
+    display: none; /* الإخفاء الافتراضي ويتم تفعيل المسموح عبر الجافاسكريبت */
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
     box-shadow: var(--card-shadow);
+  }
+
+  /* إجبار إظهار البطاقات النشطة */
+  .card.accessible {
+    display: flex !important;
   }
 
   .card::before {
@@ -208,15 +213,12 @@
 
   .card:hover::before { opacity: 1; }
 
-  /* ICON HOVER EFFECT */
   .icon {
     font-size: 42px;
     margin-bottom: 18px;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
-  .card:hover .icon {
-    transform: scale(1.15);
-  }
+  .card:hover .icon { transform: scale(1.15); }
 
   .title {
     font-size: 15px;
@@ -226,7 +228,7 @@
   }
   .card:hover .title { color: var(--primary); }
 
-  /* COLORS & SPECIAL STYLES */
+  /* COLORS */
   .blue { color: #2563eb; }
   .green { color: #16a34a; }
   .orange { color: #ea580c; }
@@ -236,18 +238,16 @@
   .gold { color: #b45309; }
   .dark { color: #4b5563; }
 
-  /* SPECIAL CARD CERTIFICATE */
+  /* PREMIUM GOLD CARD */
   .premium-gold-card {
     border: 1px solid rgba(197, 160, 89, 0.3) !important;
-    background: linear-gradient(to bottom bottom, #ffffff, #fffdf6) !important;
+    background: linear-gradient(to bottom, #ffffff, #fffdf6) !important;
     box-shadow: var(--premium-glow) !important;
   }
-  .premium-gold-card:hover {
-    border-color: var(--accent-gold) !important;
-  }
+  .premium-gold-card:hover { border-color: var(--accent-gold) !important; }
   .premium-gold-card:hover .title { color: var(--accent-gold) !important; }
 
-  /* MODAL STYLE (حول البرنامج) */
+  /* MODAL */
   .modal {
     display: none; 
     position: fixed; 
@@ -271,7 +271,6 @@
     position: relative;
     overflow: hidden;
     text-align: center;
-    transform: translateY(0);
     animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
@@ -299,28 +298,17 @@
     z-index: 10;
     transition: all 0.3s ease;
   }
-  .animated-close:hover {
-    color: #c5a059;
-    transform: rotate(90deg);
-  }
+  .animated-close:hover { color: #c5a059; transform: rotate(90deg); }
 
-  .avatar-wrapper {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    margin: 40px auto 15px auto;
-    z-index: 2;
-  }
-
+  .avatar-wrapper { position: relative; width: 120px; height: 120px; margin: 40px auto 15px auto; z-index: 2; }
+  
   .dev-avatar-premium {
     width: 100%; height: 100%;
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid #ffffff;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15), 0 0 0 3px #c5a059;
-    transition: transform 0.5s ease;
   }
-  .premium-dev-card:hover .dev-avatar-premium { transform: scale(1.05) rotate(5deg); }
 
   .online-badge {
     position: absolute;
@@ -334,23 +322,18 @@
 
   .dev-name { margin: 10px 0 5px 0; color: #0f172a; font-size: 26px; font-weight: 800; }
   .dev-badge { display: inline-block; background: #f4ebd9; color: #8c6d31; font-size: 12px; font-weight: 700; padding: 4px 14px; border-radius: 50px; margin-bottom: 15px; }
-
   .premium-divider { position: relative; height: 1px; background: #e2e8f0; margin: 20px 0; }
   .premium-divider span { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ffffff; padding: 0 15px; color: #c5a059; font-size: 14px; }
-
   .dev-bio { color: #475569; font-size: 14px; line-height: 1.7; text-align: justify; margin: 0 10px 25px 10px; }
-
   .social-links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; }
   .social-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; border-radius: 14px; text-decoration: none; font-size: 13px; font-weight: 700; transition: all 0.3s ease; }
   .social-btn i { font-size: 20px; }
-
   .facebook-btn { background: #eff6ff; color: #1d4ed8; }
   .facebook-btn:hover { background: #1d4ed8; color: #ffffff; transform: translateY(-3px); box-shadow: 0 6px 15px rgba(29, 78, 216, 0.2); }
   .youtube-btn { background: #fef2f2; color: #dc2626; }
   .youtube-btn:hover { background: #dc2626; color: #ffffff; transform: translateY(-3px); box-shadow: 0 6px 15px rgba(220, 38, 38, 0.2); }
   .whatsapp-btn { background: #f0fdf4; color: #16a34a; }
   .whatsapp-btn:hover { background: #16a34a; color: #ffffff; transform: translateY(-3px); box-shadow: 0 6px 15px rgba(22, 163, 74, 0.2); }
-
   .card-footer-info { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px; font-size: 11px; color: #94a3b8; font-weight: bold; }
   .version-tag { background: #f1f5f9; padding: 2px 8px; border-radius: 6px; color: #64748b; }
 </style>
@@ -360,7 +343,7 @@
 <div class="header">
   <div class="header-title">
     <i class="fas fa-school"></i> 
-    <span>نظام الإدارة</span>
+    <span>نظام الإدارة الأكاديمي</span>
   </div>
   <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
 </div>
@@ -368,7 +351,6 @@
 <div class="container">
   
   <div class="premium-hub">
-    
     <div class="welcome-card">
       <div class="user-avatar-wrapper" id="userAvatar">
         <i class="fas fa-user-shield"></i>
@@ -398,67 +380,66 @@
         </div>
       </div>
     </div>
-
   </div>
 
-  <div class="grid">
+  <div class="grid" id="modulesGrid">
 
-    <div class="card" onclick="go('dashboard.html')">
+    <div class="card" data-module="dashboard" onclick="go('dashboard.html')">
       <div class="icon blue"><i class="fas fa-chart-line"></i></div>
       <div class="title">لوحة التحكم</div>
     </div>
 
-    <div class="card" onclick="go('add.html')">
+    <div class="card" data-module="add" onclick="go('add.html')">
       <div class="icon green"><i class="fas fa-user-plus"></i></div>
       <div class="title">تسجيل طالب</div>
     </div>
 
-    <div class="card" onclick="go('students.html')">
+    <div class="card" data-module="students" onclick="go('students.html')">
       <div class="icon green"><i class="fas fa-user-graduate"></i></div>
       <div class="title">ملفات الطلاب</div>
     </div>
 
-    <div class="card" onclick="go('groups.html')">
+    <div class="card" data-module="groups" onclick="go('groups.html')">
       <div class="icon cyan"><i class="fas fa-users"></i></div>
       <div class="title">إدارة الأفواج والمجموعات</div>
     </div>
 
-    <div class="card premium-gold-card" onclick="go('certificates.html')">
+    <div class="card premium-gold-card" data-module="certificates" onclick="go('certificates.html')">
       <div class="icon gold"><i class="fas fa-award"></i></div>
       <div class="title">الشهادات والإيجازات</div>
     </div>
 
-    <div class="card" onclick="go('teachers.html')">
+    <div class="card" data-module="teachers" onclick="go('teachers.html')">
       <div class="icon purple"><i class="fas fa-chalkboard-teacher"></i></div>
       <div class="title">الأساتذة</div>
     </div>
 
-    <div class="card" onclick="go('courses.html')">
+    <div class="card" data-module="courses" onclick="go('courses.html')">
       <div class="icon orange"><i class="fas fa-book-open"></i></div>
       <div class="title">المواد والمستويات</div>
     </div>
 
-    <div class="card" onclick="go('attendance.html')">
+    <div class="card" data-module="attendance" onclick="go('attendance.html')">
       <div class="icon cyan"><i class="fas fa-calendar-check"></i></div>
       <div class="title">الحضور والغيابات</div>
     </div>
 
-    <div class="card" onclick="go('payments.html')">
+    <div class="card" data-module="payments" onclick="go('payments.html')">
       <div class="icon green"><i class="fas fa-money-bill-wave"></i></div>
       <div class="title">الدفع والفواتير</div>
     </div>
 
-    <div class="card" onclick="go('reports.html')">
+    <div class="card" data-module="reports" onclick="go('reports.html')">
       <div class="icon dark"><i class="fas fa-file-alt"></i></div>
       <div class="title">التقارير</div>
     </div>
 
-    <div class="card" onclick="go('settings.html')">
+    <div class="card" data-module="settings" onclick="go('settings.html')">
       <div class="icon red"><i class="fas fa-cogs"></i></div>
       <div class="title">الإعدادات</div>
     </div>
 
-    <div class="card" onclick="showAbout()">
+    <div class="card accessible" onclick="showAbout()">
       <div class="icon blue"><i class="fas fa-info-circle"></i></div>
       <div class="title">حول البرنامج</div>
     </div>
@@ -469,23 +450,17 @@
 <div id="aboutModal" class="modal">
   <div class="premium-dev-card">
     <span class="close-modal animated-close" onclick="closeAbout()">&times;</span>
-    
     <div class="card-banner-glow"></div>
-    
     <div class="avatar-wrapper">
         <img src="https://scontent.faae2-2.fna.fbcdn.net/v/t39.30808-6/653711580_27071969699071054_7213936277980766498_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=ClcW9gt6ldAQ7kNvwGH5vcj&_nc_oc=AdpbIMoOnDM4uAa7rYi2W4BV03P_D640Z9P5K5zb4Ux3cOs-ia9SOzOz9wGerG78wsY&_nc_zt=23&_nc_ht=scontent.faae2-2.fna&_nc_gid=BEbl7PPwTvK3nY2FwDa9-g&_nc_ss=7b2a8&oh=00_Af7NslLrcE1XSAOvsRj0dsmhkY73mMk5z61CgBaK4ml3RA&oe=6A123793" alt="Nadir Ouaddah" class="dev-avatar-premium">
         <span class="online-badge"></span>
     </div>
-    
     <h2 class="dev-name">نذير وضاح</h2>
     <div class="dev-badge">Full-Stack Developer & Digital Media Manager</div>
-    
     <div class="premium-divider"><span><i class="fas fa-code"></i></span></div>
-    
     <p class="dev-bio">
       هذا النظام الذكي يُمثّل الجيل الجديد في إدارة المؤسسات التعليمية والأكاديميات الاحترافية. تم بناؤه وهندسته بأحدث التقنيات البرمجية لتوفير حلول متكاملة تشمل تتبع الطلاب، الأساتذة، والعمليات المالية، بالإضافة إلى محرك رندر فوري وتوليد فخم للشهادات الرقمية الحية.
     </p>
-    
     <div class="social-links-grid">
         <a href="https://www.facebook.com/nadir.ouaddah" target="_blank" class="social-btn facebook-btn">
             <i class="fab fa-facebook-f"></i>
@@ -500,7 +475,6 @@
             <span>واتساب</span>
         </a>
     </div>
-    
     <div class="card-footer-info">
         <span class="version-tag">الإصدار 2.0</span>
         <span class="copyright-tag">© 2026 جميع الحقوق محفوظة</span>
@@ -509,23 +483,61 @@
 </div>
 
 <script>
-  /* حماية وتأكيد الصلاحية */
+  /* 🔐 هيكلة نظام الحماية والتحكم بالصلاحيات (RBAC) */
   const userRole = localStorage.getItem("role");
-  const userName = localStorage.getItem("savedUser") || "مستخدم نظام";
+  const userName = localStorage.getItem("userFullName") || "مستخدم نظام";
 
-  if (!userRole) {
+  // تعيين جدول الصلاحيات العلمي والدقيق لكل رتبة
+  const rolePermissions = {
+    "مدير": ["dashboard", "add", "students", "groups", "certificates", "teachers", "courses", "attendance", "payments", "reports", "settings"],
+    "موظف": ["add", "students", "groups", "teachers", "attendance"],
+    "مستخدم": ["reports", "attendance", "certificates"]
+  };
+
+  // طرد فوري في حال محاولة التلاعب والدخول للملف بدون رتبة مخزنة
+  if (!userRole || !rolePermissions[userRole]) {
+    localStorage.clear();
     window.location.href = "index.html";
   }
 
-  // تفعيل وظائف العرض والتهيئة المباشرة
   window.onload = function() {
     setupUserDisplay();
+    renderAccessibleModules();
     updateClock();
     setInterval(updateClock, 1000);
     fetchLiveWeather();
   };
 
-  /* 1. دالة تهيئة بيانات المستخدم المتصل تلقائياً */
+  /* 1. بناء وتصفية عناصر الواجهة بناء على الرتبة السحابية للمستخدم */
+  function renderAccessibleModules() {
+    const allowedModules = rolePermissions[userRole];
+    const cards = document.querySelectorAll('#modulesGrid .card[data-module]');
+    
+    cards.forEach(card => {
+      const moduleName = card.getAttribute('data-module');
+      if (allowedModules.includes(moduleName)) {
+        card.classList.add('accessible'); // إظهار البطاقة في الواجهة
+      } else {
+        card.classList.remove('accessible'); // عزل تام وإخفاء للبطاقة
+      }
+    });
+  }
+
+  /* 2. دالة التنقل الذكية المحمية برمجياً ضد الاختراق والتلاعب عبر المتصفح */
+  function go(page) {
+    const moduleName = page.replace('.html', '');
+    const allowedModules = rolePermissions[userRole];
+
+    // التحقق الفوري ما إذا كانت الصفحة المستهدفة تقع ضمن النطاق المسموح به برمجياً
+    if (allowedModules.includes(moduleName)) {
+      window.location.href = page;
+    } else {
+      alert("⚠️ تحذير أمني: لا تملك الصلاحيات الكافية للوصول إلى هذه الصفحة!");
+      console.warn(`Security Access Denied for module: ${moduleName}`);
+    }
+  }
+
+  /* 3. دالة تهيئة بيانات المستخدم المتصل تلقائياً */
   function setupUserDisplay() {
     const nameEl = document.getElementById("welcomeUserName");
     const badgeEl = document.getElementById("userRoleBadge");
@@ -533,7 +545,6 @@
 
     nameEl.innerText = userName;
 
-    // تخصيص الشكل والأيقونة بناء على الصلاحية
     if (userRole === "مدير") {
       badgeEl.innerText = "👑 مدير عام النظام";
       badgeEl.className = "role-badge badge-admin";
@@ -545,41 +556,37 @@
       avatarEl.style.color = "#2563eb";
       avatarEl.innerHTML = '<i class="fas fa-user-tie"></i>';
     } else {
-      badgeEl.innerText = "👁️ مستخدم (عرض فقط)";
+      badgeEl.innerText = "👁️ مستخدم (عرض وصلاحيات محدودة)";
       badgeEl.className = "role-badge badge-viewer";
       avatarEl.style.color = "#4b5563";
       avatarEl.innerHTML = '<i class="fas fa-user"></i>';
     }
   }
 
-  /* 2. دالة تشغيل الساعة والتاريخ الفاخر تلقائياً */
+  /* 4. دالة تشغيل الساعة والتاريخ تلقائياً */
   function updateClock() {
     const now = new Date();
     let hours = now.getHours();
     let minutes = now.getMinutes();
     let seconds = now.getSeconds();
     
-    // تحديد الفترة صباحاً/مساءً بشكل عربي فخم
     const period = hours >= 12 ? "مساءً" : "صباحاً";
     hours = hours % 12;
-    hours = hours ? hours : 12; // الساعة 0 تصبح 12
+    hours = hours ? hours : 12;
     
-    // إضافة الصفر المبدئي للأرقام الفردية
     hours = hours < 10 ? "0" + hours : hours;
     minutes = minutes < 10 ? "0" + minutes : minutes;
     seconds = seconds < 10 ? "0" + seconds : seconds;
 
     document.getElementById("liveClock").innerHTML = `${hours}:${minutes}:${seconds} <span id="clockPeriod">${period}</span>`;
 
-    // عرض التاريخ المنسق باللغة العربية
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById("gregorianDate").innerHTML = `<i class="far fa-calendar-alt"></i> ${now.toLocaleDateString('ar-DZ', options)}`;
   }
 
-  /* 3. دالة جلب الطقس المباشر ذكياً لمدينة سكيكدة دون الحاجة لمفاتيح معقدة */
+  /* 5. جلب الطقس لولاية سكيكدة */
   async function fetchLiveWeather() {
     try {
-      // استخدام API مفتوح وسريع دون شروط للاتصال لمدينة سكيكدة
       const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=36.8792&longitude=6.9011&current_weather=true");
       const data = await response.json();
       
@@ -588,8 +595,6 @@
         const code = data.current_weather.weathercode;
         
         document.getElementById("weatherTemp").innerText = `${temp}°م`;
-        
-        // تغيير الأيقونة والوصف بناءً على كود حالة الطقس العالمي
         const iconEl = document.getElementById("weatherIcon");
         const statusEl = document.getElementById("weatherStatus");
         
@@ -614,39 +619,23 @@
         }
       }
     } catch(e) {
-      // حماية ذكية في حال انقطاع الإنترنت أو عدم الاتصال
       document.getElementById("weatherIcon").innerHTML = '<i class="fas fa-wifi-slash" style="color: #94a3b8;"></i>';
       document.getElementById("weatherTemp").innerText = "أوفلاين";
       document.getElementById("weatherStatus").innerText = "بانتظار الاتصال...";
     }
   }
 
-  /* تنقل */
-  function go(page){
-    window.location.href = page;
-  }
-
-  /* خروج */
+  /* خروج وتطهير الكاش */
   function logout(){
-    localStorage.removeItem("role");
-    localStorage.removeItem("savedUser");
+    localStorage.clear();
     window.location.href = "index.html";
   }
 
-  /* وظائف النافذة المنبثقة */
-  function showAbout() {
-    document.getElementById('aboutModal').style.display = 'flex';
-  }
-
-  function closeAbout() {
-    document.getElementById('aboutModal').style.display = 'none';
-  }
-
+  function showAbout() { document.getElementById('aboutModal').style.display = 'flex'; }
+  function closeAbout() { document.getElementById('aboutModal').style.display = 'none'; }
   window.onclick = function(event) {
     let modal = document.getElementById('aboutModal');
-    if (event.target == modal) {
-      modal.style.display = "none";
-    }
+    if (event.target == modal) { modal.style.display = "none"; }
   }
 </script>
 
