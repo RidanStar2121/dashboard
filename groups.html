@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الأفواج والمجموعات - أكاديمية وضاح للعلوم</title>
+    <title>إدارة الأفواج والمجموعات</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -166,7 +166,7 @@
         
         <div class="groups-grid" id="groups-container">
             <div style="text-align: center; grid-column: 1/-1; color: #888; padding: 40px;">
-                <i class="fas fa-spinner fa-spin fa-2x"></i> <br><br> جاري تحميل بيانات الأفواج والطلاب
+                <i class="fas fa-spinner fa-spin fa-2x"></i> <br><br> جاري تحميل بيانات الأفواج والطلاب ...
             </div>
         </div>
     </div>
@@ -182,10 +182,36 @@
     let selectedStudentIds = []; // لتخزين معرفات الطلاب في الفوج الحالي أثناء الإنشاء أو التعديل
 
     // أضف هذا السطر داخل دالة window.onload لتبدأ مع فتح الصفحة
+
+
     window.onload = async () => {
         await loadTeachers(); // جلب الأساتذة أولاً
         await loadInitialData(); // ثم جلب المجموعات والطلاب
-    };
+
+
+// الكود الذكي لاستقبال اسم الفوج المختار وعزله فوراً داخل صفحة groups.html
+const urlParams = new URLSearchParams(window.location.search);
+const selectedGroup = urlParams.get('groupName');
+
+if (selectedGroup) {
+    // 1. وضع اسم الفوج داخل صندوق البحث الخاص بصفحة الأفواج تلقائياً
+    const searchInput = document.getElementById("tableSearch"); // تأكد من أن هذا هو ID صندوق البحث في صفحة الأفواج
+    if (searchInput) {
+        searchInput.value = selectedGroup;
+    }
+    
+    // 2. تصفية الجدول لعزل هذا الفوج بمفرده (بناءً على دالة الفلترة لديك في صفحة الأفواج)
+    // إذا كانت دالة الفلترة لديك تسمى filterGroupsTable() فستكون كالتالي:
+    if (typeof filterGroupsTable === "function") {
+        filterGroupsTable(); 
+    }
+}
+
+
+};
+
+
+
 
     // جلب المجموعات والطلاب معاً لربط البيانات بشكل متناسق وسريع
     async function loadInitialData() {
@@ -534,6 +560,27 @@
             teacherSelect.innerHTML = '<option value="">⚠️ خطأ في تحميل قائمة الأساتذة</option>';
         }
     }
+// كود ذكي ومدمج لاستقبال اسم الفوج المختار وعزله فوراً داخل صفحة groups.html
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedGroup = urlParams.get('groupName');
+
+    if (selectedGroup) {
+        // 1. وضع اسم الفوج داخل صندوق البحث الخاص بصفحة الأفواج تلقائياً
+        const searchInput = document.getElementById("tableSearch"); 
+        if (searchInput) {
+            searchInput.value = selectedGroup;
+        }
+        
+        // 2. تصفية الجدول لعزل هذا الفوج بمفرده بعد التأكد من وجود الدالة
+        if (typeof filterGroupsTable === "function") {
+            filterGroupsTable(); 
+        }
+    }
+})();
+
+
+
 </script>
 
 </body>
