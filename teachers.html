@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الأساتذة الاحترافية - نذير وضاح</title>
+    <title>إدارة الأساتذة الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -175,6 +175,58 @@
         .delete:hover { background: #dc2626; }
         .pay-link { background: var(--success); color: white; }
         .pay-link:hover { background: #059669; }
+
+        /* --- تصميم النافذة المنبثقة الذكية (Modal) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0; pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-box {
+            background: white;
+            width: 90%; max-width: 650px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+
+        .modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h4 { margin: 0; font-size: 16px; font-weight: 700; }
+        .close-modal-btn {
+            background: none; border: none; color: white; font-size: 20px; cursor: pointer; transition: 0.2s;
+        }
+        .close-modal-btn:hover { color: var(--danger); transform: scale(1.1); }
+
+        .modal-body { padding: 20px; max-height: 450px; overflow-y: auto; }
+        .modal-info-bar {
+            background: #f8fafc; padding: 10px 14px; border-radius: 8px; 
+            margin-bottom: 15px; border-right: 4px solid var(--accent);
+            font-size: 13px; color: #475569; display: flex; justify-content: space-between;
+        }
+        
+        .student-mini-table { width: 100%; border-collapse: collapse; }
+        .student-mini-table th { background: #f1f5f9; padding: 10px; font-size: 13px; }
+        .student-mini-table td { padding: 8px 10px; font-size: 13px; border-bottom: 1px solid var(--border-color); }
+        .student-count-badge { background: var(--accent); color: white; padding: 2px 8px; border-radius: 20px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -276,30 +328,62 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="groupStudentsModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h4 id="modalGroupTitle">🏫 قائمة تلاميذ الفوج</h4>
+            <button class="close-modal-btn" onclick="closeStudentsModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-info-bar">
+                <span id="modalTeacherName">👤 الأستاذ: --</span>
+                <span>🔢 عدد التلاميذ: <b id="modalStudentCount" class="student-count-badge">0</b></span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="student-mini-table">
+                    <thead>
+                        <tr>
+                            <th>🆔 رقم التلميذ</th>
+                            <th>👤 اسم التلميذ بالكامل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalStudentsTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
 let allTeachers = [];
 let allGroups = [];
+let allStudents = []; // مصفوفة شاملة لتخزين كل طلاب المنظومة بالذاكرة
 
-async function loadInitialData(){
+async function loadInitialData() {
     try {
         // 1. جلب الأساتذة
-        const resTeachers = await fetch(sheetURL + "?sheet=teachers");
+        const resTeachers = await fetch(`${sheetURL}?action=get&sheet=teachers`);
         allTeachers = await resTeachers.json();
         
-        // 2. جلب الأفواج من شيت Group لعمل المزامنة العكسية التلقائية
-        const resGroups = await fetch(sheetURL + "?action=get&sheet=Group");
+        // 2. جلب الأفواج
+        const resGroups = await fetch(`${sheetURL}?action=get&sheet=Group`);
         allGroups = await resGroups.json();
 
-        calculateStats();
-        renderTeachers(allTeachers);
-    } catch(e) { 
-        console.error("Error loading data:", e); 
-        document.getElementById("tableBody").innerHTML = "<tr><td colspan='8' style='color:red;'>❌ فشل تحميل البيانات، تحقق من اتصال السيرفر.</td></tr>";
+        // 3. الحل الذكي: جلب شيت الطلاب الرئيسي لضمان وجود أي اسم ID بالمنظومة
+        const resStudents = await fetch(`${sheetURL}?action=get&sheet=students`);
+        allStudents = await resStudents.json();
+
+        // استدعاء دالات الرندرة الخاصة بصفحة الأساتذة لديك هنا
+        if (typeof calculateStats === "function") calculateStats();
+        if (typeof renderTeachers === "function") renderTeachers(allTeachers);
+        
+    } catch (e) {
+        console.error("Error loading initial data:", e);
     }
 }
 
-// دالة ذكية للبحث عن كل المجموعات التابعة لأستاذ معين عبر اسمه
 function getTeacherGroups(teacherName) {
     if (!teacherName) return [];
     return allGroups.filter(g => g.teacher && g.teacher.trim().toLowerCase() === teacherName.trim().toLowerCase());
@@ -307,7 +391,6 @@ function getTeacherGroups(teacherName) {
 
 function calculateStats() {
     document.getElementById("totalTeachersCount").innerText = allTeachers.length;
-    
     let totalSalaries = 0;
     let subjectsSet = new Set();
     
@@ -330,17 +413,14 @@ function renderTeachers(dataArray){
     }
 
     dataArray.forEach(t => {
-        // إنشاء السطر أولاً بشكل برمي صحيح لمنع انهيار السكريبت
         const tr = document.createElement("tr");
-
         const teacherGroups = getTeacherGroups(t.name);
         let groupsBadgesHtml = "";
 
         if(teacherGroups.length > 0) {
             teacherGroups.forEach(g => {
-                // رابط ذكي ينقل المستخدم لصفحة المجموعات مع تمرير اسم الفوج بدقة في الـ URL
-                const targetURL = `groups.html?groupName=${encodeURIComponent(g.groupName.trim())}`;
-                groupsBadgesHtml += `<a href="${targetURL}" class="group-badge-tag" title="الانتقال إلى صفحة الفوج ومعاينة التلاميذ">🏫 ${g.groupName}</a>`;
+                // تعديل ذكي جداً: عند الضغط يتم تشغيل دالة تفتح النافذة العائمة وتعرض التلاميذ فوراً
+                groupsBadgesHtml += `<span class="group-badge-tag" onclick="openStudentsModal('${encodeURIComponent(g.groupName.trim())}', '${encodeURIComponent(t.name)}')" title="اضغط لعرض قائمة التلاميذ فوراً">🏫 ${g.groupName}</span>`;
             });
         } else {
             groupsBadgesHtml = `<span class="no-groups">لا توجد أفواج حالياً</span>`;
@@ -364,6 +444,91 @@ function renderTeachers(dataArray){
         `;
         tbody.appendChild(tr);
     });
+}
+
+// --- دالة فك تشفير وعرض التلاميذ داخل الواجهة العائمة فوراً ---
+// --- الدالة المحدثة والذكية لضمان جلب وقراءة تلاميذ الفوج بنجاح ---
+// --- الدالة الذكية المحدثة لعزل طلاب الفوج المعنيين فقط بناءً على studentIds ---
+function openStudentsModal(encodedGroupName, encodedTeacherName) {
+    const groupName = decodeURIComponent(encodedGroupName).trim().toLowerCase();
+    const teacherName = decodeURIComponent(encodedTeacherName).trim();
+    
+    document.getElementById("modalGroupTitle").innerText = `🏫 تلاميذ فوج: ${decodeURIComponent(encodedGroupName)}`;
+    document.getElementById("modalTeacherName").innerText = `👤 الأستاذ: ${teacherName}`;
+    
+    const studentsTableBody = document.getElementById("modalStudentsTableBody");
+    studentsTableBody.innerHTML = "<tr><td colspan='2'>🔍 جاري قراءة القائمة الرسمية ومطابقة الأسماء الكاملة...</td></tr>";
+    
+    // 1. البحث عن الفوج المستهدف داخل مصفوفة allGroups
+    const targetGroup = allGroups.find(g => {
+        const gName = g.groupName || "";
+        return gName.toString().trim().toLowerCase() === groupName;
+    });
+
+    if (!targetGroup || !targetGroup.studentIds || targetGroup.studentIds.toString().trim() === "") {
+        studentsTableBody.innerHTML = "<tr><td colspan='2' style='color:#64748b; padding:15px;'>📭 لا يوجد تلاميذ مسجلين في هذا الفوج حالياً.</td></tr>";
+        document.getElementById("modalStudentCount").innerText = "0";
+        document.getElementById("groupStudentsModal").classList.add("active");
+        return;
+    }
+
+    // 2. تفكيك الـ studentIds إلى مصفوفة نظيفة
+    let idList = targetGroup.studentIds.toString().split(",")
+                     .map(id => id.trim())
+                     .filter(id => id !== "");
+
+    if (idList.length === 0) {
+        studentsTableBody.innerHTML = "<tr><td colspan='2' style='color:#64748b; padding:15px;'>📭 لا يوجد تلاميذ مسجلين في هذا الفوج حالياً.</td></tr>";
+        document.getElementById("modalStudentCount").innerText = "0";
+    } else {
+        studentsTableBody.innerHTML = "";
+        let displayedCount = 0;
+
+        // 3. المطابقة الذكية الشاملة
+        idList.forEach(stId => {
+            let sName = "";
+
+            // أ) البحث أولاً في شيت الطلاب الرئيسي (وهو الحل الجذري للمشكلة)
+            if (typeof allStudents !== 'undefined' && allStudents.length > 0) {
+                const match = allStudents.find(s => {
+                    const sId = s.id || s.studentId || "";
+                    return sId.toString().trim() === stId.toString().trim();
+                });
+                if (match) sName = match.name || match.studentName || match.student_name;
+            }
+
+            // ب) خطة بديلة: إذا لم يعثر عليه في شيت الطلاب، يبحث في شيت الحضور القديم
+            if (!sName && typeof attendanceData !== 'undefined' && attendanceData.length > 0) {
+                const matchAtt = attendanceData.find(s => {
+                    const sId = s.studentId || s.id || "";
+                    return sId.toString().trim() === stId.toString().trim();
+                });
+                if (matchAtt) sName = matchAtt.studentName || matchAtt.name;
+            }
+
+            // ج) إذا لم يعثر عليه نهائياً في أي مكان، يبقي رقمه بشكل منظم
+            if (!sName) {
+                sName = `تلميذ مسجل برقم (${stId})`;
+            }
+
+            // عرض السطر بشكل احترافي ومنسق ومطابق للتصميم الجميل لديك
+            const str = document.createElement("tr");
+            str.innerHTML = `
+                <td><b style="color: #475569;">${stId}</b></td>
+                <td style="text-align:right; font-weight:600; padding-right:30px; color: #1e293b;">👤 ${sName}</td>
+            `;
+            studentsTableBody.appendChild(str);
+            displayedCount++;
+        });
+        
+        document.getElementById("modalStudentCount").innerText = displayedCount;
+    }
+    
+    document.getElementById("groupStudentsModal").classList.add("active");
+}
+
+function closeStudentsModal() {
+    document.getElementById("groupStudentsModal").classList.remove("active");
 }
 
 function filterTeachersTable() {
@@ -445,8 +610,7 @@ function editTeacher(id) {
     
     if(currentGroups.length > 0) {
         currentGroups.forEach(g => {
-            const targetURL = `groups.html?groupName=${encodeURIComponent(g.groupName)}`;
-            formGroupsBox.innerHTML += `<a href="${targetURL}" class="group-badge-tag" title="اضغط لعرض تفاصيل وتلاميذ ${g.groupName}">🏫 ${g.groupName}</a>`;
+            formGroupsBox.innerHTML += `<span class="group-badge-tag" onclick="openStudentsModal('${encodeURIComponent(g.groupName.trim())}', '${encodeURIComponent(t.name)}')" title="اضغط لعرض تفاصيل وتلاميذ ${g.groupName}">🏫 ${g.groupName}</span>`;
         });
     } else {
         formGroupsBox.innerHTML = `<span class="no-groups">هذا الأستاذ غير مسكن في أي فوج حالياً</span>`;
@@ -489,7 +653,6 @@ function clearForm(){
 
 function goHome(){ window.location.href = "home.html"; }
 
-// تشغيل جلب البيانات الفوري بمجرد إقلاع الواجهة
 loadInitialData();
 </script>
 </body>
