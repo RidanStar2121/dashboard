@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إعدادات النظام | أكاديمية وضاح للعلوم</title>
+    <title>إعدادات النظام الأساسية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -44,8 +44,7 @@
         @media(max-width: 600px) { .users-grid { grid-template-columns: 1fr; } }
         
         /* التنبيهات */
-        #toast { display: none; position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px 25px; border-radius: 10px; z-index: 1000; animation: slideUp 0.5s ease; font-size: 14px; }
-        @keyframes slideUp { from { transform: translateY(100px); } to { transform: translateY(0); } }
+        .toast { position: fixed; bottom: 20px; right: 20px; color: white; padding: 15px 25px; border-radius: 10px; z-index: 1000; font-size: 14px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     </style>
 </head>
 <body>
@@ -68,7 +67,7 @@
     </div>
 </div>
 
-<div id="toast"></div>
+<div id="toast" class="toast"></div>
 
 <script>
     // الرابط الموحد للـ Web App (Apps Script) الخاص بك دون أي تعديل في السيرفر
@@ -78,20 +77,52 @@
     const currentRole = localStorage.getItem("role") || "موظف";
     const currentLoggedUser = localStorage.getItem("savedUser") || "";
 
-    // تخزين مؤقت لإعدادات المنظومة الافتراضية
+    // كائن تخزين الإعدادات (ستُجلب قِيَمُه ديناميكياً من السيرفر)
     let currentSettings = {
-        schoolName: "أكاديمية وضاح للعلوم",
-        schoolPhone: "06xxxxxxxx",
-        schoolAddress: "سكيكدة، الجزائر"
+        schoolName: "جاري التحميل...",
+        schoolPhone: "جاري التحميل...",
+        schoolAddress: "جاري التحميل..."
     };
 
-    window.onload = () => {
+    window.onload = async () => {
         // إظهار لوحة تحكم الحسابات إذا كان المتصل "مدير"
         if(currentRole === "مدير") {
             document.getElementById("nav-users-manage").style.display = "flex";
         }
-        showTab('general');
+        
+        // جلب الإعدادات الحقيقية المخزنة سحابياً فور فتح الصفحة
+        await loadSystemSettings();
     };
+
+    // دالة ذكية لجلب إعدادات الأكاديمية من شيت settings سحابياً
+    async function loadSystemSettings() {
+        try {
+            const res = await fetch(`${API_URL}?action=get&sheet=settings`);
+            const data = await res.json();
+            
+            // البحث عن السطر المخصص للمنظومة CONFIG
+            const config = data.find(item => item.id === "SYSTEM_CONFIG");
+            if (config) {
+                currentSettings.schoolName = config.schoolName || "";
+                currentSettings.schoolPhone = config.schoolPhone || "";
+                currentSettings.schoolAddress = config.schoolAddress || "";
+            } else {
+                // قيم افتراضية في حال كانت الورقة فارغة تماماً
+                currentSettings.schoolName = "أكاديمية نذير وضاح";
+                currentSettings.schoolPhone = "06xxxxxxxx";
+                currentSettings.schoolAddress = "سكيكدة، الجزائر";
+            }
+        } catch (e) {
+            console.error("خطأ في جلب الإعدادات السحابية:", e);
+            showToast("⚠️ فشل جلب الإعدادات الحالية من السحاب، تم عرض البيانات المحلية.", "#ff9800");
+            currentSettings.schoolName = "أكاديمية نذير وضاح";
+            currentSettings.schoolPhone = "06xxxxxxxx";
+            currentSettings.schoolAddress = "سكيكدة، الجزائر";
+        }
+        
+        // عرض التبويب الافتراضي بعد انتهاء جلب البيانات
+        showTab('general');
+    }
 
     function showTab(tabName, element) {
         if(element) {
@@ -118,7 +149,7 @@
                 <div class="form-group"><label>كلمة المرور الجديدة المتفوقة:</label><input type="password" id="myNewPass" placeholder="أدخل كلمة مرور جديدة قوية ونشطة"></div>
                 <div class="ai-status" style="background:#e8f4fd; border-color:#b8daff; color:#004085">
                     <i class="fas fa-info-circle"></i>
-                    <p>هذا الإجراء سيقوم بتحديث كلمة المرور الخاصة بحسابك الحالي في ملف الشيت بنجاح دون المساس بقواعد البيانات الأخرى.</p>
+                    <p>هذا الإجراء سيقوم بتحديث كلمة المرور الخاصة بحسابك الحالي بنجاح دون المساس بقواعد البيانات الأخرى.</p>
                 </div>
                 <button class="save-btn" id="btn-save" onclick="updateMyPassword()" style="background:#007bff"><i class="fas fa-key"></i> تحديث كلمة مروري الحالية</button>
             `;
@@ -145,25 +176,51 @@
         content.innerHTML = html;
     }
 
-    // 1. دالة حفظ إعدادات المؤسسة العامة
+    // 1. دالة حفظ إعدادات المؤسسة العامة ومزامنتها سحابياً بشكل دائم
     async function saveGeneral() {
+        const sName = document.getElementById('schoolName').value.trim();
+        const sPhone = document.getElementById('schoolPhone').value.trim();
+        const sAddress = document.getElementById('schoolAddress').value.trim();
+
+        if(!sName) {
+            showToast("⚠️ يرجى كتابة اسم المؤسسة على الأقل", "#dc3545");
+            return;
+        }
+
         const payload = {
-            action: "editStudent", // توجيه متوافق مع دالة تعديل الأسطر بالسيرفر
+            action: "editStudent", // التوجيه المتوافق مع دالة تعديل الأسطر في السكريبت الخاص بك
             sheet: "settings",
-            id: "SYSTEM_CONFIG",   // معرف موحد ثابت للسطر الأول الخاص بالإعدادات
-            schoolName: document.getElementById('schoolName').value,
-            schoolPhone: document.getElementById('schoolPhone').value,
-            schoolAddress: document.getElementById('schoolAddress').value
+            id: "SYSTEM_CONFIG",   // المعرف الثابت المربوط بالسطر الثاني في شيت جوجل
+            schoolName: sName,
+            schoolPhone: sPhone,
+            schoolAddress: sAddress
         };
         
-        await sendData(payload, "تم تحديث إعدادات المؤسسة بنجاح سحابي!");
-        // تحديث البيانات محلياً للواجهة
-        currentSettings.schoolName = payload.schoolName;
-        currentSettings.schoolPhone = payload.schoolPhone;
-        currentSettings.schoolAddress = payload.schoolAddress;
+        startLoading();
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if(result.success) {
+                showToast("✅ تم تحديث إعدادات المؤسسة بنجاح سحابي ومستمر!", "#28a745");
+                // تحديث المتغير المحلي بالذاكرة لتبقى ثابتة في الواجهة
+                currentSettings.schoolName = sName;
+                currentSettings.schoolPhone = sPhone;
+                currentSettings.schoolAddress = sAddress;
+            } else {
+                showToast("❌ خطأ أثناء الحفظ السحابي: " + result.error, "#dc3545");
+            }
+        } catch (error) {
+            showToast("❌ حدث خطأ أثناء الاتصال بالخادم السحابي", "#dc3545");
+        } finally {
+            stopLoading("<i class='fas fa-save'></i> حفظ إعدادات المؤسسة");
+        }
     }
 
-    // 2. دالة تعديل كلمة المرور للمستخدم الحالي المتصل (متوافقة 100%)
+    // 2. دالة تعديل كلمة المرور للمستخدم الحالي المتصل (تعمل 100%)
     async function updateMyPassword() {
         const newPass = document.getElementById('myNewPass').value.trim();
         if(!newPass) {
@@ -174,7 +231,6 @@
         startLoading();
 
         try {
-            // جلب الأسطر الحالية من شيت الـ users لاستخراج سطر المستخدم الحالي
             const res = await fetch(`${API_URL}?action=get&sheet=users`);
             const users = await res.json();
             const myAccount = users.find(u => u.username && u.username.toString().trim() === currentLoggedUser);
@@ -185,13 +241,12 @@
                 return;
             }
 
-            // بناء الهيكل التوافقي مع آلية التعديل الافتراضية للسكريبت القديم الخاص بك
             const payload = {
                 action: "editStudent", 
                 sheet: "users",
-                id: myAccount.id, // استخدام المعرف الفريد المستخرج للسطر
+                id: myAccount.id, 
                 username: myAccount.username,
-                password: newPass, // استبدال كلمة المرور القديمة بالجديدة
+                password: newPass, 
                 role: myAccount.role,
                 full_name: myAccount.full_name
             };
@@ -215,7 +270,7 @@
         }
     }
 
-    // 3. دالة إضافة وإنشاء حساب مستخدم جديد (متاحة للمدير فقط ومتوافقة مع السكريبت)
+    // 3. دالة إضافة وإنشاء حساب مستخدم جديد (تعمل كما هي 100%)
     async function createNewUser() {
         const fullName = document.getElementById("regFullName").value.trim();
         const username = document.getElementById("regUser").value.trim();
@@ -229,11 +284,10 @@
 
         startLoading();
 
-        // إجبار السكريبت القديم على إضافة البيانات في صفحة الحسابات عبر دالة addStudent العامة لديه
         const payload = {
             action: "addStudent", 
             sheet: "users",      
-            id: "U-" + Date.now(), // توليد معرف تلقائي رقمي فريد يوضع في عمود الـ id الأساسي للشيت الجديد
+            id: "U-" + Date.now(), 
             username: username,
             password: password,
             role: role,
@@ -247,8 +301,7 @@
             });
             const result = await response.json();
             if(result.success) {
-                showToast("✅ تم إنشاء الحساب والموظف الجديد بنجاح  users!", "#28a745");
-                // تصفير الخانات بعد النجاح للاستخدام القادم
+                showToast("✅ تم إنشاء الحساب والموظف الجديد بنجاح في شيت users!", "#28a745");
                 document.getElementById("regFullName").value = "";
                 document.getElementById("regUser").value = "";
                 document.getElementById("regPass").value = "";
@@ -258,34 +311,18 @@
         } catch(err) {
             showToast("❌ حدث خطأ غير متوقع أثناء الاتصال بالخادم", "#dc3545");
         } finally {
-            stopLoading("<i class='fas fa-user-check'></i> اعتماد وإنشاء الحساب ");
+            stopLoading("<i class='fas fa-user-check'></i> اعتماد وإنشاء الحساب في الشيت");
         }
     }
 
-    // دالة التوصيل السريع والإرسال العام للبيانات
-    async function sendData(payload, successMessage) {
-        startLoading();
-        try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-            showToast(successMessage, "#28a745");
-        } catch (error) {
-            showToast("❌ حدث خطأ أثناء الاتصال بالخادم السحابي", "#dc3545");
-        } finally {
-            stopLoading("<i class='fas fa-save'></i> حفظ الإعدادات");
-        }
-    }
-
-    // تأثيرات اللودينج السينمائية للأزرار أثناء رفع البيانات السحابية
+    // تأثيرات اللودينج للأزرار أثناء الحفظ السحابي
     let originalBtnHTML = "";
     function startLoading() {
         const btn = document.getElementById('btn-save');
         if(btn) {
             originalBtnHTML = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري مزامنة التسجيل بدقة...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري مزامنة قاعدة البيانات بدقة...';
         }
     }
 
