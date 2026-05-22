@@ -43,6 +43,21 @@
         .users-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px dashed #007bff; }
         @media(max-width: 600px) { .users-grid { grid-template-columns: 1fr; } }
         
+        /* تصميم جدول استعراض الحسابات الاحترافي */
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 25px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .users-table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; }
+        .users-table th { background-color: #f1f5f9; color: #334155; padding: 12px 15px; font-weight: bold; border-bottom: 2px solid #e2e8f0; }
+        .users-table td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; color: #475569; vertical-align: middle; }
+        .users-table tr:hover { background-color: #f8fafc; }
+        
+        /* أزرار الإجراءات داخل الجدول */
+        .actions-cell { display: flex; gap: 8px; }
+        .btn-action { border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: 'Cairo'; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; color: white; }
+        .btn-edit { background-color: #0284c7; }
+        .btn-edit:hover { background-color: #0369a1; }
+        .btn-delete { background-color: #ef4444; }
+        .btn-delete:hover { background-color: #dc2626; }
+
         /* التنبيهات */
         .toast { position: fixed; bottom: 20px; right: 20px; color: white; padding: 15px 25px; border-radius: 10px; z-index: 1000; font-size: 14px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     </style>
@@ -50,7 +65,7 @@
 <body>
 
 <div class="header">
-    <i class="fas fa-cog"></i> إعدادات المنظومة الإدارية
+    <i class="fas fa-cog"></i> إعدادات المنظومة الإدارية 
     <a href="home.html" class="back-btn"><i class="fas fa-home"></i> الرئيسية</a>
 </div>
 
@@ -63,51 +78,44 @@
         </div>
 
         <div class="settings-content" id="tab-content">
-            </div>
+        </div>
     </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
-    // الرابط الموحد للـ Web App (Apps Script) الخاص بك دون أي تعديل في السيرفر
     const API_URL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
     
-    // قراءة الصلاحيات الحالية المخزنة في المتصفح عند تسجيل الدخول
     const currentRole = localStorage.getItem("role") || "موظف";
     const currentLoggedUser = localStorage.getItem("savedUser") || "";
 
-    // كائن تخزين الإعدادات (ستُجلب قِيَمُه ديناميكياً من السيرفر)
     let currentSettings = {
         schoolName: "جاري التحميل...",
         schoolPhone: "جاري التحميل...",
         schoolAddress: "جاري التحميل..."
     };
 
+    let allSystemUsers = [];
+
     window.onload = async () => {
-        // إظهار لوحة تحكم الحسابات إذا كان المتصل "مدير"
         if(currentRole === "مدير") {
             document.getElementById("nav-users-manage").style.display = "flex";
         }
-        
-        // جلب الإعدادات الحقيقية المخزنة سحابياً فور فتح الصفحة
         await loadSystemSettings();
     };
 
-    // دالة ذكية لجلب إعدادات الأكاديمية من شيت settings سحابياً
     async function loadSystemSettings() {
         try {
             const res = await fetch(`${API_URL}?action=get&sheet=settings`);
             const data = await res.json();
             
-            // البحث عن السطر المخصص للمنظومة CONFIG
             const config = data.find(item => item.id === "SYSTEM_CONFIG");
             if (config) {
                 currentSettings.schoolName = config.schoolName || "";
                 currentSettings.schoolPhone = config.schoolPhone || "";
                 currentSettings.schoolAddress = config.schoolAddress || "";
             } else {
-                // قيم افتراضية في حال كانت الورقة فارغة تماماً
                 currentSettings.schoolName = "أكاديمية نذير وضاح";
                 currentSettings.schoolPhone = "06xxxxxxxx";
                 currentSettings.schoolAddress = "سكيكدة، الجزائر";
@@ -120,8 +128,69 @@
             currentSettings.schoolAddress = "سكيكدة، الجزائر";
         }
         
-        // عرض التبويب الافتراضي بعد انتهاء جلب البيانات
         showTab('general');
+    }
+
+    async function fetchAndRenderUsersTable() {
+        const tableContainer = document.getElementById('users-table-container');
+        if(!tableContainer) return;
+
+        tableContainer.innerHTML = `<div style="text-align:center; padding: 20px; color: #666;"><i class="fas fa-spinner fa-spin"></i> جاري تحديث قائمة الحسابات الحالية مباشرة...</div>`;
+        
+        try {
+            const res = await fetch(`${API_URL}?action=get&sheet=users`);
+            allSystemUsers = await res.json();
+            
+            if(!allSystemUsers || allSystemUsers.length === 0) {
+                tableContainer.innerHTML = `<div style="text-align:center; padding: 20px; color: #94a3b8;">لا توجد حسابات مسجلة حالياً في النظام.</div>`;
+                return;
+            }
+
+            let tableHtml = `
+                <div class="table-responsive">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>الاسم الكامل</th>
+                                <th>اسم المستخدم</th>
+                                <th>كلمة المرور</th>
+                                <th>الصلاحية والرتية</th>
+                                <th>الإجراءات والعمليات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            allSystemUsers.forEach(user => {
+                if(!user.id) return;
+
+                tableHtml += `
+                    <tr>
+                        <td><strong>${user.full_name || ''}</strong></td>
+                        <td><code>${user.username || ''}</code></td>
+                        <td><input type="text" value="${user.password || ''}" id="pass-${user.id}" style="padding:5px; border-radius:6px; font-size:12px; width:110px;"></td>
+                        <td>
+                            <select id="role-${user.id}" style="padding:5px; border-radius:6px; font-size:12px; width:110px;">
+                                <option value="مدير" ${user.role === 'مدير' ? 'selected' : ''}>مدير</option>
+                                <option value="موظف" ${user.role === 'موظف' ? 'selected' : ''}>موظف</option>
+                                <option value="مستخدم" ${user.role === 'مستخدم' ? 'selected' : ''}>مستخدم</option>
+                            </select>
+                        </td>
+                        <td class="actions-cell">
+                            <button class="btn-action btn-edit" onclick="updateUserRow('${user.id}')"><i class="fas fa-save"></i> حفظ</button>
+                            <button class="btn-action btn-delete" onclick="deleteUserRow('${user.id}')"><i class="fas fa-trash-alt"></i> حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHtml += `</tbody></table></div>`;
+            tableContainer.innerHTML = tableHtml;
+
+        } catch (error) {
+            console.error("خطأ في جلب المستخدمين:", error);
+            tableContainer.innerHTML = `<div style="text-align:center; padding: 20px; color: #dc3545;"><i class="fas fa-exclamation-triangle"></i> فشل تحديث جدول الحسابات من السيرفر.</div>`;
+        }
     }
 
     function showTab(tabName, element) {
@@ -143,15 +212,20 @@
             `;
         } 
         else if(tabName === 'security') {
+            const activeUser = localStorage.getItem("savedUser") || localStorage.getItem("username") || sessionStorage.getItem("username") || "admin";
+            
             html = `
                 <h3 class="section-title"><i class="fas fa-user-shield"></i> الأمان وتغيير كلمة المرور الخاصة بك</h3>
-                <div class="form-group"><label>اسم المستخدم الحالي المتصل:</label><input type="text" id="myUsername" value="${currentLoggedUser}" disabled style="background:#eee; cursor:not-allowed;"></div>
+                <div class="form-group">
+                    <label>اسم المستخدم الحالي المتصل:</label>
+                    <input type="text" id="myUsername" value="${activeUser}" disabled style="background:#e9ecef; color:#495057; cursor:not-allowed; font-weight:bold;">
+                </div>
                 <div class="form-group"><label>كلمة المرور الجديدة المتفوقة:</label><input type="password" id="myNewPass" placeholder="أدخل كلمة مرور جديدة قوية ونشطة"></div>
                 <div class="ai-status" style="background:#e8f4fd; border-color:#b8daff; color:#004085">
                     <i class="fas fa-info-circle"></i>
                     <p>هذا الإجراء سيقوم بتحديث كلمة المرور الخاصة بحسابك الحالي بنجاح دون المساس بقواعد البيانات الأخرى.</p>
                 </div>
-                <button class="save-btn" id="btn-save" onclick="updateMyPassword()" style="background:#007bff"><i class="fas fa-key"></i> تحديث كلمة مروري الحالية</button>
+                <button class="save-btn" id="btn-save" onclick="updateMyPassword()"><i class="fas fa-key"></i> تحديث كلمة مروري الحالية</button>
             `;
         } 
         else if(tabName === 'users') {
@@ -171,12 +245,16 @@
                     </div>
                 </div>
                 <button class="save-btn" id="btn-save" onclick="createNewUser()" style="background:#28a745"><i class="fas fa-user-check"></i> اعتماد وإنشاء الحساب في الشيت</button>
+                <div id="users-table-container"></div>
             `;
         }
         content.innerHTML = html;
+
+        if(tabName === 'users') {
+            fetchAndRenderUsersTable();
+        }
     }
 
-    // 1. دالة حفظ إعدادات المؤسسة العامة ومزامنتها سحابياً بشكل دائم
     async function saveGeneral() {
         const sName = document.getElementById('schoolName').value.trim();
         const sPhone = document.getElementById('schoolPhone').value.trim();
@@ -188,9 +266,9 @@
         }
 
         const payload = {
-            action: "editStudent", // التوجيه المتوافق مع دالة تعديل الأسطر في السكريبت الخاص بك
+            action: "editStudent", 
             sheet: "settings",
-            id: "SYSTEM_CONFIG",   // المعرف الثابت المربوط بالسطر الثاني في شيت جوجل
+            id: "SYSTEM_CONFIG",   
             schoolName: sName,
             schoolPhone: sPhone,
             schoolAddress: sAddress
@@ -205,24 +283,24 @@
             const result = await response.json();
             
             if(result.success) {
-                showToast("✅ تم تحديث إعدادات المؤسسة بنجاح سحابي ومستمر!", "#28a745");
-                // تحديث المتغير المحلي بالذاكرة لتبقى ثابتة في الواجهة
+                showToast("✅ تم تحديث إعدادات المؤسسة بنجاح !", "#28a745");
                 currentSettings.schoolName = sName;
                 currentSettings.schoolPhone = sPhone;
                 currentSettings.schoolAddress = sAddress;
             } else {
-                showToast("❌ خطأ أثناء الحفظ السحابي: " + result.error, "#dc3545");
+                showToast("❌ خطأ أثناء الحفظ: " + result.error, "#dc3545");
             }
         } catch (error) {
-            showToast("❌ حدث خطأ أثناء الاتصال بالخادم السحابي", "#dc3545");
+            showToast("❌ حدث خطأ أثناء الاتصال بالخادم ", "#dc3545");
         } finally {
             stopLoading("<i class='fas fa-save'></i> حفظ إعدادات المؤسسة");
         }
     }
 
-    // 2. دالة تعديل كلمة المرور للمستخدم الحالي المتصل (تعمل 100%)
     async function updateMyPassword() {
         const newPass = document.getElementById('myNewPass').value.trim();
+        const visualUser = document.getElementById('myUsername').value.trim(); 
+        
         if(!newPass) {
             showToast("⚠️ يرجى كتابة كلمة المرور الجديدة أولاً", "#dc3545");
             return;
@@ -233,10 +311,14 @@
         try {
             const res = await fetch(`${API_URL}?action=get&sheet=users`);
             const users = await res.json();
-            const myAccount = users.find(u => u.username && u.username.toString().trim() === currentLoggedUser);
+            
+            const myAccount = users.find(u => {
+                if (!u.username) return false;
+                return u.username.toString().trim().toLowerCase() === visualUser.toLowerCase();
+            });
 
             if(!myAccount) {
-                showToast("❌ خطأ: لم يتم العثور على بيانات حسابك الحالي بالشيت", "#dc3545");
+                showToast("❌ خطأ: لم يتم العثور على بيانات حسابك الحالي .", "#dc3545");
                 stopLoading("<i class='fas fa-key'></i> تحديث كلمة مروري الحالية");
                 return;
             }
@@ -258,19 +340,19 @@
             const result = await response.json();
             
             if(result.success) {
-                showToast("✅ تم تحديث كلمة مرورك الشخصية بنجاح مبهر!", "#28a745");
+                showToast("✅ تم تحديث كلمة مرورك الشخصية بنجاح !", "#28a745");
                 document.getElementById('myNewPass').value = "";
             } else {
                 showToast("❌ خطأ من السيرفر: " + result.error, "#dc3545");
             }
         } catch(err) {
-            showToast("❌ فشل الاتصال بقاعدة البيانات السحابية", "#dc3545");
+            console.error(err);
+            showToast("❌ فشل الاتصال بقاعدة البيانات", "#dc3545");
         } finally {
             stopLoading("<i class='fas fa-key'></i> تحديث كلمة مروري الحالية");
         }
     }
 
-    // 3. دالة إضافة وإنشاء حساب مستخدم جديد (تعمل كما هي 100%)
     async function createNewUser() {
         const fullName = document.getElementById("regFullName").value.trim();
         const username = document.getElementById("regUser").value.trim();
@@ -301,10 +383,11 @@
             });
             const result = await response.json();
             if(result.success) {
-                showToast("✅ تم إنشاء الحساب والموظف الجديد بنجاح في شيت users!", "#28a745");
+                showToast("✅ تم إنشاء الحساب والموظف الجديد بنجاح users!", "#28a745");
                 document.getElementById("regFullName").value = "";
                 document.getElementById("regUser").value = "";
                 document.getElementById("regPass").value = "";
+                fetchAndRenderUsersTable();
             } else {
                 showToast("❌ فشل الحفظ: " + result.error, "#dc3545");
             }
@@ -315,7 +398,87 @@
         }
     }
 
-    // تأثيرات اللودينج للأزرار أثناء الحفظ السحابي
+    async function updateUserRow(userId) {
+        const targetUser = allSystemUsers.find(u => u.id === userId);
+        if(!targetUser) return;
+
+        const updatedPass = document.getElementById(`pass-${userId}`).value.trim();
+        const updatedRole = document.getElementById(`role-${userId}`).value;
+
+        if(!updatedPass) {
+            showToast("⚠️ لا يمكن إبقاء حقل كلمة المرور فارغاً", "#ff9800");
+            return;
+        }
+
+        const payload = {
+            action: "editStudent",
+            sheet: "users",
+            id: userId,
+            username: targetUser.username,
+            full_name: targetUser.full_name,
+            password: updatedPass,
+            role: updatedRole
+        };
+
+        showToast("⏳ جاري حفظ وتعديل الحساب ...", "#0284c7");
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if(result.success) {
+                showToast("✅ تم تحديث بيانات ورتبة المستخدم بنجاح تام!", "#28a745");
+                fetchAndRenderUsersTable(); 
+            } else {
+                showToast("❌ فشل التعديل: " + result.error, "#dc3545");
+            }
+        } catch(e) {
+            showToast("❌ خطأ أثناء الاتصال بقاعدة البيانات", "#dc3545");
+        }
+    }
+
+    async function deleteUserRow(userId) {
+        const targetUser = allSystemUsers.find(u => u.id === userId);
+        if(!targetUser) return;
+
+        const visualUser = document.getElementById('myUsername') ? document.getElementById('myUsername').value.trim() : currentLoggedUser;
+
+        if(targetUser.username.toString().trim().toLowerCase() === visualUser.toString().trim().toLowerCase()) {
+            showToast("🛑 لا يمكنك حذف حسابك الشخصي النشط حالياً من المنظومة!", "#dc3545");
+            return;
+        }
+
+        if(!confirm(`هل أنت متأكد تماماً من رغبتك في حذف حساب الموظف (${targetUser.full_name}) نهائياً من السيستم؟`)) {
+            return;
+        }
+
+        const payload = {
+            action: "deleteStudent", 
+            sheet: "users",
+            id: userId
+        };
+
+        showToast("⏳ جاري إزالة الحساب نهائياً من قاعدة البيانات...", "#ef4444");
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            if(result.success) {
+                showToast("🗑️ تم حذف الحساب بنجاح .", "#28a745");
+                fetchAndRenderUsersTable(); 
+            } else {
+                showToast("❌ فشل عملية الحذف: " + result.error, "#dc3545");
+            }
+        } catch(e) {
+            showToast("❌ حدث عطل أثناء الاتصال بالخادم", "#dc3545");
+        }
+    }
+
     let originalBtnHTML = "";
     function startLoading() {
         const btn = document.getElementById('btn-save');
@@ -336,10 +499,12 @@
 
     function showToast(msg, bg) {
         const toast = document.getElementById('toast');
-        toast.innerText = msg;
-        toast.style.background = bg;
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        if(toast) {
+            toast.innerText = msg;
+            toast.style.background = bg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
     }
 </script>
 
