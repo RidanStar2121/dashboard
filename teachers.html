@@ -144,17 +144,26 @@
         td { padding: 12px 14px; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 14px; }
         tbody tr:hover { background: #f8fafc; }
 
-        /* تاقات الأفواج الديناميكية */
+        /* تاقات الأفواج الديناميكية التفاعلية الذكية */
         .group-badge-tag {
             background: #e0f2fe;
             color: #0369a1;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
             display: inline-block;
             margin: 2px;
             border: 1px solid #bae6fd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .group-badge-tag:hover {
+            background: #0369a1;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(3, 105, 161, 0.2);
         }
         .no-groups { color: #94a3b8; font-size: 12px; font-style: italic; }
 
@@ -321,15 +330,17 @@ function renderTeachers(dataArray){
     }
 
     dataArray.forEach(t => {
+        // إنشاء السطر أولاً بشكل برمي صحيح لمنع انهيار السكريبت
         const tr = document.createElement("tr");
-        
-        // جلب أفواج الأستاذ بطريقة مؤتمتة ذكية بالكامل من شيت المجموعات
+
         const teacherGroups = getTeacherGroups(t.name);
         let groupsBadgesHtml = "";
-        
+
         if(teacherGroups.length > 0) {
             teacherGroups.forEach(g => {
-                groupsBadgesHtml += `<span class="group-badge-tag">🏫 ${g.groupName}</span>`;
+                // رابط ذكي ينقل المستخدم لصفحة المجموعات مع تمرير اسم الفوج بدقة في الـ URL
+                const targetURL = `groups.html?groupName=${encodeURIComponent(g.groupName.trim())}`;
+                groupsBadgesHtml += `<a href="${targetURL}" class="group-badge-tag" title="الانتقال إلى صفحة الفوج ومعاينة التلاميذ">🏫 ${g.groupName}</a>`;
             });
         } else {
             groupsBadgesHtml = `<span class="no-groups">لا توجد أفواج حالياً</span>`;
@@ -363,7 +374,6 @@ function filterTeachersTable() {
     }
     
     const filtered = allTeachers.filter(t => {
-        // البحث يشمل الأفواد الديناميكية المرتبطة به أيضاً!
         const teacherGroups = getTeacherGroups(t.name);
         const hasGroupMatch = teacherGroups.some(g => g.groupName && g.groupName.toLowerCase().includes(query));
 
@@ -388,7 +398,7 @@ function saveTeacher(){
         subject: document.getElementById("subject").value,
         level: document.getElementById("level").value,
         salary: document.getElementById("salary").value,
-        group_name: "" // نتركها فارغة لأن النظام أصبح يقرأ الأفواج ديناميكياً من شيت المجموعات مباشرة
+        group_name: "" 
     };
 
     if(!data.name) { alert("⚠️ يرجى إدخال اسم الأستاذ الكامل أولاً"); return; }
@@ -429,14 +439,14 @@ function editTeacher(id) {
     document.getElementById("level").value = t.level || "";
     document.getElementById("salary").value = t.salary || "";
     
-    // عرض الأفواج التابعة له داخل صندوق الـ Form بشكل تفاعلي سريع عند الضغط على تعديل
     const formGroupsBox = document.getElementById("teacherGroupsFormList");
     const currentGroups = getTeacherGroups(t.name);
     formGroupsBox.innerHTML = "";
     
     if(currentGroups.length > 0) {
         currentGroups.forEach(g => {
-            formGroupsBox.innerHTML += `<span class="group-badge-tag">🏫 ${g.groupName}</span>`;
+            const targetURL = `groups.html?groupName=${encodeURIComponent(g.groupName)}`;
+            formGroupsBox.innerHTML += `<a href="${targetURL}" class="group-badge-tag" title="اضغط لعرض تفاصيل وتلاميذ ${g.groupName}">🏫 ${g.groupName}</a>`;
         });
     } else {
         formGroupsBox.innerHTML = `<span class="no-groups">هذا الأستاذ غير مسكن في أي فوج حالياً</span>`;
