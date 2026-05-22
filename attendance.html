@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الحضور المتكاملة - نذير وضاح</title>
+    <title>إدارة الحضور الذكية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; margin: 0; background: #f5f7fa; direction: rtl; }
@@ -17,10 +18,8 @@
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); position: relative; }
         h3 { margin-top: 0; color: #007bff; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; font-size: 16px; }
 
-        /* الكاميرا */
         #reader { width: 100%; border-radius: 10px; overflow: hidden; border: 2px solid #eee; }
         
-        /* محرك البحث الذكي الجديد */
         .search-box-container { position: relative; margin-bottom: 15px; }
         .search-input { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #007bff; box-sizing: border-box; font-family: 'Cairo'; background: #f0f7ff; }
         .search-suggestions { 
@@ -32,57 +31,61 @@
         .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
         .suggestion-item:hover { background: #e7f3ff; }
 
-        /* الفورم */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; }
-        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; }
+        input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; box-sizing: border-box; }
         
-        .btn-save { background: #28a745; color: white; width: 100%; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .buttons-group { display: flex; gap: 10px; }
+        .btn-save { background: #28a745; color: white; flex: 2; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn-cancel { background: #dc3545; color: white; flex: 1; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; display: none; }
         
-        /* التتبع والجدول */
         .full-width { grid-column: 1 / -1; }
-        .filters { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; background: #e9ecef; padding: 15px; border-radius: 10px; }
+        .filters { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; background: #e9ecef; padding: 15px; border-radius: 10px; align-items: center; }
         .filters button { background: white; border: 1px solid #007bff; color: #007bff; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
         .filters button.active { background: #007bff; color: white; }
 
         .table-container { background: white; border-radius: 10px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        table { width: 100%; border-collapse: collapse; min-width: 850px; }
         th, td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; font-size: 13px; }
         thead { background: #007bff; color: white; }
         
         .status-present { color: #28a745; font-weight: bold; }
         .status-absent { color: #dc3545; font-weight: bold; }
         .loading-overlay { display: none; text-align: center; padding: 20px; color: #666; }
+        .badge-group { background: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
+        
+        .action-btn { border: none; background: none; cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 4px; transition: 0.2s; }
+        .btn-edit-row { color: #ffc107; } .btn-edit-row:hover { background: #fff9e6; }
+        .btn-delete-row { color: #dc3545; } .btn-delete-row:hover { background: #fff5f5; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    📊 إدارة الحضور والغياب (ذكي + يدوي)
+    👥 نظام تتبع الحضور الذكي والربط التلقائي للأفواج
     <button class="nav-btn" onclick="location.href='home.html'">🏠 الرئيسية</button>
 </div>
 
 <div class="container">
     
-    <!-- الجهة اليمنى: المسح الضوئي والكاميرا -->
     <div class="card">
         <h3>🎥 المسح الذكي (QR Code)</h3>
         <div id="reader"></div>
-        <p id="scanStatus" style="text-align: center; font-weight: bold; margin-top: 10px; color: #666;">في انتظار المسح...</p>
+        <p id="scanStatus" style="text-align: center; font-weight: bold; margin-top: 10px; color: #666;">في انتظار قراءة الكود...</p>
     </div>
 
-    <!-- الجهة اليسرى: الإدخال اليدوي المطور -->
     <div class="card">
-        <h3>📝 تسجيل حضور/غياب سريع</h3>
+        <h3 id="formTitle">📝 تسجيل حضور / غياب جديد</h3>
         
-        <!-- خانة البحث السريع الجديدة -->
+        <input type="hidden" id="rowId">
+
         <div class="search-box-container">
-            <label>🔍 ابحث عن اسم الطالب بسرعة:</label>
-            <input type="text" id="quickSearch" class="search-input" placeholder="اكتب اسم الطالب هنا..." oninput="handleQuickSearch()">
+            <label>🔍 ابحث عن اسم الطالب أو معرفه:</label>
+            <input type="text" id="quickSearch" class="search-input" placeholder="اكتب اسم الطالب هنا للمقاطعة الفورية..." oninput="handleQuickSearch()">
             <div id="suggestions" class="search-suggestions"></div>
         </div>
 
-        <div class="form-group" style="display: none;"> <!-- مخفية لكنها مهمة للسكربت -->
+        <div class="form-group" style="display: none;">
             <select id="studentSelect">
                 <option value="">-- اختر الطالب --</option>
             </select>
@@ -90,13 +93,20 @@
 
         <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
-                <label>اسم الطالب المختار:</label>
-                <input type="text" id="displayStudentName" readonly placeholder="لم يتم الاختيار" style="background: #f8f9fa; font-weight: bold;">
+                <label>الطالب المستهدف:</label>
+                <input type="text" id="displayStudentName" readonly placeholder="في انتظار الاختيار..." style="background: #f8f9fa; font-weight: bold;">
             </div>
             <div>
-                <label>رقم الطالب (ID):</label>
+                <label>رقم المعرف (ID):</label>
                 <input type="text" id="studentId" readonly placeholder="ID" style="background: #f8f9fa;">
             </div>
+        </div>
+
+        <div class="form-group">
+            <label style="color: #007bff;">👥 الفوج المستهدف (يتعرف عليه النظام تلقائياً):</label>
+            <select id="groupSelect" style="border: 2px solid #28a745; font-weight: bold;">
+                <option value="">⏳ جاري تحميل بيانات الأفواج والمجموعات...</option>
+            </select>
         </div>
 
         <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -114,26 +124,29 @@
         </div>
 
         <div class="form-group">
-            <label>ملاحظات:</label>
-            <input type="text" id="note" placeholder="مثال: تأخر 10 دقائق">
+            <label>ملاحظات إضافية:</label>
+            <input type="text" id="note" placeholder="ملاحظات حول الحصة الحالية...">
         </div>
-        <button class="btn-save" id="saveBtn" onclick="submitAttendance()">💾 تأكيد وحفظ العملية</button>
+        
+        <div class="buttons-group">
+            <button class="btn-save" id="saveBtn" onclick="submitAttendance()">💾 تأكيد الحفظ في السحابة</button>
+            <button class="btn-cancel" id="cancelBtn" onclick="resetForm()">❌ إلغاء</button>
+        </div>
     </div>
 
-    <!-- الجزء السفلي: جدول التتبع التاريخي -->
     <div class="card full-width">
-        <h3>📅 سجل تتبع الحضور والغياب</h3>
+        <h3>📅 سجل عمليات الحضور التاريخي</h3>
         <div class="filters">
-            <strong>تصفية الجدول:</strong>
-            <button onclick="filterRecords('all')" class="active" id="btnAll">الكل</button>
-            <button onclick="filterRecords('day')" id="btnDay">اليوم</button>
-            <button onclick="filterRecords('month')" id="btnMonth">هذا الشهر</button>
+            <strong>تصفية الحصص:</strong>
+            <button onclick="filterRecords('all')" class="active" id="btnAll">عرض الكل</button>
+            <button onclick="filterRecords('day')" id="btnDay">اليوم الحصري</button>
+            <button onclick="filterRecords('month')" id="btnMonth">الشهر الحالي</button>
             <div style="margin-right: auto;">
-                <input type="text" id="tableSearch" placeholder="🔍 بحث في السجل..." style="width: 200px; padding: 5px;">
+                <input type="text" id="tableSearch" placeholder="🔍 بحث سريع في السجل..." style="width: 200px; padding: 5px;">
             </div>
         </div>
 
-        <div id="loader" class="loading-overlay">⏳ جاري جلب السجلات من السحابة...</div>
+        <div id="loader" class="loading-overlay">⏳ جاري جلب البيانات ...</div>
 
         <div class="table-container">
             <table>
@@ -142,8 +155,10 @@
                         <th>التاريخ</th>
                         <th>ID</th>
                         <th>اسم الطالب</th>
+                        <th>الفوج المستهدف والبيانات</th>
                         <th>الحالة</th>
                         <th>ملاحظات</th>
+                        <th style="text-align: center; width: 100px;">إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="attBody"></tbody>
@@ -155,6 +170,7 @@
 <script>
     const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
     let studentsData = [];
+    let groupsData = []; 
     let attendanceHistory = [];
 
     window.onload = async () => {
@@ -168,8 +184,8 @@
             const sRes = await fetch(`${sheetURL}?action=get&sheet=students`);
             studentsData = await sRes.json();
             
-            // تعبئة القائمة المخفية للمزامنة
             const select = document.getElementById('studentSelect');
+            select.innerHTML = '<option value="">-- اختر الطالب --</option>';
             studentsData.forEach(s => {
                 let opt = document.createElement('option');
                 opt.value = s.id;
@@ -177,11 +193,30 @@
                 select.appendChild(opt);
             });
 
+            const gRes = await fetch(`${sheetURL}?action=get&sheet=Group`);
+            groupsData = await gRes.json();
+            populateAllGroupsInitially();
+
             await fetchAttendanceHistory();
-        } catch (e) { console.error("Error loading data"); }
+        } catch (e) { console.error("Error loading initial data", e); }
     }
 
-    // --- نظام البحث السريع الجديد ---
+    function populateAllGroupsInitially() {
+        const gSelect = document.getElementById('groupSelect');
+        gSelect.innerHTML = '<option value="">-- اختر الفوج يدوياً أو ابحث عن طالب للربط التلقائي --</option>';
+        if(groupsData.length === 0) {
+            gSelect.innerHTML = '<option value="">⚠️ لا توجد أفواج في شيت Group</option>';
+            return;
+        }
+        groupsData.forEach(g => {
+            let opt = document.createElement('option');
+            let groupText = `${g.groupName || 'فوج غير مسمى'} [${g.subject || 'بدون مادة'}] - أ.${g.teacher || 'غير مححدد'}`;
+            opt.value = groupText;
+            opt.textContent = groupText;
+            gSelect.appendChild(opt);
+        });
+    }
+
     function handleQuickSearch() {
         const query = document.getElementById('quickSearch').value.toLowerCase();
         const container = document.getElementById('suggestions');
@@ -211,11 +246,38 @@
     function selectStudent(student) {
         document.getElementById('displayStudentName').value = student.name;
         document.getElementById('studentId').value = student.id;
-        document.getElementById('studentSelect').value = student.id; // للمزامنة مع الكود القديم
+        document.getElementById('studentSelect').value = student.id; 
         document.getElementById('quickSearch').value = student.name;
         document.getElementById('suggestions').style.display = "none";
+
+        const gSelect = document.getElementById('groupSelect');
+        
+        const matchedGroups = groupsData.filter(g => {
+            if (g.studentIds) {
+                const idsArray = g.studentIds.toString().split(",").map(id => id.trim());
+                return idsArray.includes(student.id.toString());
+            }
+            return false;
+        });
+
+        if (matchedGroups.length > 0) {
+            gSelect.innerHTML = '';
+            matchedGroups.forEach(g => {
+                let opt = document.createElement('option');
+                let groupText = `${g.groupName} [${g.subject}] - أ.${g.teacher || 'غير محدد'}`;
+                opt.value = groupText;
+                opt.textContent = groupText;
+                gSelect.appendChild(opt);
+            });
+        } else {
+            populateAllGroupsInitially();
+            let opt = document.createElement('option');
+            opt.value = "";
+            opt.textContent = "⚠️ تنبيه: هذا التلميذ لم يتم تسكينه بأي فوج في صفحة الأفواج!";
+            opt.selected = true;
+            gSelect.prepend(opt);
+        }
     }
-    // -------------------------------
 
     async function fetchAttendanceHistory() {
         document.getElementById('loader').style.display = "block";
@@ -223,7 +285,7 @@
             const aRes = await fetch(`${sheetURL}?action=get&sheet=attendance`);
             attendanceHistory = await aRes.json();
             renderTable(attendanceHistory);
-        } catch (e) { console.error("Error fetching history"); }
+        } catch (e) { console.error("Error fetching history", e); }
         document.getElementById('loader').style.display = "none";
     }
 
@@ -233,39 +295,117 @@
             const student = studentsData.find(s => s.id == decoded || s.name == decoded);
             if(student) selectStudent(student);
             playBeep();
-        }).catch(err => console.log("Camera error"));
+        }).catch(err => console.log("Camera loading..."));
     }
 
     async function submitAttendance() {
         const btn = document.getElementById('saveBtn');
+        const rowId = document.getElementById('rowId').value;
         const sName = document.getElementById('displayStudentName').value;
         const sId = document.getElementById('studentId').value;
+        const groupInfo = document.getElementById('groupSelect').value;
         
-        if (!sId) return alert("يرجى البحث واختيار طالب أولاً");
+        if (!sId) return alert("يرجى اختيار طالب أولاً");
+        if (!groupInfo || groupInfo.includes("تنبيه") || groupInfo.includes("اختر")) return alert("يرجى اختيار الفوج والمادة المحددة لحفظ الحصة بنجاح");
 
-        const data = {
-            action: "addStudent",
+        const isEdit = rowId !== "";
+
+        const payload = {
+            action: isEdit ? "editStudent" : "addStudent",
             sheet: "attendance",
+            id: isEdit ? rowId : null,
             studentId: sId,
             studentName: sName,
+            groupName: groupInfo, 
             date: document.getElementById('attDate').value,
             status: document.getElementById('status').value,
             note: document.getElementById('note').value
         };
 
         btn.disabled = true;
-        btn.innerText = "⏳ جاري الحفظ...";
+        btn.innerText = "⏳ جاري الإرسال ...";
         try {
-            const res = await fetch(sheetURL, { method: "POST", body: JSON.stringify(data) });
+            const res = await fetch(sheetURL, { method: "POST", body: JSON.stringify(payload) });
             const result = await res.json();
             if (result.success) {
-                alert("✅ تم تسجيل " + data.status + " للطالب: " + sName);
+                alert(isEdit ? "✅ تم تعديل السجل بنجاح!" : "✅ تم تسجيل عملية الحضور بنجاح!");
                 await fetchAttendanceHistory();
                 resetForm();
+            } else {
+                alert("❌ فشل الحفظ: " + (result.error || "خطأ سيرفر"));
             }
-        } catch (e) { alert("خطأ في الاتصال"); }
+        } catch (e) { alert("خطأ في الاتصال بالخادم"); }
         btn.disabled = false;
-        btn.innerText = "💾 تأكيد وحفظ العملية";
+        btn.innerText = isEdit ? "💾 حفظ التعديلات" : "💾 تأكيد الحفظ";
+    }
+
+    function editAttendanceMode(id) {
+        const record = attendanceHistory.find(r => r.id.toString() === id.toString());
+        if (!record) return;
+
+        document.getElementById('formTitle').innerHTML = `✏️ تعديل سجل حضور الطالب: ${record.studentName}`;
+        document.getElementById('rowId').value = record.id;
+        document.getElementById('displayStudentName').value = record.studentName;
+        document.getElementById('studentId').value = record.studentId;
+        document.getElementById('studentSelect').value = record.studentId;
+        document.getElementById('quickSearch').value = record.studentName;
+        document.getElementById('attDate').value = record.date;
+        document.getElementById('status').value = record.status;
+        document.getElementById('note').value = record.note || "";
+
+        const gSelect = document.getElementById('groupSelect');
+        const savedGroup = record.groupName || record.group || '';
+        gSelect.innerHTML = `<option value="${savedGroup}" selected>${savedGroup}</option>`;
+        
+        groupsData.forEach(g => {
+            let groupText = `${g.groupName || 'فوج غير مسمى'} [${g.subject || 'بدون مادة'}] - أ.${g.teacher || 'غير محدد'}`;
+            if (groupText !== savedGroup) {
+                let opt = document.createElement('option');
+                opt.value = groupText;
+                opt.textContent = groupText;
+                gSelect.appendChild(opt);
+            }
+        });
+
+        document.getElementById('cancelBtn').style.display = "inline-flex";
+        document.getElementById('saveBtn').innerText = "💾 حفظ التعديلات";
+        window.scrollTo({ top: 100, behavior: 'smooth' });
+    }
+
+    // الدالة الذكية والمطابقة تماماً لصفحة Group لحذف السجل بدون لمس الـ Apps Script
+    // الدالة الذكية والمطابقة تماماً لصفحة Group لحذف السجل بدون لمس الـ Apps Script
+    async function deleteAttendance(id) {
+        if (!confirm("هل أنت متأكد تماماً من حذف سجل الحضور هذا؟ لا يمكن التراجع عن هذا الإجراء.")) return;
+
+        // استخدام نفس تركيبة وبنية متغير الـ payload لصفحة المجموعات الناجحة بنسبة 100%
+        const payload = {
+            action: "deleteUser", 
+            sheet: "attendance",
+            id: id
+        };
+
+        try {
+            const response = await fetch(sheetURL, { 
+                method: "POST", 
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify(payload) 
+            });
+            
+            const result = await response.json();
+            
+            if (result.success || response.ok) {
+                // تحديث السجل فوراً في الواجهة لإشعار المستخدم بالدقة
+                alert("🗑️ تم حذف السجل بنجاح من المنظومة سحابياً.");
+                await fetchAttendanceHistory();
+            } else {
+                alert("❌ فشل الحذف من السيرفر: " + (result.error || "خطأ غير معروف"));
+            }
+        } catch (e) {
+            alert("❌ فشل الحذف، يرجى التحقق من اتصال الشبكة.");
+            console.error(e);
+        }
     }
 
     function renderTable(data) {
@@ -273,13 +413,20 @@
         tbody.innerHTML = "";
         data.slice().reverse().forEach(r => {
             const statusClass = r.status === "حاضر" ? "status-present" : "status-absent";
+            const groupDisplay = r.groupName || r.group || '-';
+            
             tbody.innerHTML += `
                 <tr>
                     <td>${r.date}</td>
                     <td>${r.studentId}</td>
                     <td>${r.studentName}</td>
+                    <td><span class="badge-group">${groupDisplay}</span></td>
                     <td class="${statusClass}">${r.status}</td>
                     <td>${r.note || '-'}</td>
+                    <td style="text-align: center;">
+                        <button class="action-btn btn-edit-row" onclick="editAttendanceMode('${r.id}')" title="تعديل السجل"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn btn-delete-row" onclick="deleteAttendance('${r.id}')" title="حذف السجل"><i class="fas fa-trash-alt"></i></button>
+                    </td>
                 </tr>
             `;
         });
@@ -310,17 +457,23 @@
         const term = e.target.value.toLowerCase();
         const filtered = attendanceHistory.filter(r => 
             r.studentName.toLowerCase().includes(term) || 
-            r.studentId.toString().includes(term)
+            r.studentId.toString().includes(term) ||
+            (r.groupName && r.groupName.toLowerCase().includes(term))
         );
         renderTable(filtered);
     });
 
     function resetForm() {
+        document.getElementById('formTitle').innerHTML = "📝 تسجيل حضور / غياب جديد";
+        document.getElementById('rowId').value = "";
         document.getElementById('quickSearch').value = "";
         document.getElementById('displayStudentName').value = "";
         document.getElementById('studentId').value = "";
         document.getElementById('note').value = "";
-        document.getElementById('scanStatus').innerHTML = "في انتظار المسح...";
+        document.getElementById('cancelBtn').style.display = "none";
+        document.getElementById('saveBtn').innerText = "💾 تأكيد الحفظ في السحابة";
+        populateAllGroupsInitially();
+        document.getElementById('scanStatus').innerHTML = "في انتظار قراءة الكود...";
     }
 
     function playBeep() {
