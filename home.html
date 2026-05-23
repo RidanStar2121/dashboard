@@ -45,95 +45,86 @@
     gap: 12px;
   }
 
+  /* زر التشات العائم */
+  .ai-chat-bubble {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #7c3aed, #007bff);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+    z-index: 999;
+    transition: all 0.3s ease;
+  }
+  .ai-chat-bubble:hover { transform: scale(1.1) rotate(5deg); }
 
-/* زر التشات العائم */
-.ai-chat-bubble {
-  position: fixed;
-  bottom: 30px;
-  left: 30px; /* يسار لأن النظام dir="rtl" */
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #7c3aed, #007bff);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 26px;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
-  z-index: 999;
-  transition: all 0.3s ease;
-}
-.ai-chat-bubble:hover { transform: scale(1.1) rotate(5deg); }
+  .ai-badge-pulse {
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 12px; height: 12px;
+    background-color: #10b981;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation: pulseGlow 2s infinite;
+  }
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
 
-.ai-badge-pulse {
-  position: absolute;
-  top: 2px; right: 2px;
-  width: 12px; height: 12px;
-  background-color: #10b981;
-  border-radius: 50%;
-  border: 2px solid white;
-  animation: pulseGlow 2s infinite;
-}
-@keyframes pulseGlow {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
+  /* نافذة محادثة ريدان */
+  .ai-chat-window {
+    display: none;
+    position: fixed;
+    bottom: 105px;
+    left: 30px;
+    width: 360px;
+    height: 480px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    border: 1px solid rgba(124, 58, 237, 0.15);
+    z-index: 999;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUpAi 0.3s ease;
+  }
+  @keyframes slideUpAi { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-/* نافذة محادثة ريدان */
-.ai-chat-window {
-  display: none;
-  position: fixed;
-  bottom: 105px;
-  left: 30px;
-  width: 360px;
-  height: 480px;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-  border: 1px solid rgba(124, 58, 237, 0.15);
-  z-index: 999;
-  flex-direction: column;
-  overflow: hidden;
-  animation: slideUpAi 0.3s ease;
-}
-@keyframes slideUpAi { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .ai-chat-header {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #7c3aed;
+  }
+  .ai-profile { display: flex; align-items: center; gap: 10px; }
+  .ai-avatar { width: 35px; height: 35px; background: rgba(124, 58, 237, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #a78bfa; font-size: 16px; border: 1px solid #7c3aed; }
+  .ai-name-status h4 { margin: 0; font-size: 15px; font-weight: 700; }
+  .ai-name-status span { font-size: 11px; color: #94a3b8; }
+  .close-ai-chat { font-size: 24px; cursor: pointer; color: #94a3b8; transition: color 0.2s; }
+  .close-ai-chat:hover { color: #ef4444; }
 
-.ai-chat-header {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  color: white;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid #7c3aed;
-}
-.ai-profile { display: flex; align-items: center; gap: 10px; }
-.ai-avatar { width: 35px; height: 35px; background: rgba(124, 58, 237, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #a78bfa; font-size: 16px; border: 1px solid #7c3aed; }
-.ai-name-status h4 { margin: 0; font-size: 15px; font-weight: 700; }
-.ai-name-status span { font-size: 11px; color: #94a3b8; }
-.close-ai-chat { font-size: 24px; cursor: pointer; color: #94a3b8; transition: color 0.2s; }
-.close-ai-chat:hover { color: #ef4444; }
+  .ai-chat-body { flex: 1; padding: 20px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 12px; }
+  .ai-message { max-width: 80%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; }
+  .ai-message.bot { background: white; color: #1e293b; align-self: flex-start; border-bottom-right-radius: 4px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+  .ai-message.user { background: #7c3aed; color: white; align-self: flex-end; border-bottom-left-radius: 4px; }
 
-.ai-chat-body { flex: 1; padding: 20px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 12px; }
-.ai-message { max-width: 80%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; }
-.ai-message.bot { background: white; color: #1e293b; align-self: flex-start; border-bottom-right-radius: 4px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-.ai-message.user { background: #7c3aed; color: white; align-self: flex-end; border-bottom-left-radius: 4px; }
-
-.ai-chat-footer { padding: 12px 15px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
-.ai-chat-footer input { flex: 1; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: 'Cairo'; font-size: 13px; }
-.ai-chat-footer button { background: #7c3aed; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
-.ai-chat-footer button:hover { background: #6d28d9; }
-
-
-
-
-
-
-
-
+  .ai-chat-footer { padding: 12px 15px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
+  .ai-chat-footer input { flex: 1; padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: 'Cairo'; font-size: 13px; }
+  .ai-chat-footer button { background: #7c3aed; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
+  .ai-chat-footer button:hover { background: #6d28d9; }
 
   .logout-btn {
     background: #dc3545;
@@ -272,7 +263,7 @@
     cursor: pointer;
     transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(0, 0, 0, 0.03);
-    display: none; /* الإخفاء الافتراضي ويتم تفعيل المسموح عبر الجافاسكريبت */
+    display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -280,7 +271,6 @@
     box-shadow: var(--card-shadow);
   }
 
-  /* إجبار إظهار البطاقات النشطة */
   .card.accessible {
     display: flex !important;
   }
@@ -567,73 +557,161 @@
     </div>
     <div class="card-footer-info">
         <span class="version-tag">الإصدار 2.0</span>
-        <span class="copyright-tag">© 2026 جميع الحقوق محفوظة</span>
+        <span class="copyright-tag">جميع الحقوق محفوظة 2026 © نذير وضاح</span>
     </div>
   </div>
 </div>
 
-<script>
+<div class="ai-chat-bubble" onclick="toggleAiChat()">
+  <i class="fas fa-robot"></i>
+  <span class="ai-badge-pulse"></span>
+</div>
 
-/* 🤖 وظائف المساعد الذكي ريدن ستار */
+<div class="ai-chat-window" id="aiChatWindow">
+  <div class="ai-chat-header">
+    <div class="ai-profile">
+      <div class="ai-avatar"><i class="fas fa-star"></i></div>
+      <div class="ai-name-status">
+        <h4>ريدن ستار</h4>
+        <span>المساعد الذكي الخارق الحكيم 🌟</span>
+      </div>
+    </div>
+    <span class="close-ai-chat" onclick="toggleAiChat()">&times;</span>
+  </div>
+  
+  <div class="ai-chat-body" id="raidanChatContainer">
+    <div class="ai-message bot">مرحباً بك ! أنا مساعدك العبقري <strong>ريدن ستار</strong>. يمكنني قراءة بيانات قاعدة البيانات الحية والإجابة على أي سؤال بدقة. كيف يمكنني مساعدتك اليوم؟</div>
+  </div>
+  
+  <div class="ai-chat-footer">
+    <input type="text" id="raidanQuestionInput" placeholder="اكتب سؤالك هنا عن الطلاب أو النظام...">
+    <button onclick="askRaidanStar()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<script>
+// رابط الـ Backend السحابي الخاص بك (تم الحفاظ عليه بالكامل)
+const API_URL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec"; 
+
+// مفتاح الـ API مشفر بـ Base64 لحمايته من الفحص السريع بالعين المجردة داخل ملفات الـ EXE
+const ENCRYPTED_GEMINI_KEY = "QUl6YVN5QlRqQ1ZjQ0FhNk42cUFEdy1WdUlhejB6RlRvdmdCS3A0"; 
+
+// دالة تفك التشفير في الذاكرة المؤقتة فقط عند الاستدعاء
+function getSecretKey() {
+    return atob(ENCRYPTED_GEMINI_KEY);
+}
+
+// 🤖 الدالة الذكية الأساسية لتشغيل الذكاء الاصطناعي الفعلي المربوط بالشيت
+async function askRaidanStar() {
+    const questionInput = document.getElementById("raidanQuestionInput"); 
+    const chatContainer = document.getElementById("raidanChatContainer"); 
+    const question = questionInput.value.trim();
+    
+    if (!question) return;
+
+    // 1. عرض سؤالك في واجهة الشات فوراً
+    chatContainer.innerHTML += `<div class="ai-message user">${question}</div>`;
+    questionInput.value = ""; // تفريغ الحقل فوراً لمنع التكرار
+    chatContainer.scrollTop = chatContainer.scrollHeight; 
+    
+    // إنشاء رسالة انتظار متحركة
+    const loadingId = "load-" + Date.now();
+    chatContainer.innerHTML += `<div class="ai-message bot" id="${loadingId}"><i class="fas fa-spinner fa-spin"></i> <strong>ريدان ستار:</strong> جاري فحص الملفات الحية والتفكير...</div>`;
+    chatContainer.scrollTop = chatContainer.scrollHeight; 
+
+    try {
+        // 2. جلب البيانات الحالية من شيت المستخدمين عبر الـ API_URL الحالي
+        const resUsers = await fetch(`${API_URL}?action=get&sheet=users`);
+        const usersData = await resUsers.json();
+        
+        // تجهيز تقرير نصي ذكي ليقرأه الذكاء الاصطناعي ويمتنع عن التأليف
+        let systemContext = "بيانات المنظومة الحالية:\n";
+        systemContext += `عدد الحسابات والمسؤولين المسجلين: ${usersData.length}\n`;
+        usersData.forEach(u => {
+            systemContext += `- الاسم: ${u.full_name || 'غير معروف'} | اسم المستخدم: ${u.username || ''} | الصلاحية: ${u.role || ''}\n`;
+        });
+
+        // 3. الاتصال المباشر بسيرفرات جوجل Gemini API
+        const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getSecretKey()}`;
+        
+        const systemInstruction = `أنت 'ريدن ستار' (Ridan Star)، المساعد الذكي الخارق والعبقري المدمج في المنظومة الإدارية للأكاديمية.
+لديك وصول كامل لبيانات النظام المرفقة أدناه. أجب على أسئلة المستخدم بذكاء، واحترافية، ولغة عربية سليمة وممتازة بناءً على هذه البيانات الحية المرفقة ولا تؤلف أرقاماً غير موجودة.
+
+بيانات النظام الحية:
+${systemContext}`;
+
+        const response = await fetch(targetUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [{ "text": systemInstruction + "\n\nسؤال المستخدم الحالي: " + question }]
+                    }
+                ],
+                "generationConfig": {
+                    "temperature": 0.3,
+                    "maxOutputTokens": 600
+                }
+            })
+        });
+
+        const result = await response.json();
+        const loadingElement = document.getElementById(loadingId);
+        
+        if (result.candidates && result.candidates[0].content.parts[0].text) {
+            let aiReply = result.candidates[0].content.parts[0].text;
+            // طباعة الإجابة العبقرية الحقيقية في الواجهة
+            loadingElement.innerHTML = `<strong>ريدن ستار 🌟:</strong><br>${aiReply.replace(/\n/g, "<br>")}`;
+        } else {
+            loadingElement.innerHTML = `<strong>ريدن ستار:</strong> معذرةً، واجهتُ صعوبة في معالجة وتحليل البيانات حالياً.`;
+        }
+
+    } catch (error) {
+        console.error("AI Error:", error);
+        document.getElementById(loadingId).innerHTML = `<strong>ريدان ستار:</strong> حدث خطأ أثناء جلب البيانات أو الاتصال بخدمة الذكاء الاصطناعي.`;
+    }
+    
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// دالة فتح وإغلاق نافذة المحادثة
 function toggleAiChat() {
   const chatWindow = document.getElementById("aiChatWindow");
   if (chatWindow.style.display === "flex") {
     chatWindow.style.display = "none";
   } else {
     chatWindow.style.display = "flex";
-    document.getElementById("aiInput").focus();
+    document.getElementById("raidanQuestionInput").focus();
   }
 }
 
-function handleAiKeyPress(event) {
-  if (event.key === "Enter") { sendAiMessage(); }
-}
-
-function sendAiMessage() {
-  const inputEl = document.getElementById("aiInput");
-  const chatBody = document.getElementById("aiChatBody");
-  const msgText = inputEl.value.trim();
-
-  if (!msgText) return;
-
-  // 1. عرض رسالة المستخدم في الشات
-  const userMsgHtml = `<div class="ai-message user">${msgText}</div>`;
-  chatBody.insertAdjacentHTML('beforeend', userMsgHtml);
-  inputEl.value = "";
-  chatBody.scrollTop = chatBody.scrollHeight;
-
-  // 2. محاكاة رد ذكي مؤقت من ريدان ستار (يمكن ربطه لاحقاً بـ API حقيقي)
-  setTimeout(() => {
-    let reply = `أنا هنا لمساعدتك يا فندم، بصفتي مساعد الأكاديمية الذكي، جاري تطوير وظائف معالجة البيانات الحية للرد بدقة على طلبك: "${msgText}".`;
-    
-    // ردود مخصصة ذكية مبدئية
-    if (msgText.includes("سلام") || msgText.includes("مرحبا")) {
-      reply = `أهلاً بك مجدداً! يسعدني جداً تواصلك معي، أنا <strong>ريدان ستار</strong> في خدمتك.`;
-    } else if (msgText.includes("صلاحيات") || msgText.includes("من أنا")) {
-      reply = `أنت متصل الآن برتبة <strong>[${userRole}]</strong> واسمك في النظام هو <strong>${userName}</strong>. وبناءً على ذلك، قمت بتخصيص لوحة التحكم لتناسب مهامك المحددة فقط وتأمين باقي الأجزاء.`;
+// تفعيل الإرسال بزر Enter في الكود الجديد
+document.addEventListener("DOMContentLoaded", () => {
+    const inputField = document.getElementById("raidanQuestionInput");
+    if (inputField) {
+        inputField.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                askRaidanStar();
+            }
+        });
     }
-
-    const botMsgHtml = `<div class="ai-message bot">${reply}</div>`;
-    chatBody.insertAdjacentHTML('beforeend', botMsgHtml);
-    chatBody.scrollTop = chatBody.scrollHeight;
-  }, 800);
-}
-
-
-
+});
 
   /* 🔐 هيكلة نظام الحماية والتحكم بالصلاحيات (RBAC) */
   const userRole = localStorage.getItem("role");
   const userName = localStorage.getItem("userFullName") || "مستخدم نظام";
 
-  // تعيين جدول الصلاحيات العلمي والدقيق لكل رتبة
   const rolePermissions = {
     "مدير": ["dashboard", "add", "students", "groups", "certificates", "teachers", "courses", "attendance", "payments", "reports", "settings"],
     "موظف": ["add", "students", "groups", "teachers", "attendance"],
     "مستخدم": ["reports", "attendance", "certificates"]
   };
 
-  // طرد فوري في حال محاولة التلاعب والدخول للملف بدون رتبة مخزنة
   if (!userRole || !rolePermissions[userRole]) {
     localStorage.clear();
     window.location.href = "index.html";
@@ -647,7 +725,6 @@ function sendAiMessage() {
     fetchLiveWeather();
   };
 
-  /* 1. بناء وتصفية عناصر الواجهة بناء على الرتبة السحابية للمستخدم */
   function renderAccessibleModules() {
     const allowedModules = rolePermissions[userRole];
     const cards = document.querySelectorAll('#modulesGrid .card[data-module]');
@@ -655,28 +732,24 @@ function sendAiMessage() {
     cards.forEach(card => {
       const moduleName = card.getAttribute('data-module');
       if (allowedModules.includes(moduleName)) {
-        card.classList.add('accessible'); // إظهار البطاقة في الواجهة
+        card.classList.add('accessible');
       } else {
-        card.classList.remove('accessible'); // عزل تام وإخفاء للبطاقة
+        card.classList.remove('accessible');
       }
     });
   }
 
-  /* 2. دالة التنقل الذكية المحمية برمجياً ضد الاختراق والتلاعب عبر المتصفح */
   function go(page) {
     const moduleName = page.replace('.html', '');
     const allowedModules = rolePermissions[userRole];
 
-    // التحقق الفوري ما إذا كانت الصفحة المستهدفة تقع ضمن النطاق المسموح به برمجياً
     if (allowedModules.includes(moduleName)) {
       window.location.href = page;
     } else {
       alert("⚠️ تحذير أمني: لا تملك الصلاحيات الكافية للوصول إلى هذه الصفحة!");
-      console.warn(`Security Access Denied for module: ${moduleName}`);
     }
   }
 
-  /* 3. دالة تهيئة بيانات المستخدم المتصل تلقائياً */
   function setupUserDisplay() {
     const nameEl = document.getElementById("welcomeUserName");
     const badgeEl = document.getElementById("userRoleBadge");
@@ -702,7 +775,6 @@ function sendAiMessage() {
     }
   }
 
-  /* 4. دالة تشغيل الساعة والتاريخ تلقائياً */
   function updateClock() {
     const now = new Date();
     let hours = now.getHours();
@@ -723,7 +795,6 @@ function sendAiMessage() {
     document.getElementById("gregorianDate").innerHTML = `<i class="far fa-calendar-alt"></i> ${now.toLocaleDateString('ar-DZ', options)}`;
   }
 
-  /* 5. جلب الطقس لولاية سكيكدة */
   async function fetchLiveWeather() {
     try {
       const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=36.8792&longitude=6.9011&current_weather=true");
@@ -764,7 +835,6 @@ function sendAiMessage() {
     }
   }
 
-  /* خروج وتطهير الكاش */
   function logout(){
     localStorage.clear();
     window.location.href = "index.html";
@@ -777,35 +847,5 @@ function sendAiMessage() {
     if (event.target == modal) { modal.style.display = "none"; }
   }
 </script>
-
-<div class="ai-chat-bubble" onclick="toggleAiChat()">
-  <i class="fas fa-robot"></i>
-  <span class="ai-badge-pulse"></span>
-</div>
-
-<div class="ai-chat-window" id="aiChatWindow">
-  <div class="ai-chat-header">
-    <div class="ai-profile">
-      <div class="ai-avatar"><i class="fas fa-brain"></i></div>
-      <div class="ai-name-status">
-        <h4>ريدان ستار</h4>
-        <span><i class="fas fa-circle" style="color: #10b981; font-size: 8px;"></i> المساعد الذكي نشط الآن</span>
-      </div>
-    </div>
-    <span class="close-ai-chat" onclick="toggleAiChat()">&times;</span>
-  </div>
-  
-  <div class="ai-chat-body" id="aiChatBody">
-    <div class="ai-message bot">
-      مرحباً بك! معك مساعدك الذكي <strong>ريدان ستار</strong> 🌟. كيف يمكنني مساعدتك في إدارة الأكاديمية اليوم؟
-    </div>
-  </div>
-  
-  <div class="ai-chat-footer">
-    <input type="text" id="aiInput" placeholder="اسأل ريدان ستار عن أي شيء..." onkeypress="handleAiKeyPress(event)">
-    <button onclick="sendAiMessage()"><i class="fas fa-paper-plane"></i></button>
-  </div>
-</div>
-
 </body>
 </html>
