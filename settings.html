@@ -58,6 +58,15 @@
         .btn-delete { background-color: #ef4444; }
         .btn-delete:hover { background-color: #dc2626; }
 
+        /* الستايلات المضافة لنظام الحماية والـ Backup */
+        .backup-panel { display: flex; flex-direction: column; gap: 15px; background: #fafafa; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-top: 15px; }
+        .backup-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media(max-width: 550px) { .backup-btn-group { grid-template-columns: 1fr; } }
+        .btn-backup-manual { background: #4f46e5; color: white; }
+        .btn-backup-manual:hover { background: #4338ca; }
+        .btn-backup-restore { background: #ea580c; color: white; }
+        .btn-backup-restore:hover { background: #ca8a04; }
+
         /* التنبيهات */
         .toast { position: fixed; bottom: 20px; right: 20px; color: white; padding: 15px 25px; border-radius: 10px; z-index: 1000; font-size: 14px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     </style>
@@ -75,6 +84,7 @@
             <div class="nav-item active" onclick="showTab('general', this)"><i class="fas fa-school"></i> عام</div>
             <div class="nav-item" onclick="showTab('security', this)"><i class="fas fa-shield-alt"></i> الأمان والشخصي</div>
             <div class="nav-item" id="nav-users-manage" style="display:none;" onclick="showTab('users', this)"><i class="fas fa-users-cog"></i> إدارة الحسابات</div>
+            <div class="nav-item" id="nav-backup-manage" style="display:none;" onclick="showTab('backup', this)"><i class="fas fa-database"></i> الحماية والنسخ الاحترافي</div>
         </div>
 
         <div class="settings-content" id="tab-content">
@@ -101,6 +111,7 @@
     window.onload = async () => {
         if(currentRole === "مدير") {
             document.getElementById("nav-users-manage").style.display = "flex";
+            document.getElementById("nav-backup-manage").style.display = "flex";
         }
         await loadSystemSettings();
     };
@@ -248,10 +259,88 @@
                 <div id="users-table-container"></div>
             `;
         }
+        else if(tabName === 'backup') {
+            html = `
+                <h3 class="section-title"><i class="fas fa-database"></i> نظام الحماية الذكي والنسخ الاحتياطي السحابي (ريدن ستار)</h3>
+                <div class="ai-status" style="background: #e0f2fe; border-color: #bae6fd; color: #0369a1;">
+                    <i class="fas fa-shield-alt" style="color: #0284c7;"></i>
+                    <p><strong>حالة نظام الحماية الحالية:</strong> نشط ويعمل بالخلفية. يمكنك أخذ نسخة احتياطية محلية فورية لجهازك بصيغة إكسل في أي وقت.</p>
+                </div>
+                
+                <div class="backup-panel">
+                    <label style="font-size: 15px; color:#1e293b;"><i class="fas fa-history"></i> إدارة النسخ وتحميل الملف الحلي:</label>
+                    <p style="font-size: 13px; color: #64748b; margin: 0 0 10px 0;">عند الضغط على الزر أدناه، سيتم تنزيل ملف قاعدة البيانات (Sheets) بالكامل مباشرة إلى مجلد التنزيلات بجهازك بصيغة Excel لحفظه وتأمينه يدوياً.</p>
+                    
+                    <div class="backup-btn-group">
+                        <button class="save-btn btn-backup-manual" id="btn-trigger-backup" onclick="triggerManualBackup()">
+                            <i class="fas fa-download"></i> تحميل نسخة احتياطية فورية على الجهاز (.xlsx)
+                        </button>
+                        <button class="save-btn btn-backup-restore" id="btn-trigger-restore" onclick="triggerRestoreBackup()">
+                            <i class="fas fa-undo-alt"></i> استرجاع البيانات لآخر نسخة آمنة
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
         content.innerHTML = html;
 
         if(tabName === 'users') {
             fetchAndRenderUsersTable();
+        }
+    }
+
+    async function executionAutoBackup() {
+        try {
+            await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "createBackup", sheet: "auto_system", type: "automatic" })
+            });
+            console.log("ريدان ستار: تم حفظ نسخة احتياطية تلقائية بنجاح كإجراء وقائي.");
+        } catch(e) {
+            console.warn("فشل حفظ النسخة التلقائية المؤقتة:", e);
+        }
+    }
+
+    // الدالة المعدلة والمباشرة لتحميل الملف فوراً كإكسل على جهازك دون الحاجة للـ API السحابي
+    function triggerManualBackup() {
+        showToast("⏳ جاري بدء تحميل النسخة الاحتياطية مباشرة...", "#4f46e5");
+        
+        // استخراج معرف الملف من الـ API_URL الخاص بك تلقائياً أو يمكنك كتابته يدوياً هنا
+        // الرابط المباشر لتصدير وتحميل ملف الشيت كاملاً بصيغة إكسل المعتمدة
+        const sheetId = "1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g"; // تم استخراجه من الـ API_URL الخاص بك
+        const downloadUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=xlsx`;
+        
+        // فتح الرابط لبدء التحميل الفوري على المتصفح
+        window.location.href = downloadUrl;
+    }
+
+    async function triggerRestoreBackup() {
+        if(!confirm("⚠️ تحذير أمني: هل أنت متأكد من استرجاع البيانات لآخر نقطة آمنة؟ العملية ستقوم باستبدال البيانات الحالية بالنسخة الاحتياطية السابقة!")) {
+            return;
+        }
+
+        const btn = document.getElementById('btn-trigger-restore');
+        const oldHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري إعادة البناء واسترجاع البيانات...';
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "restoreBackup", sheet: "all" })
+            });
+            const result = await response.json();
+            if(result.success) {
+                showToast("🔄 تم استرجاع قاعدة البيانات وإصلاح الجداول بنجاح تام!", "#28a745");
+                if(typeof loadSystemSettings === "function") await loadSystemSettings();
+            } else {
+                showToast("❌ فشل الاسترجاع السحابي: " + (result.error || "لا توجد نسخ متوفرة"), "#dc3545");
+            }
+        } catch (error) {
+            showToast("❌ خطأ بالاتصال: تأكد من صلاحيات الـ Apps Script لاستعادة البيانات.", "#dc3545");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = oldHtml;
         }
     }
 
@@ -275,6 +364,8 @@
         };
         
         startLoading();
+        await executionAutoBackup(); // حماية تلقائية قبل الحفظ
+
         try {
             const response = await fetch(API_URL, {
                 method: "POST",
@@ -307,6 +398,7 @@
         }
 
         startLoading();
+        await executionAutoBackup(); // حماية تلقائية
 
         try {
             const res = await fetch(`${API_URL}?action=get&sheet=users`);
@@ -421,6 +513,7 @@
         };
 
         showToast("⏳ جاري حفظ وتعديل الحساب ...", "#0284c7");
+        await executionAutoBackup(); // أخذ نسخة وقائية قبل التعديل في السيرفر
 
         try {
             const response = await fetch(API_URL, {
@@ -461,6 +554,7 @@
         };
 
         showToast("⏳ جاري إزالة الحساب نهائياً من قاعدة البيانات...", "#ef4444");
+        await executionAutoBackup(); // حماية فورية قبل الحذف القطعي
 
         try {
             const response = await fetch(API_URL, {
