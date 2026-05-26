@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الدروس والجداول الزمنية</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1e70e6;
+            --primary-dark: #1256b8;
+            --accent-color: #10b981;
+            --danger-color: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 24px; }
+
+        /* الهيدر المحسن */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white; padding: 24px 32px; border-radius: var(--radius-lg);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 24px; box-shadow: var(--shadow-lg);
+        }
+        .header-title-box { display: flex; align-items: center; gap: 16px; }
+        .header-icon {
+            background: rgba(255, 255, 255, 0.2); width: 48px; height: 48px;
+            border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        .header-title-box h1 { font-size: 20px; font-weight: 700; }
+        .header-title-box p { font-size: 13px; opacity: 0.85; }
+
+        .btn-home {
+            background: rgba(255, 255, 255, 0.15); color: white; padding: 10px 18px;
+            border-radius: var(--radius-md); text-decoration: none; font-weight: 600;
+            font-size: 14px; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+        }
+        .btn-home:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-2px); }
+
+        /* توزيع العناصر الهيكلي */
+        .content-grid { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
+        @media (max-width: 1024px) { .content-grid { grid-template-columns: 1fr; } }
+
+        .panel-card {
+            background: var(--card-bg); border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden;
+        }
+        .panel-header { padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; background: #fafafa; }
+        .panel-header h2 { font-size: 16px; font-weight: 600; }
+        .panel-header i { color: var(--primary-color); }
+        .panel-body { padding: 24px; }
+
+        /* الحقول والاستمارات المتقدمة */
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .input-wrapper { position: relative; }
+        .input-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); z-index: 2; }
+        
+        .form-control {
+            width: 100%; padding: 11px 40px 11px 14px; font-size: 14px;
+            border-radius: var(--radius-md); border: 1px solid var(--border-color);
+            outline: none; transition: all 0.2s; background-color: #fff;
+        }
+        .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(30, 112, 230, 0.12); }
+        select.form-control { appearance: none; -webkit-appearance: none; cursor: pointer; }
+
+        /* الأزرار */
+        .btn {
+            width: 100%; padding: 12px; font-size: 14px; font-weight: 600;
+            border-radius: var(--radius-md); border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: var(--primary-dark); }
+        .btn-success { background-color: var(--accent-color); color: white; }
+        
+        /* شريط تحكم الجدول */
+        .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 16px; }
+
+        /* الجداول الاحترافية المتجاوبة */
+        .table-responsive { width: 100%; overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+        .custom-table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; }
+        .custom-table th { background-color: #f1f5f9; padding: 14px 18px; border-bottom: 2px solid var(--border-color); font-weight: 600; }
+        .custom-table td { padding: 14px 18px; border-bottom: 1px solid var(--border-color); }
+        .custom-table tr:hover td { background-color: #f8fafc; }
+
+        /* الشارات والتأثيرات الزخرفية للبيانات */
+        .badge { display: inline-block; padding: 4px 10px; font-size: 12px; font-weight: 600; border-radius: 20px; }
+        .badge-time { background-color: #fef3c7; color: #d97706; }
+        .badge-room { background-color: #e0f2fe; color: #0369a1; }
+        .badge-group { background-color: #ede9fe; color: #6d28d9; }
+
+        /* أزرار الإجراءات داخل الجدول */
+        .action-cell { display: flex; gap: 6px; justify-content: center; }
+        .btn-action-icon {
+            background: none; border: none; cursor: pointer; font-size: 14px;
+            padding: 6px 10px; border-radius: var(--radius-md); transition: all 0.2s;
+        }
+        .btn-edit-row { color: var(--primary-color); }
+        .btn-edit-row:hover { background-color: #eef5ff; }
+        .btn-delete-row { color: var(--danger-color); }
+        .btn-delete-row:hover { background-color: #ffeeee; }
+
+        /* تصميم النافذة المنبثقة للتعديل (Modal) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; z-index: 10000;
+            opacity: 0; pointer-events: none; transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-container {
+            background: #fff; border-radius: var(--radius-lg); width: 450px;
+            max-width: 90%; box-shadow: var(--shadow-lg); overflow: hidden;
+            transform: translateY(20px); transition: all 0.3s ease;
+        }
+        .modal-overlay.active .modal-container { transform: translateY(0); }
+        .modal-header { padding: 18px 24px; background: #fafafa; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 16px; font-weight: 700; }
+
+        /* نظام التنبيهات */
+        .toast-container { position: fixed; bottom: 24px; left: 24px; z-index: 9999; }
+        .toast-box {
+            background: #1e293b; color: white; padding: 14px 24px; border-radius: var(--radius-md);
+            display: flex; align-items: center; gap: 12px; font-size: 14px; margin-top: 10px;
+            border-right: 4px solid var(--primary-color); box-shadow: var(--shadow-lg);
+        }
+
+        .empty-state { padding: 40px; text-align: center; color: var(--text-muted); }
+        .empty-state i { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .page-header, .panel-card:first-child, .table-toolbar, .toast-container, .action-cell, th:last-child { display: none !important; }
+            .content-grid { grid-template-columns: 1fr !important; }
+            .panel-card { border: none !important; box-shadow: none !important; }
+            .custom-table th { background-color: #f1f5f9 !important; color: black !important; }
+            .custom-table td, .custom-table th { border: 1px solid #cbd5e1 !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <div class="header-title-box">
+            <div class="header-icon"><i class="fa-solid fa-calendar-days"></i></div>
+            <div>
+                <h1>إدارة الدروس والجداول الزمنية</h1>
+                <p>تنظيم الحصص فائق الأداء</p>
+            </div>
+        </div>
+        <a href="index.html" class="btn-home">
+            <i class="fa-solid fa-house"></i>
+            <span>الرئيسية</span>
+        </a>
+    </header>
+
+    <main class="content-grid">
+        <section class="panel-card">
+            <div class="panel-header">
+                <i class="fa-solid fa-circle-plus"></i>
+                <h2>إضافة حصة جديدة</h2>
+            </div>
+            <div class="panel-body">
+                <form id="scheduleForm" onsubmit="saveData(event)">
+                    <div class="form-group">
+                        <label class="form-label">اسم الدرس / المادة</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-book-open input-icon"></i>
+                            <input type="text" id="className" class="form-control" required placeholder="مثال: لغة برمجية، كيك بوكسينغ">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">الفوج / الفئة </label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-users input-icon"></i>
+                            <select id="groupName" class="form-control" required>
+                                <option value="" disabled selected>جاري تحميل الأفواج...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">توقيت الحصة</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-clock input-icon"></i>
+                            <input type="time" id="scheduleTime" class="form-control" required>
+                        </div> 
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">القاعة</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-door-open input-icon"></i>
+                            <input type="text" id="roomName" class="form-control" placeholder="مثال: معمل الحاسوب A" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">الأستاذ المسؤول</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user-tie input-icon"></i>
+                            <select id="teacherName" class="form-control" required>
+                                <option value="" disabled selected>جاري تحميل الأساتذة...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>حفظ في الجوجل شيت</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <i class="fa-solid fa-table-list"></i>
+                <h2>جدول التوقيت والأقسام الحالي</h2>
+            </div>
+            <div class="panel-body">
+                <div class="table-toolbar">
+                    <button onclick="window.print()" class="btn btn-success" style="width: auto; padding: 9px 16px;">
+                        <i class="fa-solid fa-print"></i>
+                        <span>طباعة الجدول</span>
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>اسم الدرس / المادة</th>
+                                <th>الفوج</th>
+                                <th>توقيت الحصة</th>
+                                <th>القاعة</th>
+                                <th>الأستاذ المسؤول</th>
+                                <th style="text-align: center; width: 110px;">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                                    <i class="fa-solid fa-spinner fa-spin" style="margin-left: 8px;"></i> جاري تحميل الجداول من السحابة...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <i class="fa-solid fa-calendar-xmark"></i>
+                        <p>لا توجد حصص مسجلة حالياً .</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-pen-to-square" style="color: var(--primary-color); margin-left: 6px;"></i>تعديل بيانات الحصة</h3>
+                <button class="close-modal" style="background:none; border:none; font-size:22px; cursor:pointer;" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="panel-body">
+                <form id="editForm" onsubmit="updateData(event)">
+                    <input type="hidden" id="editRowId">
+                    <div class="form-group">
+                        <label class="form-label">اسم الدرس</label>
+                        <input type="text" id="editClassName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الفوج</label>
+                        <select id="editGroupName" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">التوقيت</label>
+                        <input type="time" id="editScheduleTime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">القاعة</label>
+                        <input type="text" id="editRoomName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الأستاذ</label>
+                        <select id="editTeacherName" class="form-control" required></select>
+                    </div>
+                    <button type="submit" id="editSubmitBtn" class="btn btn-primary" style="margin-top: 10px;">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>تحديث وتعديل البيانات</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
+        let localDataCached = []; 
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast-box';
+            if (type === 'danger') toast.style.borderRightColor = '#ef4444';
+            if (type === 'warning') toast.style.borderRightColor = '#ff9800';
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}" style="color:${type === 'success' ? 'var(--accent-color)' : (type === 'warning' ? '#ff9800' : '#ef4444')}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function renderTable(data) {
+            let tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = "";
+            
+            const cleanData = data.filter(row => row.id && row.id !== "id" && row.className !== "className");
+
+            if(cleanData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">لا توجد بيانات متاحة</td></tr>`;
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+            document.getElementById('emptyState').style.display = 'none';
+
+            cleanData.forEach(row => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: 600;">${row.className || ''}</td>
+                    <td><span class="badge badge-group">${row.groupName || ''}</span></td>
+                    <td><span class="badge badge-time"><i class="fa-regular fa-clock"></i> ${row.scheduleTime || ''}</span></td>
+                    <td><span class="badge badge-room">${row.roomName || ''}</span></td>
+                    <td style="color: var(--text-muted);">${row.teacherName || ''}</td>
+                    <td class="action-cell">
+                        <button onclick="openEditModal('${row.id}')" class="btn-action-icon btn-edit-row" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteData('${row.id}')" class="btn-action-icon btn-delete-row" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        async function fetchOptions() {
+            const groupSelect = document.getElementById('groupName');
+            const editGroupSelect = document.getElementById('editGroupName');
+            const teacherSelect = document.getElementById('teacherName');
+            const editTeacherSelect = document.getElementById('editTeacherName');
+
+            try {
+                const [groupsRes, teachersRes] = await Promise.all([
+                    fetch(API_URL + "?sheet=group"),
+                    fetch(API_URL + "?sheet=teachers")
+                ]);
+
+                const groupsData = await groupsRes.json();
+                const teachersData = await teachersRes.json();
+
+                groupSelect.innerHTML = '<option value="" disabled selected>اختر الفوج المخصص...</option>';
+                editGroupSelect.innerHTML = '';
+                groupsData.forEach(group => {
+                    if(!group.groupName || group.groupName === "groupName") return; 
+                    groupSelect.add(new Option(group.groupName, group.groupName));
+                    editGroupSelect.add(new Option(group.groupName, group.groupName));
+                });
+
+                teacherSelect.innerHTML = '<option value="" disabled selected>اختر الأستاذ المسؤول...</option>';
+                editTeacherSelect.innerHTML = '';
+                teachersData.forEach(teacher => {
+                    let name = teacher.teacherName || teacher.name;
+                    if(!name || name === "teacherName" || name === "name") return; 
+                    teacherSelect.add(new Option(name, name));
+                    editTeacherSelect.add(new Option(name, name));
+                });
+
+            } catch (error) {
+                console.error("خطأ أثناء مزامنة القوائم المنسدلة:", error);
+                showToast("⚠️ فشل جلب القوائم من السحاب، تم عرض الخيارات الافتراضية.", "warning");
+
+                groupSelect.innerHTML = '<option value="" disabled selected>اختر الفوج المخصص...</option>';
+                editGroupSelect.innerHTML = '';
+                const defaultGroups = ["الفوج الأول", "الفوج الثاني", "الفوج الثالث"];
+                defaultGroups.forEach(g => {
+                    groupSelect.add(new Option(g, g));
+                    editGroupSelect.add(new Option(g, g));
+                });
+
+                teacherSelect.innerHTML = '<option value="" disabled selected>اختر الأستاذ المسؤول...</option>';
+                editTeacherSelect.innerHTML = '';
+                const defaultTeachers = ["أستاذ افتراضي 1", "أستاذ افتراضي 2"];
+                defaultTeachers.forEach(t => {
+                    teacherSelect.add(new Option(t, t));
+                    editTeacherSelect.add(new Option(t, t));
+                });
+            } finally {
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        async function loadData() {
+            try {
+                let response = await fetch(API_URL + "?action=get&sheet=lessons");
+                let data = await response.json();
+                if(Array.isArray(data)){
+                    localDataCached = data;
+                    renderTable(localDataCached);
+                }
+            } catch (error) {
+                console.error("خطأ في جلب البيانات:", error);
+                showToast("⚠️ فشل جلب جدول الحصص من السحاب.", "warning");
+                renderTable(localDataCached);
+            }
+        }
+
+        async function saveData(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            
+            let newLesson = {
+                id: "ID-" + Math.floor(100000 + Math.random() * 900000), 
+                className: document.getElementById('className').value,
+                groupName: document.getElementById('groupName').value,
+                scheduleTime: document.getElementById('scheduleTime').value,
+                roomName: document.getElementById('roomName').value,
+                teacherName: document.getElementById('teacherName').value
+            };
+
+            const formBody = new URLSearchParams();
+            formBody.append("action", "addStudent"); 
+            formBody.append("sheet", "lessons"); 
+            formBody.append("id", newLesson.id);
+            formBody.append("className", newLesson.className);
+            formBody.append("groupName", newLesson.groupName);
+            formBody.append("scheduleTime", newLesson.scheduleTime);
+            formBody.append("roomName", newLesson.roomName);
+            formBody.append("teacherName", newLesson.teacherName);
+
+            try {
+                const response = await fetch(API_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: formBody.toString() 
+                });
+
+                showToast("تم إرسال البيانات ومزامنتها بنجاح!");
+                document.getElementById('scheduleForm').reset();
+                setInitialTime();
+                setTimeout(loadData, 1500);
+            } catch (error) {
+                console.error("خطأ في المزامنة السحابية:", error);
+                showToast("حدث خطأ أثناء الاتصال بالخادم", "danger");
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        function openEditModal(id) {
+            let row = localDataCached.find(item => item.id == id);
+            if(row) {
+                document.getElementById('editRowId').value = row.id;
+                document.getElementById('editClassName').value = row.className || '';
+                document.getElementById('editGroupName').value = row.groupName || '';
+                document.getElementById('editScheduleTime').value = row.scheduleTime || '';
+                document.getElementById('editRoomName').value = row.roomName || '';
+                document.getElementById('editTeacherName').value = row.teacherName || '';
+                document.getElementById('editModal').classList.add('active');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        async function updateData(event) {
+            event.preventDefault();
+            const editBtn = document.getElementById('editSubmitBtn');
+            editBtn.disabled = true;
+
+            const rowId = document.getElementById('editRowId').value;
+            let updatedFields = {
+                id: rowId,
+                className: document.getElementById('editClassName').value,
+                groupName: document.getElementById('editGroupName').value,
+                scheduleTime: document.getElementById('editScheduleTime').value,
+                roomName: document.getElementById('editRoomName').value,
+                teacherName: document.getElementById('editTeacherName').value
+            };
+
+            const formBody = new URLSearchParams();
+            formBody.append("action", "editStudent");
+            formBody.append("sheet", "lessons"); 
+            formBody.append("id", rowId);
+            formBody.append("className", updatedFields.className);
+            formBody.append("groupName", updatedFields.groupName);
+            formBody.append("scheduleTime", updatedFields.scheduleTime);
+            formBody.append("roomName", updatedFields.roomName);
+            formBody.append("teacherName", updatedFields.teacherName);
+
+            try {
+                await fetch(API_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: formBody.toString() 
+                });
+                showToast("تم تحديث البيانات بنجاح!");
+                closeEditModal();
+                setTimeout(loadData, 1500);
+            } catch (error) {
+                console.error("خطأ في التعديل:", error);
+                showToast("فشل تحديث البيانات سحابياً", "danger");
+                closeEditModal();
+            } finally {
+                editBtn.disabled = false;
+            }
+        }
+
+        async function deleteData(id) {
+            if(confirm("هل أنت متأكد من رغبتك في حذف هذه الحصة نهائياً؟")) {
+                const formBody = new URLSearchParams();
+                formBody.append("action", "deleteStudent"); // تم التعديل ليطابق الـ Apps Script
+                formBody.append("sheet", "lessons"); 
+                formBody.append("id", id);
+
+                try {
+                    await fetch(API_URL, { 
+                        method: "POST", 
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: formBody.toString() 
+                    });
+                    showToast("تم حذف الحصة بنجاح", 'danger');
+                    setTimeout(loadData, 1000);
+                } catch (error) {
+                    console.error("خطأ في الحذف:", error);
+                    showToast("تعذر الحذف من الخادم", "danger");
+                }
+            }
+        }
+
+        function setInitialTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('scheduleTime').value = `${hours}:${minutes}`;
+        }
+
+        window.onload = async () => {
+            setInitialTime(); 
+            await fetchOptions(); 
+            await loadData();      
+        };
+    </script>
+</body>
+</html>
