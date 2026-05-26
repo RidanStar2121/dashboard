@@ -78,6 +78,22 @@
         .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(30, 112, 230, 0.12); }
         select.form-control { appearance: none; -webkit-appearance: none; cursor: pointer; }
 
+        /* تصميم مدخل الوقت المزدوج المخصص */
+        .time-range-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .time-range-wrapper .form-control {
+            padding: 11px 12px;
+            text-align: center;
+        }
+        .time-separator {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-muted);
+        }
+
         /* الأزرار */
         .btn {
             width: 100%; padding: 12px; font-size: 14px; font-weight: 600;
@@ -197,10 +213,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">توقيت الحصة</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-clock input-icon"></i>
-                            <input type="time" id="scheduleTime" class="form-control" required>
+                        <label class="form-label">توقيت الحصة (من - إلى)</label>
+                        <div class="time-range-wrapper">
+                            <input type="time" id="startTime" class="form-control" required>
+                            <span class="time-separator">إلى</span>
+                            <input type="time" id="endTime" class="form-control" required>
                         </div> 
                     </div>
 
@@ -290,8 +307,12 @@
                         <select id="editGroupName" class="form-control" required></select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">التوقيت</label>
-                        <input type="time" id="editScheduleTime" class="form-control" required>
+                        <label class="form-label">التوقيت (من - إلى)</label>
+                        <div class="time-range-wrapper">
+                            <input type="time" id="editStartTime" class="form-control" required>
+                            <span class="time-separator">إلى</span>
+                            <input type="time" id="editEndTime" class="form-control" required>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">القاعة</label>
@@ -433,11 +454,16 @@
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             
+            // دمج الوقتين معاً لتكوين نص متناسق مثل: 09:00 - 11:00
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const combinedTime = `${startTime} - ${endTime}`;
+
             let newLesson = {
                 id: "ID-" + Math.floor(100000 + Math.random() * 900000), 
                 className: document.getElementById('className').value,
                 groupName: document.getElementById('groupName').value,
-                scheduleTime: document.getElementById('scheduleTime').value,
+                scheduleTime: combinedTime,
                 roomName: document.getElementById('roomName').value,
                 teacherName: document.getElementById('teacherName').value
             };
@@ -477,9 +503,19 @@
                 document.getElementById('editRowId').value = row.id;
                 document.getElementById('editClassName').value = row.className || '';
                 document.getElementById('editGroupName').value = row.groupName || '';
-                document.getElementById('editScheduleTime').value = row.scheduleTime || '';
                 document.getElementById('editRoomName').value = row.roomName || '';
                 document.getElementById('editTeacherName').value = row.teacherName || '';
+                
+                // تفكيك الوقت المدمج (مثال: "09:00 - 11:00") لإعادته إلى حقول الوقت المنفصلة بالنافذة المنبثقة
+                if(row.scheduleTime && row.scheduleTime.includes(" - ")) {
+                    const times = row.scheduleTime.split(" - ");
+                    document.getElementById('editStartTime').value = times[0].trim();
+                    document.getElementById('editEndTime').value = times[1].trim();
+                } else {
+                    document.getElementById('editStartTime').value = row.scheduleTime || '';
+                    document.getElementById('editEndTime').value = '';
+                }
+
                 document.getElementById('editModal').classList.add('active');
             }
         }
@@ -494,11 +530,17 @@
             editBtn.disabled = true;
 
             const rowId = document.getElementById('editRowId').value;
+            
+            // دمج الحقلين عند التحديث أيضاً
+            const editStartTime = document.getElementById('editStartTime').value;
+            const editEndTime = document.getElementById('editEndTime').value;
+            const combinedTime = `${editStartTime} - ${editEndTime}`;
+
             let updatedFields = {
                 id: rowId,
                 className: document.getElementById('editClassName').value,
                 groupName: document.getElementById('editGroupName').value,
-                scheduleTime: document.getElementById('editScheduleTime').value,
+                scheduleTime: combinedTime,
                 roomName: document.getElementById('editRoomName').value,
                 teacherName: document.getElementById('editTeacherName').value
             };
@@ -534,7 +576,7 @@
         async function deleteData(id) {
             if(confirm("هل أنت متأكد من رغبتك في حذف هذه الحصة نهائياً؟")) {
                 const formBody = new URLSearchParams();
-                formBody.append("action", "deleteStudent"); // تم التعديل ليطابق الـ Apps Script
+                formBody.append("action", "deleteStudent"); 
                 formBody.append("sheet", "lessons"); 
                 formBody.append("id", id);
 
@@ -557,7 +599,12 @@
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('scheduleTime').value = `${hours}:${minutes}`;
+            
+            // تعيين وقت افتراضي لبداية الحصة (الوقت الحالي) ووقت النهاية تلقائياً بعد ساعتين لراحة أكبر عند الإدخال
+            document.getElementById('startTime').value = `${hours}:${minutes}`;
+            
+            const endHour = String((now.getHours() + 2) % 24).padStart(2, '0');
+            document.getElementById('endTime').value = `${endHour}:${minutes}`;
         }
 
         window.onload = async () => {
