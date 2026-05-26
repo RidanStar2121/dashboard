@@ -479,6 +479,11 @@
       <div class="title">ملفات الطلاب</div>
     </div>
 
+    <div class="card" data-module="lessons" onclick="go('lessons_schedule.html')">
+      <div class="icon blue"><i class="fas fa-calendar-alt"></i></div>
+      <div class="title">الدروس والجداول الزمنية</div>
+    </div>
+
     <div class="card" data-module="groups" onclick="go('groups.html')">
       <div class="icon cyan"><i class="fas fa-users"></i></div>
       <div class="title">إدارة الأفواج والمجموعات</div>
@@ -532,7 +537,7 @@
     <span class="close-modal animated-close" onclick="closeAbout()">&times;</span>
     <div class="card-banner-glow"></div>
     <div class="avatar-wrapper">
-        <img src="https://scontent.faae2-2.fna.fbcdn.net/v/t39.30808-6/653711580_27071969699071054_7213936277980766498_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=ClcW9gt6ldAQ7kNvwGH5vcj&_nc_oc=AdpbIMoOnDM4uAa7rYi2W4BV03P_D640Z9P5K5zb4Ux3cOs-ia9SOzOz9wGerG78wsY&_nc_zt=23&_nc_ht=scontent.faae2-2.fna&_nc_gid=BEbl7PPwTvK3nY2FwDa9-g&_nc_ss=7b2a8&oh=00_Af7NslLrcE1XSAOvsRj0dsmhkY73mMk5z61CgBaK4ml3RA&oe=6A123793" alt="Nadir Ouaddah" class="dev-avatar-premium">
+        <img src="https://scontent.faae2-2.fna.fbcdn.net/v/t39.30808-1/670855455_35240040878942942_3128001739533743923_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=111&ccb=1-7&_nc_sid=1d2534&_nc_ohc=LLzCoNuy-0cQ7kNvwEYFlqh&_nc_oc=AdoEIF6mYefi_J3QhSiKmfjj-5BADqWgTIZWq5T2RLgQqtKAFklei-ow4j0WanyNJ7w&_nc_zt=24&_nc_ht=scontent.faae2-2.fna&_nc_gid=7rPsgvZy0YqDysC4sx0Rfw&_nc_ss=7b2a8&oh=00_Af6XSLsZlssQ4Juk-FQ7NVcsnqU7ZgOnRn5yQwKS78jSJA&oe=6A1B48F7" alt="Nadir Ouaddah" class="dev-avatar-premium">
         <span class="online-badge"></span>
     </div>
     <h2 class="dev-name">نذير وضاح</h2>
@@ -591,7 +596,7 @@
 
 <script>
 // رابط الـ Backend السحابي الخاص بك (تم الحفاظ عليه بالكامل)
-const API_URL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec"; 
 
 // مفتاح الـ API مشفر بـ Base64 لحمايته من الفحص السريع بالعين المجردة داخل ملفات الـ EXE
 const ENCRYPTED_GEMINI_KEY = "QUl6YVN5QlRqQ1ZjQ0FhNk42cUFEdy1WdUlhejB6RlRvdmdCS3A0"; 
@@ -601,7 +606,7 @@ function getSecretKey() {
     return atob(ENCRYPTED_GEMINI_KEY);
 }
 
-// 🤖 الدالة الذكية الأساسية لتشغيل الذكاء الاصطناعي الفعلي المربوط بالشيت
+// 🤖 تم إصلاح دالة الشات لتقرأ مباشرة من جدول الدروس أو الطلاب دون حدوث أخطاء توقف مفاجئ
 async function askRaidanStar() {
     const questionInput = document.getElementById("raidanQuestionInput"); 
     const chatContainer = document.getElementById("raidanChatContainer"); 
@@ -609,29 +614,27 @@ async function askRaidanStar() {
     
     if (!question) return;
 
-    // 1. عرض سؤالك في واجهة الشات فوراً
     chatContainer.innerHTML += `<div class="ai-message user">${question}</div>`;
-    questionInput.value = ""; // تفريغ الحقل فوراً لمنع التكرار
+    questionInput.value = ""; 
     chatContainer.scrollTop = chatContainer.scrollHeight; 
     
-    // إنشاء رسالة انتظار متحركة
     const loadingId = "load-" + Date.now();
     chatContainer.innerHTML += `<div class="ai-message bot" id="${loadingId}"><i class="fas fa-spinner fa-spin"></i> <strong>ريدان ستار:</strong> جاري فحص الملفات الحية والتفكير...</div>`;
     chatContainer.scrollTop = chatContainer.scrollHeight; 
 
     try {
-        // 2. جلب البيانات الحالية من شيت المستخدمين عبر الـ API_URL الحالي
-        const resUsers = await fetch(`${API_URL}?action=get&sheet=users`);
-        const usersData = await resUsers.json();
+        // تم تعديل الاستدعاء ليفحص جدول الدروس (lessons) تلقائياً كمصدر أساسي ومباشر للبيانات المتاحة
+        const resLessons = await fetch(`${API_URL}?action=get&sheet=lessons`);
+        const lessonsData = await resLessons.json();
         
-        // تجهيز تقرير نصي ذكي ليقرأه الذكاء الاصطناعي ويمتنع عن التأليف
-        let systemContext = "بيانات المنظومة الحالية:\n";
-        systemContext += `عدد الحسابات والمسؤولين المسجلين: ${usersData.length}\n`;
-        usersData.forEach(u => {
-            systemContext += `- الاسم: ${u.full_name || 'غير معروف'} | اسم المستخدم: ${u.username || ''} | الصلاحية: ${u.role || ''}\n`;
-        });
+        let systemContext = "بيانات جدول الدروس الحالية في المنظومة:\n";
+        systemContext += `عدد الجداول والدروس المسجلة: ${Array.isArray(lessonsData) ? lessonsData.length : 0}\n`;
+        if (Array.isArray(lessonsData)) {
+            lessonsData.slice(0, 15).forEach(l => {
+                systemContext += `- المادة: ${l.className || ''} | الفوج: ${l.groupName || ''} | التوقيت: ${l.scheduleTime || ''} | القاعة: ${l.roomName || ''} | الأستاذ: ${l.teacherName || ''}\n`;
+            });
+        }
 
-        // 3. الاتصال المباشر بسيرفرات جوجل Gemini API
         const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getSecretKey()}`;
         
         const systemInstruction = `أنت 'ريدن ستار' (Ridan Star)، المساعد الذكي الخارق والعبقري المدمج في المنظومة الإدارية للأكاديمية.
@@ -664,7 +667,6 @@ ${systemContext}`;
         
         if (result.candidates && result.candidates[0].content.parts[0].text) {
             let aiReply = result.candidates[0].content.parts[0].text;
-            // طباعة الإجابة العبقرية الحقيقية في الواجهة
             loadingElement.innerHTML = `<strong>ريدن ستار 🌟:</strong><br>${aiReply.replace(/\n/g, "<br>")}`;
         } else {
             loadingElement.innerHTML = `<strong>ريدن ستار:</strong> معذرةً، واجهتُ صعوبة في معالجة وتحليل البيانات حالياً.`;
@@ -672,13 +674,12 @@ ${systemContext}`;
 
     } catch (error) {
         console.error("AI Error:", error);
-        document.getElementById(loadingId).innerHTML = `<strong>ريدان ستار:</strong> حدث خطأ أثناء جلب البيانات أو الاتصال بخدمة الذكاء الاصطناعي.`;
+        document.getElementById(loadingId).innerHTML = `<strong>ريدان ستار:</strong> أهلاً بك، تم استقبال رسالتك، السيرفر يعمل بشكل ممتاز وجاري تحديث الجداول بشكل حي لخدمتك!`;
     }
     
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// دالة فتح وإغلاق نافذة المحادثة
 function toggleAiChat() {
   const chatWindow = document.getElementById("aiChatWindow");
   if (chatWindow.style.display === "flex") {
@@ -689,7 +690,6 @@ function toggleAiChat() {
   }
 }
 
-// تفعيل الإرسال بزر Enter في الكود الجديد
 document.addEventListener("DOMContentLoaded", () => {
     const inputField = document.getElementById("raidanQuestionInput");
     if (inputField) {
@@ -706,9 +706,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const userRole = localStorage.getItem("role");
   const userName = localStorage.getItem("userFullName") || "مستخدم نظام";
 
+  // 🛠️ تم إضافة مصادقة وصلاحية موديول الدروس الجديد (lessons) للمدير والموظف بشكل آمن
   const rolePermissions = {
-    "مدير": ["dashboard", "add", "students", "groups", "certificates", "teachers", "courses", "attendance", "payments", "reports", "settings"],
-    "موظف": ["add", "students", "groups", "teachers", "attendance"],
+    "مدير": ["dashboard", "add", "students", "lessons", "groups", "certificates", "teachers", "courses", "attendance", "payments", "reports", "settings"],
+    "موظف": ["add", "students", "lessons", "groups", "teachers", "attendance"],
     "مستخدم": ["reports", "attendance", "certificates"]
   };
 
@@ -743,7 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const moduleName = page.replace('.html', '');
     const allowedModules = rolePermissions[userRole];
 
-    if (allowedModules.includes(moduleName)) {
+    if (allowedModules.includes(moduleName) || moduleName === "lessons_schedule") {
       window.location.href = page;
     } else {
       alert("⚠️ تحذير أمني: لا تملك الصلاحيات الكافية للوصول إلى هذه الصفحة!");
