@@ -231,7 +231,6 @@ tr:hover{
 
 <div class="container">
 
-<!-- TOOLS -->
 <div class="tools">
 
 <input type="text" id="search" placeholder="🔍 بحث بالاسم أو ID">
@@ -248,7 +247,6 @@ tr:hover{
 
 </div>
 
-<!-- TABLE -->
 <div class="table-container">
 
 <table id="studentsTable">
@@ -274,7 +272,6 @@ tr:hover{
 
 </div>
 
-<!-- MODAL -->
 <div class="modal" id="cardModal">
 
 <div class="modal-content">
@@ -295,7 +292,7 @@ tr:hover{
    إعدادات
 ========================= */
 
-const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
 
 let allStudents = [];
 
@@ -371,6 +368,7 @@ if(student.birth){
 
 }
 
+    // هنا تم ربط دالات goToPayments و goToAttendance وتمرير الاسم مشفراً تماماً مثل صفحة group الموثوقة لديك
     tr.innerHTML = `
 
       <td>
@@ -416,11 +414,13 @@ if(student.birth){
         🖨️
         </button>
 
-        <button class="action-btn payment">
+        <button class="action-btn payment"
+        onclick="goToPayments('${student.id}', '${encodeURIComponent(student.name)}')">
         💰
         </button>
 
-        <button class="action-btn attendance">
+        <button class="action-btn attendance"
+        onclick="goToAttendance('${student.id}', '${encodeURIComponent(student.name)}')">
         🕒
         </button>
 
@@ -731,6 +731,17 @@ function goHome(){
 
   window.location.href = "home.html";
 
+}
+
+/* =======================================================
+   الدوال المطابقة لصفحة group للتوجه المباشر لصفحات الدفع والحضور
+========================================================== */
+function goToPayments(studentId, studentName) {
+    window.location.href = `payments.html?studentId=${studentId}&studentName=${studentName}`;
+}
+
+function goToAttendance(studentId, studentName) {
+    window.location.href = `attendance.html?studentId=${studentId}&studentName=${studentName}`;
 }
 
 /* =========================
