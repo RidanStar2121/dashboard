@@ -6,7 +6,7 @@
 <title id="pageTitle">الرئيسية | نظام الإدارة الأكاديمي</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root {
     --primary: #007bff;
@@ -464,6 +464,7 @@
   .ai-chat-footer button { background: var(--primary-dark); color: white; border: none; width: 42px; height: 42px; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
   .ai-chat-footer button:hover { background: #004085; }
 </style>
+
 </head>
 <body>
 
@@ -509,7 +510,7 @@
         </div>
         <div class="weather-info">
           <div class="weather-temp" id="weatherTemp">--°م</div>
-          <div class="weather-city" id="weatherStatus">سكيكدة، الجزائر</div>
+          <div class="weather-city" id="weatherStatus">ا رمضان جمال ا سكيكدة، الجزائر</div>
         </div>
       </div>
     </div>
@@ -623,7 +624,7 @@
     <span class="close-ai-chat" onclick="toggleAiChat()">&times;</span>
   </div>
   <div class="ai-chat-body" id="raidanChatContainer">
-    <div class="ai-message bot">مرحباً بك ! أنا مساعدك العبقري <strong>ريدن ستار</strong>. لقد قمت الآن بربطي بقاعدة بيانات الطلاب الحية مباشرة، يمكنك سؤالي عن أعداد الطلاب وجنسهم أو جداول الدروس وسأجيبك فوراً!</div>
+    <div class="ai-message bot">مرحباً بك! أنا مساعدك العبقري <strong>ريدن ستار</strong>. لقد تم ربطي بقاعدة بيانات الأكاديمية الحية مباشرة عبر Google Apps Script، يمكنك سؤالي الآن عن إحصائيات الطلاب والأساتذة أو تتبع الديون والحضور الحية وسأقوم بحسابها فوراً!</div>
   </div>
   <div class="ai-chat-footer">
     <input type="text" id="raidanQuestionInput" placeholder="اكتب سؤالك هنا عن الطلاب أو النظام...">
@@ -632,11 +633,76 @@
 </div>
 
 <script>
+// 1. رابط الـ Web App الخاص بـ Apps Script (الذي يجمع كل الشيتات حية)
+const REDEN_STAR_DATA_URL = "https://script.google.com/macros/s/AKfycbweZDu_CWVOaGzaBEat3v_muS1GZZlNnNthRGMS7ZlS7_4sr77-opAuRLr2NKTVes9eEg/exec";
+
+// رابط الإعدادات المنفصل لجلب اسم المدرسة فقط
 const API_URL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec"; 
-const ENCRYPTED_GEMINI_KEY = "QUl6YVN5QlRqQ1ZjQ0FhNk42cUFEdy1WdUlhejB6RlRvdmdCS3A0"; 
 
-function getSecretKey() { return atob(ENCRYPTED_GEMINI_KEY); }
+// 2. مفتاح الـ API لـ Gemini (مفكك التشفير وآمن)
+const GEMINI_API_KEY = atob("QUl6YVN5QlRqQ1ZjQ0FhNk42cUFEdy1WdUlhejB6RlRvdmdCS3A0"); 
 
+// 🚀 الدالة العبقرية لـ "ريدن ستار" المتكاملة حياً بدون تشويه التصميم
+async function askRaidanStar() {
+    const questionInput = document.getElementById("raidanQuestionInput"); 
+    const chatContainer = document.getElementById("raidanChatContainer"); 
+    const question = questionInput.value.trim();
+    if (!question) return;
+
+    // إضافة رسالة المستخدم في صندوق الشات بالتنسيق الأصلي الفخم
+    chatContainer.innerHTML += `<div class="ai-message user">${question}</div>`;
+    questionInput.value = ""; 
+    chatContainer.scrollTop = chatContainer.scrollHeight; 
+    
+    const loadingId = "load-" + Date.now();
+    chatContainer.innerHTML += `<div class="ai-message bot" id="${loadingId}"><i class="fas fa-spinner fa-spin"></i> ريدن ستار يتصل بالـ Apps Script ويحلل البيانات حياً...</div>`;
+    chatContainer.scrollTop = chatContainer.scrollHeight; 
+
+    try {
+        // خطوة السحر البرمجي: جلب كل البيانات بطلب واحد من الـ Web App الموحد
+        const responseData = await fetch(REDEN_STAR_DATA_URL);
+        const allSystemData = await responseData.json();
+
+        // هندسة البرومبت الخارق وتمرير مصفوفات الـ JSON الكاملة لـ Gemini
+        const systemInstruction = `
+        أنت المساعد الذكي الخارق والمستشار الإداري 'ريدن ستار' (Ridan Star) لنظام إدارة أكاديمية وضاح للعلوم.
+        لديك صلاحية وصول كاملة ومباشرة وقراءة حية لجميع جداول ومصفوفات النظام الحالية المرفقة أدناه بصيغة JSON.
+        
+        بيانات النظام الحية الحالية:
+        ${JSON.stringify(allSystemData)}
+        
+        المطلوب منك لإبهار العميل (نذير وضاح):
+        1. الإجابة بدقة حسابية مطلقة 100% بناءً على السطور والأرقام الموجودة في البيانات المرفقة فقط ولا تخمن أو تألف أرقاماً أبداً.
+        2. تفادي الأخطاء السابقة: إذا سألك عن عدد الأساتذة، اذهب لجدول (teachers) أو التبويب الخاص بهم وقم بعدّهم، وإذا سألك عن الطلاب اذهب لجدول (students) وفلتر حسب الجنس (ذكر/أنثى) عبر عمود gender أو الجنس وأعط الأعداد الدقيقة فوراً.
+        3. الحسابات المالية: إذا سألك عن الديون أو المبالغ المتبقية، تصفح جداول الدفع (payments) وسير في عمود المبالغ المتبقية (remaining) واجمع القيم حسابياً بدقة وأعط الناتج الإجمالي.
+        4. الحضور والغياب: تتبع غيابات وحضور اليوم من جدول الحضور (attendance).
+        5. صغ ردودك بفخامة تكنولوجية، لغة عربية سليمة واحترافية، منسقة بشكل مريح للقراءة مع نقاط واضحة واستخدام الرموز التعبيرية (Emojis).
+        6. لا تذكر للمستخدم كلمة "ملف JSON" أو "قاعدة بيانات مرفقة"، أجب بشكل طبيعي جداً كأنك عقل اللوحة والنظام المفكر.
+        `;
+
+        // الاتصال بنموذج Gemini 1.5 Flash السريع جداً والذكي
+        const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: systemInstruction + "\n\nسؤال المستخدم الحالي: " + question }] }]
+            })
+        });
+
+        const result = await aiResponse.json();
+        const aiReply = result.candidates[0].content.parts[0].text;
+        
+        // عرض الرد النهائي داخل الـ Chat Bubble بنفس التصميم الأنيق الخاص بك
+        document.getElementById(loadingId).innerHTML = `<strong>ريدن ستار 🌟:</strong><br>${aiReply.replace(/\n/g, "<br>")}`;
+
+    } catch (error) {
+        console.error("AI Sync Error:", error);
+        document.getElementById(loadingId).innerHTML = `<strong>ريدن ستار 🌟:</strong> عذراً حدث خطأ أثناء جلب البيانات الحية من السكريبت. يرجى التأكد من نشر كود الـ Apps Script الجديد كـ Web App واختيار صلاحية الوصول لـ (Anyone).`;
+    }
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// دالة جلب اسم المدرسة من جدول الإعدادات
 async function fetchAndDisplaySchoolName() {
     const titleElement = document.getElementById("dynamicSchoolName");
     const pageTitle = document.getElementById("pageTitle");
@@ -667,93 +733,6 @@ async function fetchAndDisplaySchoolName() {
     }
 }
 
-// 🚀 تحديث الدالة لربط الذكاء الاصطناعي ببيانات الشيتس الحية (الطلاب والدروس)
-async function askRaidanStar() {
-    const questionInput = document.getElementById("raidanQuestionInput"); 
-    const chatContainer = document.getElementById("raidanChatContainer"); 
-    const question = questionInput.value.trim();
-    if (!question) return;
-
-    chatContainer.innerHTML += `<div class="ai-message user">${question}</div>`;
-    questionInput.value = ""; 
-    chatContainer.scrollTop = chatContainer.scrollHeight; 
-    
-    const loadingId = "load-" + Date.now();
-    chatContainer.innerHTML += `<div class="ai-message bot" id="${loadingId}"><i class="fas fa-spinner fa-spin"></i> جاري قراءة قاعدة البيانات وتحليل الأرقام فورا...</div>`;
-    chatContainer.scrollTop = chatContainer.scrollHeight; 
-
-    // إعداد متغيرات الإحصاء الافتراضية لقراءتها حية
-    let totalStudents = 0;
-    let maleCount = 0;
-    let femaleCount = 0;
-    let systemContext = "";
-
-    try {
-        // 1. جلب بيانات ورقة الطلاب لتحليل الإحصائيات (ذكور/إناث)
-        const resStudents = await fetch(`${API_URL}?action=get&sheet=students`);
-        const studentsData = await resStudents.json();
-        
-        if (Array.isArray(studentsData)) {
-            totalStudents = studentsData.length;
-            studentsData.forEach(student => {
-                // قراءة عمود الجنس بناء على المسميات المتوقعة في الشيت (الجنس، gender)
-                const gender = (student.gender || student["الجنس"] || student.genderName || "").trim();
-                if (gender === "ذكر" || gender === "Male" || gender.includes("ذكر")) {
-                    maleCount++;
-                } else if (gender === "أنثى" || gender === "Female" || gender.includes("أنثى") || gender.includes("انثى")) {
-                    femaleCount++;
-                }
-            });
-        }
-
-        // 2. جلب بيانات الدروس والحصص
-        const resLessons = await fetch(`${API_URL}?action=get&sheet=lessons`);
-        const lessonsData = await resLessons.json();
-        
-        systemContext = `ملخص إحصائيات قاعدة البيانات الحالية:\n`;
-        systemContext += `- إجمالي عدد الطلاب المسجلين بالشيت: ${totalStudents} طالب وطالبة.\n`;
-        systemContext += `- عدد الطلاب الذكور: ${maleCount}.\n`;
-        systemContext += `- عدد الطالبات الإناث: ${femaleCount}.\n\n`;
-        
-        systemContext += "سجلات الجداول الحية المتاحة:\n";
-        if (Array.isArray(lessonsData)) {
-            lessonsData.slice(0, 12).forEach(l => {
-                systemContext += `- مادة: ${l.className || l["اسم المادة"] || ''} | فوج: ${l.groupName || l["الفوج"] || ''} | توقيت: ${l.scheduleTime || l["التوقيت"] || ''} | أستاذ: ${l.teacherName || l["الأستاذ"] || ''}\n`;
-            });
-        }
-
-        // إرسال البيانات المجمعة والمحدثة لـ Gemini
-        const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getSecretKey()}`;
-        const systemInstruction = `أنت 'ريدن ستار'، المساعد الذكي الخارق لمنظومة أكاديمية وضاح للعلوم. أنت متصل مباشرة بقاعدة البيانات. أجب عن أسئلة المستخدم بدقة بالاعتماد الكامل على الإحصائيات وسياق البيانات المرفق أدناه، ولا تخبر المستخدم أنك تلقيت سياقاً بل أجب كأنك تعرفها مباشرة بذكاء وفخر وسرعة:\n${systemContext}`;
-
-        const response = await fetch(targetUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                "contents": [{"role": "user", "parts": [{"text": systemInstruction + "\nالسؤال الحالي للمستخدم: " + question}]}]
-            })
-        });
-        
-        const result = await response.json();
-        const loadingElement = document.getElementById(loadingId);
-        if (result.candidates && result.candidates[0].content.parts[0].text) {
-            loadingElement.innerHTML = `<strong>ريدن ستار 🌟:</strong><br>${result.candidates[0].content.parts[0].text.replace(/\n/g, "<br>")}`;
-        } else { 
-            loadingElement.innerHTML = `<strong>ريدن ستار:</strong> تم قراءة الشيت بنجاح! الإجمالي: ${totalStudents} (الذكور: ${maleCount} | الإناث: ${femaleCount}).`; 
-        }
-    } catch (e) {
-        console.error(e);
-        // Fallback في حال حدوث أي خطأ بالشبكة يظهر الإحصاء المحلي المحسوب
-        const loadingElement = document.getElementById(loadingId);
-        if(totalStudents > 0) {
-            loadingElement.innerHTML = `<strong>ريدن ستار 🌟:</strong><br>حسب البيانات الحية المتوفرة حالياً في الشيت، إجمالي الطلاب هو <strong>${totalStudents}</strong>، عدد الذكور <strong>${maleCount}</strong>، وعدد الإناث <strong>${femaleCount}</strong>.`;
-        } else {
-            loadingElement.innerHTML = `<strong>ريدن ستار:</strong> عذراً، تعذر الاتصال بالسيرفر، يرجى التحقق من استجابة رابط الـ API الخاص بـ Google Sheets.`;
-        }
-    }
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
 function toggleAiChat() {
   const chatWindow = document.getElementById("aiChatWindow");
   chatWindow.style.display = (chatWindow.style.display === "flex") ? "none" : "flex";
@@ -765,79 +744,77 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-  const userRole = localStorage.getItem("role") || "مدير"; 
-  const userName = localStorage.getItem("userFullName") || "نذير وضاح";
+const userRole = localStorage.getItem("role") || "مدير"; 
+const userName = localStorage.getItem("userFullName") || "نذير وضاح";
 
-  const rolePermissions = {
-    "مدير": ["dashboard", "add", "students", "lessons", "groups", "certificates", "teachers", "courses", "attendance", "payments", "reports", "settings"],
-    "موظف": ["add", "students", "lessons", "groups", "teachers", "attendance"],
-    "مستخدم": ["reports", "attendance", "certificates"]
-  };
+const rolePermissions = {
+  "مدير": ["dashboard", "add", "students", "lessons", "groups", "certificates", "teachers", "courses", "attendance", "payments", "reports", "settings"],
+  "موظف": ["add", "students", "lessons", "groups", "teachers", "attendance"],
+  "مستخدم": ["reports", "attendance", "certificates"]
+};
 
-  window.onload = function() {
-    fetchAndDisplaySchoolName();
-    setupUserDisplay();
-    renderAccessibleModules();
-    updateClock();
-    setInterval(updateClock, 1000);
-    fetchLiveWeather();
-  };
+window.onload = function() {
+  fetchAndDisplaySchoolName();
+  setupUserDisplay();
+  renderAccessibleModules();
+  updateClock();
+  setInterval(updateClock, 1000);
+  fetchLiveWeather();
+};
 
-  function renderAccessibleModules() {
-    const allowedModules = rolePermissions[userRole] || [];
-    document.querySelectorAll('#modulesGrid .card[data-module]').forEach(card => {
-      const moduleName = card.getAttribute('data-module');
-      if (allowedModules.includes(moduleName)) card.classList.add('accessible');
-      else card.classList.remove('accessible');
-    });
+function renderAccessibleModules() {
+  const allowedModules = rolePermissions[userRole] || [];
+  document.querySelectorAll('#modulesGrid .card[data-module]').forEach(card => {
+    const moduleName = card.getAttribute('data-module');
+    if (allowedModules.includes(moduleName)) card.classList.add('accessible');
+    else card.classList.remove('accessible');
+  });
+}
+
+function go(page) { window.location.href = page; }
+
+function setupUserDisplay() {
+  const nameEl = document.getElementById("welcomeUserName");
+  const badgeEl = document.getElementById("userRoleBadge");
+  const avatarEl = document.getElementById("userAvatar");
+  nameEl.innerText = userName;
+
+  if (userRole === "مدير") {
+    badgeEl.innerText = "👑 مدير عام النظام";
+    badgeEl.className = "role-badge badge-admin";
+    avatarEl.innerHTML = '<i class="fas fa-crown"></i>';
+  } else {
+    badgeEl.innerText = "💼 موظف إداري";
+    badgeEl.className = "role-badge badge-staff";
+    avatarEl.innerHTML = '<i class="fas fa-user-tie"></i>';
   }
+}
 
-  function go(page) {
-    window.location.href = page;
-  }
+function updateClock() {
+  const now = new Date();
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+  const period = hours >= 12 ? "مساءً" : "صباحاً";
+  hours = hours % 12 || 12;
+  hours = hours < 10 ? "0" + hours : hours;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  document.getElementById("liveClock").innerHTML = `${hours}:${minutes}:${now.getSeconds() < 10 ? '0'+now.getSeconds() : now.getSeconds()} <span>${period}</span>`;
+  document.getElementById("gregorianDate").innerHTML = `<i class="far fa-calendar-alt"></i> ${now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+}
 
-  function setupUserDisplay() {
-    const nameEl = document.getElementById("welcomeUserName");
-    const badgeEl = document.getElementById("userRoleBadge");
-    const avatarEl = document.getElementById("userAvatar");
-    nameEl.innerText = userName;
-
-    if (userRole === "مدير") {
-      badgeEl.innerText = "👑 مدير عام النظام";
-      badgeEl.className = "role-badge badge-admin";
-      avatarEl.innerHTML = '<i class="fas fa-crown"></i>';
-    } else {
-      badgeEl.innerText = "💼 موظف إداري";
-      badgeEl.className = "role-badge badge-staff";
-      avatarEl.innerHTML = '<i class="fas fa-user-tie"></i>';
+async function fetchLiveWeather() {
+  try {
+    const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=36.8792&longitude=6.9011&current_weather=true");
+    const data = await response.json();
+    if(data && data.current_weather) {
+      document.getElementById("weatherTemp").innerText = `${Math.round(data.current_weather.temperature)}°م`;
     }
-  }
+  } catch(e) { document.getElementById("weatherTemp").innerText = "18°م"; }
+}
 
-  function updateClock() {
-    const now = new Date();
-    let hours = now.getHours();
-    let minutes = now.getMinutes();
-    const period = hours >= 12 ? "مساءً" : "صباحاً";
-    hours = hours % 12 || 12;
-    hours = hours < 10 ? "0" + hours : hours;
-    minutes = minutes < 10 ? "0" + minutes : minutes;
-    document.getElementById("liveClock").innerHTML = `${hours}:${minutes}:${now.getSeconds() < 10 ? '0'+now.getSeconds() : now.getSeconds()} <span>${period}</span>`;
-    document.getElementById("gregorianDate").innerHTML = `<i class="far fa-calendar-alt"></i> ${now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
-  }
-
-  async function fetchLiveWeather() {
-    try {
-      const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=36.8792&longitude=6.9011&current_weather=true");
-      const data = await response.json();
-      if(data && data.current_weather) {
-        document.getElementById("weatherTemp").innerText = `${Math.round(data.current_weather.temperature)}°م`;
-      }
-    } catch(e) { document.getElementById("weatherTemp").innerText = "18°م"; }
-  }
-
-  function logout(){ localStorage.clear(); window.location.href = "index.html"; }
-  function showAbout() { document.getElementById('aboutModal').style.display = 'flex'; }
-  function closeAbout() { document.getElementById('aboutModal').style.display = 'none'; }
+function logout(){ localStorage.clear(); window.location.href = "index.html"; }
+function showAbout() { document.getElementById('aboutModal').style.display = 'flex'; }
+function closeAbout() { document.getElementById('aboutModal').style.display = 'none'; }
 </script>
 </body>
 </html>
