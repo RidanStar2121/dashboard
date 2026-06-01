@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام الجرس الذكي وإدارة القاعات</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 body {
@@ -89,6 +90,12 @@ body {
   border-radius: 15px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.05);
   height: fit-content;
+  transition: all 0.3s ease;
+}
+
+.form-card.edit-mode-active {
+  border: 2px solid #007bff;
+  background: #fbfdff;
 }
 
 .form-card h3 {
@@ -133,6 +140,27 @@ body {
 }
 .submit-btn:hover {
   background: #218838;
+}
+
+.submit-btn.btn-edit-mode {
+  background: #007bff;
+}
+.submit-btn.btn-edit-mode:hover {
+  background: #0056b3;
+}
+
+.cancel-edit-btn {
+  width: 100%;
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 5px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+  font-weight: bold;
 }
 
 .test-sound-btn {
@@ -214,6 +242,23 @@ td {
 input:checked + .slider { background-color: #28a745; }
 input:checked + .slider:before { transform: translateX(18px); }
 
+.action-buttons-container {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.edit-btn {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.edit-btn:hover { background: #e68a00; }
+
 .delete-btn {
   background: #dc3545;
   color: white;
@@ -223,6 +268,7 @@ input:checked + .slider:before { transform: translateX(18px); }
   cursor: pointer;
   font-size: 12px;
 }
+.delete-btn:hover { background: #bd2130; }
 
 /* NOTIFICATION OVERLAY (PRE-ALARM) */
 .notice-banner {
@@ -269,8 +315,8 @@ input:checked + .slider:before { transform: translateX(18px); }
 
   <div class="manager-grid">
     
-    <div class="form-card">
-      <h3>📅 جدولة حصة جديدة</h3>
+    <div class="form-card" id="formContainerCard">
+      <h3 id="formSectionTitle">📅 جدولة حصة جديدة</h3>
       <form id="alarmForm">
         
         <div class="form-group">
@@ -299,7 +345,8 @@ input:checked + .slider:before { transform: translateX(18px); }
           <input type="time" id="alarmTime" required>
         </div>
 
-        <button type="submit" class="submit-btn">💾 حفظ الحصة بالجدول</button>
+        <button type="submit" id="submitFormBtn" class="submit-btn">💾 حفظ الحصة بالجدول</button>
+        <button type="button" id="cancelEditBtn" class="cancel-edit-btn" style="display: none;" onclick="exitEditMode()">❌ إلغاء التعديل</button>
       </form>
       
       <button class="test-sound-btn" onclick="testBellSound()">🔊 تجربة جرس المدرسة الآن</button>
@@ -341,12 +388,12 @@ input:checked + .slider:before { transform: translateX(18px); }
 <audio id="dingNoticeAudio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav" preload="auto"></audio>
 
 <script>
-// رابط تطبيق الـ Web App الخاص بك في الـ Google Script لربط البيانات بدقة كلياً
 const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
 
 let academyAlarms = [];
 let triggeredBells = {};
 let triggeredPreAlarms = {};
+let currentEditingAlarmId = null; // متغير لتتبع معرّف الحصة قيد التعديل
 
 /* ==========================================
    تشغيل النظام الأساسي وجلب الخيارات السحابية
@@ -357,7 +404,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     
     renderAlarmsTable();
-    loadSheetsDropdowns(); // استدعاء دالة جلب البيانات الفورية من السحاب
+    loadSheetsDropdowns(); 
     
     setInterval(updateSystemClockAndCheck, 1000);
 });
@@ -367,12 +414,10 @@ window.addEventListener('DOMContentLoaded', () => {
 ========================================== */
 async function loadSheetsDropdowns() {
     try {
-        // 1. جلب القاعات من شيت lessons
         const resLessons = await fetch(sheetURL + "?sheet=lessons");
         const dataLessons = await resLessons.json();
         const selectRoom = document.getElementById("editRoomName");
         selectRoom.innerHTML = '<option value="">🚪 اختر القاعة...</option>';
-        // تصفية وحذف القيم المكررة أو الفارغة لـ roomName
         let rooms = [...new Set(dataLessons.map(x => x.roomName).filter(Boolean))];
         rooms.forEach(r => {
             let opt = document.createElement("option");
@@ -380,7 +425,6 @@ async function loadSheetsDropdowns() {
             selectRoom.appendChild(opt);
         });
 
-        // 2. جلب الأفواج من شيت group
         const resGroups = await fetch(sheetURL + "?sheet=group");
         const dataGroups = await resGroups.json();
         const selectGroup = document.getElementById("editGroupName");
@@ -392,7 +436,6 @@ async function loadSheetsDropdowns() {
             selectGroup.appendChild(opt);
         });
 
-        // 3. جلب الأساتذة من شيت teachers
         const resTeachers = await fetch(sheetURL + "?sheet=teachers");
         const dataTeachers = await resTeachers.json();
         const selectTeacher = document.getElementById("editTeacherName");
@@ -432,26 +475,23 @@ function updateSystemClockAndCheck() {
     academyAlarms.forEach(alarm => {
         if (!alarm.active) return;
         
-        // 🔔 رنين الجرس التلقائي الفعلي
         if (alarm.time === currentHHMM) {
             if (!triggeredBells[alarm.id]) {
                 triggerSchoolBell(alarm);
             }
         } else {
-            // إنهاء وإيقاف رنين الجرس بعد انقضاء دقيقة الرنين التلقائي
             if(triggeredBells[alarm.id] && String(now.getSeconds()) === "00") {
                document.getElementById('schoolBellAudio').pause();
             }
             delete triggeredBells[alarm.id];
         }
         
-        // ⚠️ إشعار تنبيه الـ 5 دقائق المسبق قبل انتهاء الحصة
         if (alarm.time === preAlarmHHMM) {
             if (!triggeredPreAlarms[alarm.id]) {
                 triggerPreAlarmNotice(alarm);
             }
         } else {
-            delete Math.abs(triggeredPreAlarms[alarm.id]);
+            delete triggeredPreAlarms[alarm.id];
         }
     });
 }
@@ -461,12 +501,10 @@ function updateSystemClockAndCheck() {
 ========================================== */
 function triggerSchoolBell(alarm) {
     triggeredBells[alarm.id] = true;
-    
     const bell = document.getElementById('schoolBellAudio');
     bell.currentTime = 0;
     bell.play().catch(e => console.log("المتصفح يتطلب تفاعل أولي لتشغيل الملف: ", e));
     
-    // إيقاف الجرس تلقائياً بعد رنين مكثف لمدة 12 ثانية كاملة
     setTimeout(() => {
         bell.pause();
     }, 12000);
@@ -479,7 +517,6 @@ function triggerSchoolBell(alarm) {
 ========================================== */
 function triggerPreAlarmNotice(alarm) {
     triggeredPreAlarms[alarm.id] = true;
-    
     const ding = document.getElementById('dingNoticeAudio');
     ding.currentTime = 0;
     ding.play().catch(e => console.log(e));
@@ -496,7 +533,7 @@ function triggerPreAlarmNotice(alarm) {
 }
 
 /* ==========================================
-   معالجة وحفظ الحصة الجديدة بالجدول
+   معالجة وحفظ / تحديث الحصة بالجدول
 ========================================== */
 document.getElementById('alarmForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -511,26 +548,82 @@ document.getElementById('alarmForm').addEventListener('submit', function(e) {
         return;
     }
 
-    // تفعيل إذن تشغيل الصوت للمتصفح تلقائياً عند حفظ الحصص
     document.getElementById('schoolBellAudio').play().then(() => {
         document.getElementById('schoolBellAudio').pause();
     }).catch(e => {});
 
-    const newAlarm = {
-        id: 'AL-' + Date.now(),
-        room: room,
-        group: groupName,
-        teacher: teacherName,
-        time: alarmTime,
-        active: true
-    };
+    if (currentEditingAlarmId !== null) {
+        // وضع التعديل: تحديث الحصة الحالية
+        const alarmIndex = academyAlarms.findIndex(x => x.id === currentEditingAlarmId);
+        if (alarmIndex !== -1) {
+            academyAlarms[alarmIndex].room = room;
+            academyAlarms[alarmIndex].group = groupName;
+            academyAlarms[alarmIndex].teacher = teacherName;
+            academyAlarms[alarmIndex].time = alarmTime;
+        }
+        currentEditingAlarmId = null; // تفريغ وضع التعديل
+        exitEditMode();
+    } else {
+        // وضع الإضافة الطبيعي
+        const newAlarm = {
+            id: 'AL-' + Date.now(),
+            room: room,
+            group: groupName,
+            teacher: teacherName,
+            time: alarmTime,
+            active: true
+        };
+        academyAlarms.push(newAlarm);
+    }
     
-    academyAlarms.push(newAlarm);
     saveAlarmsToStorage();
     renderAlarmsTable();
     
-    document.getElementById('alarmTime').value = '';
+    document.getElementById('alarmForm').reset();
 });
+
+/* ==========================================
+   دوال تشغيل وإلغاء وضع التعديل (Edit Mode)
+========================================== */
+function startEditAlarm(id) {
+    const alarm = academyAlarms.find(x => x.id === id);
+    if (!alarm) return;
+
+    currentEditingAlarmId = id;
+
+    // ملء حقول الإدخال بالبيانات القديمة فوراً
+    document.getElementById('editRoomName').value = alarm.room;
+    document.getElementById('editGroupName').value = alarm.group;
+    document.getElementById('editTeacherName').value = alarm.teacher;
+    document.getElementById('alarmTime').value = alarm.time;
+
+    // تغيير شكل واجهة الكرت لوضع التعديل
+    document.getElementById('formContainerCard').classList.add('edit-mode-active');
+    document.getElementById('formSectionTitle').innerHTML = "✏️ تعديل بيانات الحصة";
+    
+    const submitBtn = document.getElementById('submitFormBtn');
+    submitBtn.innerHTML = "🔄 تحديث الحصة بالجدول";
+    submitBtn.classList.add('btn-edit-mode');
+    
+    document.getElementById('cancelEditBtn').style.display = "block";
+    
+    // سحب الصفحة للأعلى قليلاً نحو كرت التعديل لراحة المستخدم
+    document.getElementById('formContainerCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+function exitEditMode() {
+    currentEditingAlarmId = null;
+    document.getElementById('alarmForm').reset();
+    
+    document.getElementById('formContainerCard').classList.remove('edit-mode-active');
+    document.getElementById('formSectionTitle').innerHTML = "📅 جدولة حصة جديدة";
+    
+    const submitBtn = document.getElementById('submitFormBtn');
+    submitBtn.innerHTML = "💾 حفظ الحصة بالجدول";
+    submitBtn.classList.remove('btn-edit-mode');
+    
+    document.getElementById('cancelEditBtn').style.display = "none";
+}
 
 /* ==========================================
    رسم وتحديث جدول التنبيهات في الصفحة
@@ -571,7 +664,10 @@ function renderAlarmsTable() {
                 </label>
             </td>
             <td>
-                <button class="delete-btn" onclick="deleteAlarmById('${alarm.id}')">🗑️ حذف</button>
+                <div class="action-buttons-container">
+                    <button class="edit-btn" onclick="startEditAlarm('${alarm.id}')">✏️ تعديل</button>
+                    <button class="delete-btn" onclick="deleteAlarmById('${alarm.id}')">🗑️ حذف</button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
@@ -590,6 +686,10 @@ function toggleAlarmStatus(id) {
 }
 
 function deleteAlarmById(id) {
+    if(currentEditingAlarmId === id) {
+        alert("⚠️ لا يمكن حذف هذه الحصة أثناء قيامك بتعديلها حالياً.");
+        return;
+    }
     if(!confirm("هل أنت متأكد من حذف توقيت هذه الحصة من الجدول؟")) return;
     academyAlarms = academyAlarms.filter(x => x.id !== id);
     saveAlarmsToStorage();
@@ -606,7 +706,7 @@ function testBellSound() {
     bell.play();
     setTimeout(() => {
         bell.pause();
-    }, 4000); // تجربة سريعة لمدة 4 ثوانٍ للاطمئنان على عمل مكبر الصوت
+    }, 4000);
 }
 
 function goHome(){
