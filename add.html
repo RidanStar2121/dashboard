@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل طالب - نذير وضاح</title>
+    <title>تسجيل طالب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -58,7 +58,9 @@
 
         <div class="grid">
             <input id="name" placeholder="👦 الاسم الكامل">
-            <input id="phone" placeholder="📱 الهاتف">
+            <input id="phone" placeholder="📱 هاتف الطالب">
+            <input id="parent_phone" placeholder="👨 هاتف الأب / الولي">
+            <input id="mother_phone" placeholder="👩 هاتف الأم">
             <input id="birth" type="date">
             <input id="place" placeholder="📍 مكان الميلاد">
             
@@ -159,7 +161,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <script>
-const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
 let allStudents = [];
 let selectedID = null;
 
@@ -273,12 +275,23 @@ function checkEditMode() {
         selectedID = student.id;
         
         document.getElementById("name").value = student.name || "";
-        document.getElementById("phone").value = student.phone || "";
         document.getElementById("birth").value = student.birth || "";
         document.getElementById("place").value = student.place || "";
         document.getElementById("gender").value = student.gender || "";
         document.getElementById("school").value = student.school || "";
         document.getElementById("level").value = student.level || "";
+        
+        // تفكيك الهواتف المدمجة من عمود الفواصل وإرجاعها لحقولها المنفصلة بالواجهة
+        if (student.phone) {
+            const phonesArr = student.phone.split(" / ");
+            document.getElementById("phone").value = phonesArr[0] || "";
+            document.getElementById("parent_phone").value = phonesArr[1] || "";
+            document.getElementById("mother_phone").value = phonesArr[2] || "";
+        } else {
+            document.getElementById("phone").value = "";
+            document.getElementById("parent_phone").value = "";
+            document.getElementById("mother_phone").value = "";
+        }
         
         // 🎯 تفكيك ذكي ومحترف للمواد والأساتذة المتعددة إذا كانت مسجلة مسبقاً بنظام الفواصل
         if(student.course && student.teacher) {
@@ -314,12 +327,18 @@ function saveStudent() {
     const combinedCourses = currentStudentCourses.map(item => item.course).join(" - ");
     const combinedTeachers = currentStudentCourses.map(item => item.teacher).join(" - ");
 
+    // دمج الهواتف الثلاثة معاً في سطر واحد مفصول بعلامة " / " لإرسالها لعمود phone الفردي بالشيت
+    const pStudent = document.getElementById("phone").value.trim();
+    const pParent = document.getElementById("parent_phone").value.trim();
+    const pMother = document.getElementById("mother_phone").value.trim();
+    const combinedPhones = [pStudent, pParent, pMother].filter(Boolean).join(" / ");
+
     let data = {
         action: isEdit ? "editStudent" : "addStudent",
         sheet: "students",
         id: isEdit ? editData.id : null,
         name: document.getElementById("name").value,
-        phone: document.getElementById("phone").value,
+        phone: combinedPhones,
         
         // إرسال البيانات مجمعة لتطابق البنية القديمة في السيرفر دون تعديل في السكريبت
         course: combinedCourses, 
@@ -353,7 +372,7 @@ function saveStudent() {
 }
 
 function clearForm() {
-    const ids = ["name", "phone", "course", "birth", "place", "gender", "teacher", "school", "level", "search"];
+    const ids = ["name", "phone", "parent_phone", "mother_phone", "course", "birth", "place", "gender", "teacher", "school", "level", "search"];
     ids.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.value = "";
@@ -391,13 +410,24 @@ document.getElementById("search").addEventListener("input", function() {
         div.innerHTML = `👦 ${s.name} | 📚 ${displayCourse}`;
         div.onclick = () => {
             document.getElementById("name").value = s.name;
-            document.getElementById("phone").value = s.phone;
             document.getElementById("birth").value = s.birth || "";
             document.getElementById("place").value = s.place || "";
             document.getElementById("gender").value = s.gender || "";
             document.getElementById("school").value = s.school || "";
             document.getElementById("level").value = s.level || "";
             selectedID = s.id;
+            
+            // تحليل وفصل الهواتف المسترجعة من الشيت داخل حقولها الفردية
+            if (s.phone) {
+                const phonesArr = s.phone.split(" / ");
+                document.getElementById("phone").value = phonesArr[0] || "";
+                document.getElementById("parent_phone").value = phonesArr[1] || "";
+                document.getElementById("mother_phone").value = phonesArr[2] || "";
+            } else {
+                document.getElementById("phone").value = "";
+                document.getElementById("parent_phone").value = "";
+                document.getElementById("mother_phone").value = "";
+            }
             
             // سحب وتحليل دورات الطالب المسترجع فوراً في جدول الواجهة
             if(s.course && s.teacher) {
