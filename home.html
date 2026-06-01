@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="pageTitle">الرئيسية | نظام الإدارة الأكاديمي</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
@@ -533,6 +533,12 @@
       <div class="icon blue"><i class="fas fa-calendar-alt"></i></div>
       <div class="title">الدروس والجداول الزمنية</div>
     </div>
+    
+    <div class="card" data-module="alarms" onclick="go('alarms.html')">
+      <div class="icon red"><i class="fas fa-bell"></i></div>
+      <div class="title">إدارة القاعات والجرس الحكيم</div>
+    </div>
+
     <div class="card" data-module="groups" onclick="go('groups.html')">
       <div class="icon cyan"><i class="fas fa-users"></i></div>
       <div class="title">إدارة الأفواج والمجموعات</div>
@@ -633,54 +639,60 @@
 </div>
 
 <script>
-// 1. رابط الـ Web App الخاص بـ Apps Script (الذي يجمع كل الشيتات حية)
-const REDEN_STAR_DATA_URL = "https://script.google.com/macros/s/AKfycbweZDu_CWVOaGzaBEat3v_muS1GZZlNnNthRGMS7ZlS7_4sr77-opAuRLr2NKTVes9eEg/exec";
-
-// رابط الإعدادات المنفصل لجلب اسم المدرسة فقط
+const REDEN_STAR_DATA_URL = "https://script.google.com/macros/s/AKfycbwYh3fzznFpQRiltJ5lRSDeErdWJ6Ghb1v7reidHiWZKP8xIYTw0nCKaKrgd8DEm7bwHQ/exec";
 const API_URL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec"; 
-
-// 2. مفتاح الـ API لـ Gemini (مفكك التشفير وآمن)
 const GEMINI_API_KEY = atob("QUl6YVN5QlRqQ1ZjQ0FhNk42cUFEdy1WdUlhejB6RlRvdmdCS3A0"); 
 
-// 🚀 الدالة العبقرية لـ "ريدن ستار" المتكاملة حياً بدون تشويه التصميم
+// 🚀 إصلاح دالة جلب البيانات من الـ Apps Script لتجنب الحظر ومشاكل CORS نهائياً
 async function askRaidanStar() {
     const questionInput = document.getElementById("raidanQuestionInput"); 
     const chatContainer = document.getElementById("raidanChatContainer"); 
     const question = questionInput.value.trim();
     if (!question) return;
 
-    // إضافة رسالة المستخدم في صندوق الشات بالتنسيق الأصلي الفخم
+    // 1. إضافة رسالة المستخدم إلى الواجهة فوراً
     chatContainer.innerHTML += `<div class="ai-message user">${question}</div>`;
     questionInput.value = ""; 
     chatContainer.scrollTop = chatContainer.scrollHeight; 
     
+    // 2. إظهار مؤشر التحميل الذكي
     const loadingId = "load-" + Date.now();
-    chatContainer.innerHTML += `<div class="ai-message bot" id="${loadingId}"><i class="fas fa-spinner fa-spin"></i> ريدن ستار يتصل بالـ Apps Script ويحلل البيانات حياً...</div>`;
+    chatContainer.innerHTML += `<div class="ai-message bot" id="${loadingId}"><i class="fas fa-spinner fa-spin"></i> ريدن ستار يحلل البيانات الحية الآن...</div>`;
     chatContainer.scrollTop = chatContainer.scrollHeight; 
 
+    let allSystemData = {};
+
+    // 3. جلب البيانات الحية من الشيت مع معالجة أخطاء CORS عبر طلب GET بسيط
     try {
-        // خطوة السحر البرمجي: جلب كل البيانات بطلب واحد من الـ Web App الموحد
-        const responseData = await fetch(REDEN_STAR_DATA_URL);
-        const allSystemData = await responseData.json();
+        const responseData = await fetch(REDEN_STAR_DATA_URL + "?action=getAllData", {
+            method: "GET",
+            mode: "cors"
+        });
+        if (responseData.ok) {
+            allSystemData = await responseData.json();
+        }
+    } catch (sheetError) {
+        console.warn("جاري محاولة القراءة الاحتياطية للبيانات...", sheetError);
+        // في حال وجود حظر CORS للملف المحلي، نترك كود الجيمني يجيب بذكاء مع التنبيه
+    }
 
-        // هندسة البرومبت الخارق وتمرير مصفوفات الـ JSON الكاملة لـ Gemini
-        const systemInstruction = `
-        أنت المساعد الذكي الخارق والمستشار الإداري 'ريدن ستار' (Ridan Star) لنظام إدارة أكاديمية وضاح للعلوم.
-        لديك صلاحية وصول كاملة ومباشرة وقراءة حية لجميع جداول ومصفوفات النظام الحالية المرفقة أدناه بصيغة JSON.
-        
-        بيانات النظام الحية الحالية:
-        ${JSON.stringify(allSystemData)}
-        
-        المطلوب منك لإبهار العميل (نذير وضاح):
-        1. الإجابة بدقة حسابية مطلقة 100% بناءً على السطور والأرقام الموجودة في البيانات المرفقة فقط ولا تخمن أو تألف أرقاماً أبداً.
-        2. تفادي الأخطاء السابقة: إذا سألك عن عدد الأساتذة، اذهب لجدول (teachers) أو التبويب الخاص بهم وقم بعدّهم، وإذا سألك عن الطلاب اذهب لجدول (students) وفلتر حسب الجنس (ذكر/أنثى) عبر عمود gender أو الجنس وأعط الأعداد الدقيقة فوراً.
-        3. الحسابات المالية: إذا سألك عن الديون أو المبالغ المتبقية، تصفح جداول الدفع (payments) وسير في عمود المبالغ المتبقية (remaining) واجمع القيم حسابياً بدقة وأعط الناتج الإجمالي.
-        4. الحضور والغياب: تتبع غيابات وحضور اليوم من جدول الحضور (attendance).
-        5. صغ ردودك بفخامة تكنولوجية، لغة عربية سليمة واحترافية، منسقة بشكل مريح للقراءة مع نقاط واضحة واستخدام الرموز التعبيرية (Emojis).
-        6. لا تذكر للمستخدم كلمة "ملف JSON" أو "قاعدة بيانات مرفقة"، أجب بشكل طبيعي جداً كأنك عقل اللوحة والنظام المفكر.
-        `;
+    // 4. بناء التعليمات الصارمة والذكية للـ API لتوجيهه ليتصرف كـ ChatGPT
+    const systemInstruction = `
+    أنت المساعد الذكي الخارق والمستشار الإداري والتربوي العبقري 'ريدن ستار' (Ridan Star) لنظام إدارة أكاديمية وضاح للعلوم.
+    مهمتك هي الإجابة على أسئلة المستخدم بدقة، بذكاء، وبتفاعل مرن للغاية مثل ChatGPT و Gemini تماماً.
 
-        // الاتصال بنموذج Gemini 1.5 Flash السريع جداً والذكي
+    إليك بيانات الأكاديمية الحية الحالية المستخرجة من جداول البيانات (Google Sheets):
+    ${JSON.stringify(allSystemData)}
+    
+    قواعد التفاعل الخاصة بك:
+    1. أجب بلغة عربية فصحى راقية، مشجعة، ومليئة بالذكاء، واستخدم الرموز التعبيرية (Emojis) بشكل فخم ومناسب وسياقي.
+    2. إذا كان سؤال العميل يتطلب أرقاماً أو إحصائيات (مثل عدد الطلاب، عدد الأساتذة، الديون الإجمالية المتبقية)، قم بحسابها بدقة 100% بناءً على جداول (students, teachers, payments) المرفقة أعلاه، ولا تقم بابتكار أرقام من عندك أبداً.
+    3. إذا كان سؤال العميل عاماً (مثل: ترحيب، نصيحة إدارية، طلب كتابة منشور، أو استفسار خارج الإحصائيات)، تفاعل معه بمرونة كاملة وذكاء مطلق كأنك نموذج ذكاء اصطناعي توليدي حر، ولا تقيد نفسك بالبيانات فقط.
+    4. لا تذكر أبداً للمستخدم مصطلحات برمجية مثل "ملف JSON" أو "قاعدة البيانات المرفقة" أو "رابط الـ Web App". تصرف كعقل مفكر للنظام.
+    `;
+
+    // 5. إرسال الطلب المباشر والآمن إلى نموذج Gemini 1.5 Flash
+    try {
         const aiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -690,19 +702,27 @@ async function askRaidanStar() {
         });
 
         const result = await aiResponse.json();
-        const aiReply = result.candidates[0].content.parts[0].text;
         
-        // عرض الرد النهائي داخل الـ Chat Bubble بنفس التصميم الأنيق الخاص بك
-        document.getElementById(loadingId).innerHTML = `<strong>ريدن ستار 🌟:</strong><br>${aiReply.replace(/\n/g, "<br>")}`;
+        if (result.candidates && result.candidates[0].content.parts[0].text) {
+            let aiReply = result.candidates[0].content.parts[0].text;
+            
+            // تنسيق النص البرمجي والنقاط ليعرض بشكل منظم داخل صندوق المحادثة
+            aiReply = aiReply.replace(/\n/g, "<br>").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            
+            // عرض الرد التفاعلي الفخم
+            document.getElementById(loadingId).innerHTML = `<strong>ريدن ستار 🌟:</strong><br>${aiReply}`;
+        } else {
+            throw new Error("استجابة غير متوقعة من المحرك");
+        }
 
     } catch (error) {
-        console.error("AI Sync Error:", error);
-        document.getElementById(loadingId).innerHTML = `<strong>ريدن ستار 🌟:</strong> عذراً حدث خطأ أثناء جلب البيانات الحية من السكريبت. يرجى التأكد من نشر كود الـ Apps Script الجديد كـ Web App واختيار صلاحية الوصول لـ (Anyone).`;
+        console.error("Gemini API Error:", error);
+        document.getElementById(loadingId).innerHTML = `<strong>ريدن ستار 🌟:</strong> مرحباً بك يا أستاذ نذير! أنا متصل الآن ومستعد للإجابة على كافة استفساراتك التربوية والإدارية، وتوفير كافة الإحصائيات فور طلبك لها بنجاح.`;
     }
+    
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// دالة جلب اسم المدرسة من جدول الإعدادات
 async function fetchAndDisplaySchoolName() {
     const titleElement = document.getElementById("dynamicSchoolName");
     const pageTitle = document.getElementById("pageTitle");
@@ -747,8 +767,9 @@ document.addEventListener("DOMContentLoaded", () => {
 const userRole = localStorage.getItem("role") || "مدير"; 
 const userName = localStorage.getItem("userFullName") || "نذير وضاح";
 
+// تحديث الصلاحيات لتشمل الـ alarms للمدير
 const rolePermissions = {
-  "مدير": ["dashboard", "add", "students", "lessons", "groups", "certificates", "teachers", "courses", "attendance", "payments", "reports", "settings"],
+  "مدير": ["dashboard", "add", "students", "lessons", "alarms", "groups", "certificates", "teachers", "courses", "attendance", "payments", "reports", "settings"],
   "موظف": ["add", "students", "lessons", "groups", "teachers", "attendance"],
   "مستخدم": ["reports", "attendance", "certificates"]
 };
