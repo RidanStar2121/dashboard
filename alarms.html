@@ -297,6 +297,15 @@ input:checked + .slider:before { transform: translateX(18px); }
   color: #999;
   padding: 20px;
 }
+
+/* SOUND SELECTOR STYLE */
+.sound-selector-box {
+  margin-top: 15px;
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
 </style>
 </head>
 <body>
@@ -349,6 +358,15 @@ input:checked + .slider:before { transform: translateX(18px); }
         <button type="button" id="cancelEditBtn" class="cancel-edit-btn" style="display: none;" onclick="exitEditMode()">❌ إلغاء التعديل</button>
       </form>
       
+      <div class="sound-selector-box">
+        <label style="font-weight: bold; font-size: 13px; display: block; margin-bottom: 5px;">🎵 اختر نغمة جرس الأكاديمية:</label>
+        <select id="bellSoundSelect" onchange="changeBellSound()" style="width:100%; padding:8px; border-radius:6px; font-family:'Cairo';">
+          <option value="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg">🔔 جرس مدرسة ميكانيكي</option>
+          <option value="https://actions.google.com/sounds/v1/alarms/mechanical_clock_ring.ogg">⚡ جرس رنين حاد</option>
+          <option value="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_manual.ogg">⏰ منبه إلكتروني قوي</option>
+        </select>
+      </div>
+
       <button class="test-sound-btn" onclick="testBellSound()">🔊 تجربة جرس المدرسة الآن</button>
     </div>
 
@@ -384,8 +402,8 @@ input:checked + .slider:before { transform: translateX(18px); }
   </div>
 </div>
 
-<audio id="schoolBellAudio" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="auto" loop></audio>
-<audio id="dingNoticeAudio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav" preload="auto"></audio>
+<audio id="schoolBellAudio" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" preload="auto"></audio>
+<audio id="dingNoticeAudio" src="https://actions.google.com/sounds/v1/alarms/mechanical_clock_ring.ogg" preload="auto"></audio>
 
 <script>
 const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
@@ -393,7 +411,7 @@ const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS91
 let academyAlarms = [];
 let triggeredBells = {};
 let triggeredPreAlarms = {};
-let currentEditingAlarmId = null; // متغير لتتبع معرّف الحصة قيد التعديل
+let currentEditingAlarmId = null; 
 
 /* ==========================================
    تشغيل النظام الأساسي وجلب الخيارات السحابية
@@ -403,11 +421,36 @@ window.addEventListener('DOMContentLoaded', () => {
         academyAlarms = JSON.parse(localStorage.getItem('academyAlarms'));
     }
     
+    // استعادة نغمة الجرس المحفوظة مسبقاً إن وجدت
+    if(localStorage.getItem('preferredBellSound')) {
+        const savedSound = localStorage.getItem('preferredBellSound');
+        document.getElementById('bellSoundSelect').value = savedSound;
+        document.getElementById('schoolBellAudio').src = savedSound;
+    }
+    
     renderAlarmsTable();
     loadSheetsDropdowns(); 
     
     setInterval(updateSystemClockAndCheck, 1000);
 });
+
+/* ==========================================
+   دالة تغيير النغمة وحفظ الخيار برمجياً 
+========================================== */
+function changeBellSound() {
+    const select = document.getElementById("bellSoundSelect");
+    const audio = document.getElementById("schoolBellAudio");
+    
+    // تحديث مسار النغمة في مشغل الصوت فوراً
+    audio.src = select.value;
+    audio.load();
+    
+    // حفظ خيار المستخدم في متصفحه المحيط
+    localStorage.setItem('preferredBellSound', select.value);
+    
+    // تجربة الصوت تلقائياً لمدة ثانيتين ليسمع الإدارة النغمة الجديدة
+    testBellSound();
+}
 
 /* ==========================================
    دالة جلب البيانات التلقائية من Google Sheets
@@ -449,7 +492,6 @@ async function loadSheetsDropdowns() {
 
     } catch(err) {
         console.error("خطأ في جلب بيانات القوائم المنسدلة الذكية:", err);
-        alert("⚠️ حدث خطأ أثناء الاتصال بـ Google Sheets لجلب القاعات والأفواج والأساتذة.");
     }
 }
 
@@ -481,7 +523,7 @@ function updateSystemClockAndCheck() {
             }
         } else {
             if(triggeredBells[alarm.id] && String(now.getSeconds()) === "00") {
-               document.getElementById('schoolBellAudio').pause();
+                document.getElementById('schoolBellAudio').pause();
             }
             delete triggeredBells[alarm.id];
         }
@@ -503,13 +545,13 @@ function triggerSchoolBell(alarm) {
     triggeredBells[alarm.id] = true;
     const bell = document.getElementById('schoolBellAudio');
     bell.currentTime = 0;
-    bell.play().catch(e => console.log("المتصفح يتطلب تفاعل أولي لتشغيل الملف: ", e));
+    bell.play().catch(e => console.log("المتصفح يتطلب تفاعل أولي: ", e));
     
     setTimeout(() => {
         bell.pause();
     }, 12000);
 
-    alert(`🔔 رنين جرس الأكاديمية الآن! \nانتهى وقت الحصة للفوج: [ ${alarm.group} ] \nفي: [ ${alarm.room} ] \nالأستاذ المحاضر: [ ${alarm.teacher} ]`);
+    alert(`🔔 رنين جرس الأكاديمية الآن! \nانتهى وقت الحصة للفوج: [ ${alarm.group} ] \nفي: [ ${alarm.room} ]`);
 }
 
 /* ==========================================
@@ -524,7 +566,7 @@ function triggerPreAlarmNotice(alarm) {
     const banner = document.getElementById('preAlarmBanner');
     const textSpan = document.getElementById('preAlarmText');
     
-    textSpan.innerHTML = `باقي 5 دقائق على انتهاء حصة الفوج <strong>${alarm.group}</strong> في <strong>${alarm.room}</strong> (الأستاذ: ${alarm.teacher})`;
+    textSpan.innerHTML = `باقي 5 دقائق على انتهاء حصة الفوج <strong>${alarm.group}</strong> في <strong>${alarm.room}</strong>`;
     banner.style.display = 'flex';
     
     setTimeout(() => {
@@ -544,16 +586,11 @@ document.getElementById('alarmForm').addEventListener('submit', function(e) {
     const alarmTime = document.getElementById('alarmTime').value;
     
     if(!room || !groupName || !teacherName) {
-        alert("⚠️ يرجى التأكد من اختيار كامل البيانات السحابية من القوائم أولاً.");
+        alert("⚠️ يرجى التأكد من اختيار كامل البيانات السحابية أولاً.");
         return;
     }
 
-    document.getElementById('schoolBellAudio').play().then(() => {
-        document.getElementById('schoolBellAudio').pause();
-    }).catch(e => {});
-
     if (currentEditingAlarmId !== null) {
-        // وضع التعديل: تحديث الحصة الحالية
         const alarmIndex = academyAlarms.findIndex(x => x.id === currentEditingAlarmId);
         if (alarmIndex !== -1) {
             academyAlarms[alarmIndex].room = room;
@@ -561,10 +598,9 @@ document.getElementById('alarmForm').addEventListener('submit', function(e) {
             academyAlarms[alarmIndex].teacher = teacherName;
             academyAlarms[alarmIndex].time = alarmTime;
         }
-        currentEditingAlarmId = null; // تفريغ وضع التعديل
+        currentEditingAlarmId = null;
         exitEditMode();
     } else {
-        // وضع الإضافة الطبيعي
         const newAlarm = {
             id: 'AL-' + Date.now(),
             room: room,
@@ -578,56 +614,40 @@ document.getElementById('alarmForm').addEventListener('submit', function(e) {
     
     saveAlarmsToStorage();
     renderAlarmsTable();
-    
     document.getElementById('alarmForm').reset();
 });
 
-/* ==========================================
-   دوال تشغيل وإلغاء وضع التعديل (Edit Mode)
-========================================== */
 function startEditAlarm(id) {
     const alarm = academyAlarms.find(x => x.id === id);
     if (!alarm) return;
 
     currentEditingAlarmId = id;
-
-    // ملء حقول الإدخال بالبيانات القديمة فوراً
     document.getElementById('editRoomName').value = alarm.room;
     document.getElementById('editGroupName').value = alarm.group;
     document.getElementById('editTeacherName').value = alarm.teacher;
     document.getElementById('alarmTime').value = alarm.time;
 
-    // تغيير شكل واجهة الكرت لوضع التعديل
     document.getElementById('formContainerCard').classList.add('edit-mode-active');
     document.getElementById('formSectionTitle').innerHTML = "✏️ تعديل بيانات الحصة";
     
     const submitBtn = document.getElementById('submitFormBtn');
     submitBtn.innerHTML = "🔄 تحديث الحصة بالجدول";
     submitBtn.classList.add('btn-edit-mode');
-    
     document.getElementById('cancelEditBtn').style.display = "block";
-    
-    // سحب الصفحة للأعلى قليلاً نحو كرت التعديل لراحة المستخدم
-    document.getElementById('formContainerCard').scrollIntoView({ behavior: 'smooth' });
 }
 
 function exitEditMode() {
     currentEditingAlarmId = null;
     document.getElementById('alarmForm').reset();
-    
     document.getElementById('formContainerCard').classList.remove('edit-mode-active');
     document.getElementById('formSectionTitle').innerHTML = "📅 جدولة حصة جديدة";
     
     const submitBtn = document.getElementById('submitFormBtn');
     submitBtn.innerHTML = "💾 حفظ الحصة بالجدول";
     submitBtn.classList.remove('btn-edit-mode');
-    
     document.getElementById('cancelEditBtn').style.display = "none";
 }
 
-/* ==========================================
-   رسم وتحديث جدول التنبيهات في الصفحة
-========================================== */
 function renderAlarmsTable() {
     const tbody = document.getElementById('alarmsTableBody');
     const noDataView = document.getElementById('noDataView');
@@ -644,7 +664,6 @@ function renderAlarmsTable() {
     
     academyAlarms.forEach(alarm => {
         const tr = document.createElement('tr');
-        
         const [h, m] = alarm.time.split(':');
         let dH = parseInt(h);
         const dM = m;
@@ -665,8 +684,8 @@ function renderAlarmsTable() {
             </td>
             <td>
                 <div class="action-buttons-container">
-                    <button class="edit-btn" onclick="startEditAlarm('${alarm.id}')">✏️ تعديل</button>
-                    <button class="delete-btn" onclick="deleteAlarmById('${alarm.id}')">🗑️ حذف</button>
+                    <button class="edit-btn" onclick="startEditAlarm('${alarm.id}')">✏️</button>
+                    <button class="delete-btn" onclick="deleteAlarmById('${alarm.id}')">🗑️</button>
                 </div>
             </td>
         `;
@@ -674,9 +693,6 @@ function renderAlarmsTable() {
     });
 }
 
-/* ==========================================
-   دوال التحكم بالتنبيهات والحفظ
-========================================== */
 function toggleAlarmStatus(id) {
     const alarm = academyAlarms.find(x => x.id === id);
     if(alarm) {
@@ -686,11 +702,8 @@ function toggleAlarmStatus(id) {
 }
 
 function deleteAlarmById(id) {
-    if(currentEditingAlarmId === id) {
-        alert("⚠️ لا يمكن حذف هذه الحصة أثناء قيامك بتعديلها حالياً.");
-        return;
-    }
-    if(!confirm("هل أنت متأكد من حذف توقيت هذه الحصة من الجدول؟")) return;
+    if(currentEditingAlarmId === id) return;
+    if(!confirm("هل أنت متأكد من الحذف؟")) return;
     academyAlarms = academyAlarms.filter(x => x.id !== id);
     saveAlarmsToStorage();
     renderAlarmsTable();
@@ -703,10 +716,10 @@ function saveAlarmsToStorage() {
 function testBellSound() {
     const bell = document.getElementById('schoolBellAudio');
     bell.currentTime = 0;
-    bell.play();
+    bell.play().catch(e => console.log(e));
     setTimeout(() => {
         bell.pause();
-    }, 4000);
+    }, 3000); // رنين تجريبي لمدة 3 ثوانٍ عند الاختيار أو التجربة
 }
 
 function goHome(){
