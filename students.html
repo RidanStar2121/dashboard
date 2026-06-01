@@ -137,7 +137,7 @@ tr:hover{
   background:#fd7e14;
 }
 
-/* CARD MODAL */
+/* CARD MODAL & PHONE MODAL */
 .modal{
   position:fixed;
   inset:0;
@@ -150,7 +150,7 @@ tr:hover{
 
 .modal-content{
   background:white;
-  width:340px;
+  width:380px;
   border-radius:15px;
   padding:20px;
   text-align:center;
@@ -163,36 +163,7 @@ tr:hover{
   left:10px;
   cursor:pointer;
   font-size:20px;
-}
-
-/* STUDENT CARD */
-.student-card{
-  border:2px solid #007bff;
-  border-radius:15px;
-  padding:15px;
-}
-
-.student-card img{
-  width:90px;
-  height:90px;
-  border-radius:50%;
-  object-fit:cover;
-  border:3px solid #007bff;
-}
-
-.card-name{
-  font-size:18px;
-  font-weight:bold;
-  margin-top:10px;
-}
-
-.card-info{
-  margin-top:5px;
-  font-size:14px;
-}
-
-.qr{
-  margin-top:10px;
+  z-index: 10;
 }
 
 /* LOADING */
@@ -216,6 +187,238 @@ tr:hover{
 
 .female{
   background:#e83e8c;
+}
+
+/* 🎯 تنسيقات احترافية لزر الهواتف والنافذة المنبثقة المخصصة للأرقام */
+.show-phones-btn {
+  background: #eef2f7;
+  color: #007bff;
+  border: 1px dashed #007bff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.show-phones-btn:hover {
+  background: #007bff;
+  color: white;
+  border-style: solid;
+}
+
+.phone-modal-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.phone-list-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: right;
+}
+
+.phone-row-item {
+  background: #f8fafc;
+  padding: 10px 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #edf2f7;
+}
+
+.phone-label {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.phone-number-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.phone-number-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================
+   🎯 التصميم الجديد الفاخر للبطاقة الذكية (ID / Visa Card Style)
+   ========================================== */
+.student-id-card {
+  width: 340px;
+  height: 215px;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  border-radius: 16px;
+  position: relative;
+  color: white;
+  padding: 16px;
+  box-sizing: border-box;
+  text-align: right;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  margin: 10px auto;
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+}
+
+/* تأثير لمعان الخلفية كالبطاقات البلاستيكية */
+.student-id-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ترويسة البطاقة */
+.card-header-zone {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-academy-title {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #f1c40f;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* الرقاقة الذكية الشبيهة ببطاقة فيزا */
+.card-chip {
+  width: 32px;
+  height: 24px;
+  background: linear-gradient(135deg, #e0a96d, #966b37);
+  border-radius: 4px;
+  position: relative;
+}
+.card-chip::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 2px;
+}
+
+/* محتوى البطاقة الرئيسي */
+.card-body-zone {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+/* حاوية الصورة */
+.card-photo-box {
+  position: relative;
+}
+.card-photo-box img {
+  width: 75px;
+  height: 75px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* حقول البيانات */
+.card-details-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.card-row-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-row-data {
+  font-size: 11px;
+  color: #dfe6e9;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.card-row-data strong {
+  color: #f1c40f;
+}
+
+/* الجزء السفلي: الكود الشريطي والباركود والمعرف */
+.card-footer-zone {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.card-id-display {
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #fff;
+  background: rgba(255,255,255,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* حاوية الـ QR كصورة آمنة للطباعة والحفظ */
+.card-qr-box img {
+  width: 55px;
+  height: 55px;
+  background: white;
+  padding: 3px;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* أزرار التحكم بالبطاقة */
+.card-actions-wrapper {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.download-img-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.download-img-btn:hover {
+  background: #218838;
 }
 
 </style>
@@ -274,17 +477,36 @@ tr:hover{
 
 <div class="modal" id="cardModal">
 
-<div class="modal-content">
+<div class="modal-content" style="width: 390px; background: #f8fafc;">
 
 <div class="close" onclick="closeCard()">❌</div>
 
 <div id="cardContent"></div>
+
+<div class="card-actions-wrapper">
+  <button class="download-img-btn" id="btnDownloadCard">📥 تحميل كصورة</button>
+</div>
+
+</div>
+
+</div>
+
+<div class="modal" id="phonesModal">
+
+<div class="modal-content" style="width: 360px;">
+
+<div class="close" onclick="closePhonesModal()">❌</div>
+
+<div class="phone-modal-title">📞 هواتف الاتصال بالعائلة</div>
+
+<div id="phonesModalContent" class="phone-list-box"></div>
 
 </div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <script>
 
@@ -341,7 +563,7 @@ function renderStudents(data){
     <th>👦 الاسم</th>
     <th>🎂 تاريخ الميلاد</th>
     <th>📘 المستوى</th>
-    <th>📱 الهاتف</th>
+    <th>📱 هواتف العائلة</th>
     <th>📚 الدورة</th>
     <th>👨‍🏫 الأستاذ</th>
     <th>⚧ الجنس</th>
@@ -368,7 +590,13 @@ if(student.birth){
 
 }
 
-    // هنا تم ربط دالات goToPayments و goToAttendance وتمرير الاسم مشفراً تماماً مثل صفحة group الموثوقة لديك
+    let displayPhonesHTML = "";
+    if (student.phone && student.phone.toString().trim() !== "") {
+        displayPhonesHTML = `<button class="show-phones-btn" onclick="openPhonesModal('${student.id}')">📞 إضغط لعرض الأرقام</button>`;
+    } else {
+        displayPhonesHTML = `<span style="color:#999; font-size:13px;">🚫 لا يوجد رقم</span>`;
+    }
+
     tr.innerHTML = `
 
       <td>
@@ -384,7 +612,7 @@ if(student.birth){
 
       <td>${student.level || ""}</td>
 
-      <td>${student.phone || ""}</td>
+      <td>${displayPhonesHTML}</td>
 
       <td>${student.course || ""}</td>
 
@@ -619,65 +847,153 @@ function deleteStudent(id){
 
 }
 
-/* =========================
-   البطاقة
-========================= */
+/* =======================================================
+   🎯 دوال النافذة المنبثقة الذكية لعرض وإدارة أرقام هواتف العائلة
+========================================================== */
+function openPhonesModal(id) {
+  const student = getStudentById(id);
+  if (!student || !student.phone) return;
 
+  const phonesArr = student.phone.toString().split(/\s*\/\s*/);
+  const container = document.getElementById("phonesModalContent");
+  
+  let html = "";
+  let hasValidData = false;
+
+  if (phonesArr[0] && phonesArr[0].trim() !== "") {
+    html += `
+      <div class="phone-row-item">
+        <span class="phone-label" style="color:#007bff;">📱 هاتف الطالب:</span>
+        <a class="phone-number-link" href="tel:${phonesArr[0].trim()}">${phonesArr[0].trim()}</a>
+      </div>`;
+    hasValidData = true;
+  }
+  if (phonesArr[1] && phonesArr[1].trim() !== "") {
+    html += `
+      <div class="phone-row-item">
+        <span class="phone-label" style="color:#28a745;">👨 هاتف الولي:</span>
+        <a class="phone-number-link" href="tel:${phonesArr[1].trim()}">${phonesArr[1].trim()}</a>
+      </div>`;
+    hasValidData = true;
+  }
+  if (phonesArr[2] && phonesArr[2].trim() !== "") {
+    html += `
+      <div class="phone-row-item">
+        <span class="phone-label" style="color:#e83e8c;">👩 هاتف الأم:</span>
+        <a class="phone-number-link" href="tel:${phonesArr[2].trim()}">${phonesArr[2].trim()}</a>
+      </div>`;
+    hasValidData = true;
+  }
+
+  if (!hasValidData) {
+    html += `
+      <div class="phone-row-item">
+        <span class="phone-label" style="color:#007bff;">📱 هاتف الطالب:</span>
+        <a class="phone-number-link" href="tel:${student.phone.toString().trim()}">${student.phone.toString().trim()}</a>
+      </div>`;
+  }
+
+  container.innerHTML = html;
+  document.getElementById("phonesModal").style.display = "flex";
+}
+
+function closePhonesModal() {
+  document.getElementById("phonesModal").style.display = "none";
+}
+
+/* =======================================================
+   🎯 بناء وعرض وتوليد البطاقة الذكية الفاخرة (ID Card Style)
+========================================================== */
 function showCard(student){
 
-  const modal =
-    document.getElementById("cardModal");
-
-  const card =
-    document.getElementById("cardContent");
+  const modal = document.getElementById("cardModal");
+  const cardContainer = document.getElementById("cardContent");
 
   modal.style.display = "flex";
 
-  card.innerHTML = `
+  // إعداد حقل تاريخ الميلاد
+  let birthDate = student.birth || "";
+  if(student.birth && !isNaN(Date.parse(student.birth))){
+    birthDate = new Date(student.birth).toLocaleDateString("fr-CA");
+  }
 
-  <div class="student-card">
+  // صياغة البنية الفاخرة المحدثة كلياً للبطاقة الذكية
+  cardContainer.innerHTML = `
+    <div class="student-id-card" id="studentTargetCard">
+      
+      <div class="card-header-zone">
+        <span class="card-academy-title">STUDENT ID CARD</span>
+        <div class="card-chip"></div>
+      </div>
 
-    <img src="${student.photo || 'https://via.placeholder.com/100'}">
+      <div class="card-body-zone">
+        <div class="card-photo-box">
+          <img src="${student.photo || 'https://via.placeholder.com/80'}" crossorigin="anonymous">
+        </div>
+        
+        <div class="card-details-box">
+          <div class="card-row-name">${student.name || ""}</div>
+          <div class="card-row-data"><strong>الدورة:</strong> ${student.course || "غير محدد"}</div>
+          <div class="card-row-data"><strong>المستوى:</strong> ${student.level || "غير محدد"}</div>
+          <div class="card-row-data"><strong>الميلاد:</strong> ${birthDate}</div>
+          <div class="card-row-data"><strong>الأستاذ:</strong> ${student.teacher || "غير محدد"}</div>
+        </div>
+      </div>
 
-    <div class="card-name">
-      ${student.name || ""}
+      <div class="card-footer-zone">
+        <div class="card-id-display">ID: ${student.id || "0000"}</div>
+        <div class="card-qr-box" id="qrTargetBox">
+            <canvas id="hiddenQrCanvas" style="display:none;"></canvas>
+        </div>
+      </div>
+
     </div>
-
-    <div class="card-info">
-      🆔 ${student.id || ""}
-    </div>
-
-    <div class="card-info">
-      📚 ${student.course || ""}
-    </div>
-
-    <div class="card-info">
-    🎂 ${student.birth || ""}
-    </div>
-
-    <div class="card-info">
-    📘 ${student.level || ""}
-    </div>
-
-    <div class="card-info">
-      📱 ${student.phone || ""}
-    </div>
-
-    <div class="card-info">
-      👨‍🏫 ${student.teacher || ""}
-    </div>
-
-    <canvas id="qrcode" class="qr"></canvas>
-
-  </div>
-
   `;
 
-  QRCode.toCanvas(
-    document.getElementById("qrcode"),
-    student.id || student.name
-  );
+  // 🎯 الحل الجذري: توليد الكود الشريطي أولاً على كانفاس مخفي ثم تحويله فوراً لـ Image حقيقية
+  setTimeout(() => {
+      const canvas = document.getElementById("hiddenQrCanvas");
+      if (canvas) {
+          QRCode.toCanvas(canvas, String(student.id || student.name), { width: 120, margin: 1 }, function (error) {
+              if (!error) {
+                  const qrImageSrc = canvas.toDataURL("image/png");
+                  const qrBox = document.getElementById("qrTargetBox");
+                  if (qrBox) {
+                      qrBox.innerHTML = `<img src="${qrImageSrc}" alt="QR Code">`;
+                  }
+              }
+          });
+      }
+  }, 50);
 
+  // ربط حدث زر التخزين كصورة وتمرير اسم الطالب لحفظ الملف باسمه الشخصي
+  document.getElementById("btnDownloadCard").onclick = function() {
+      downloadCardAsImage(student.name || "student_card");
+  };
+}
+
+/* 🎯 دالة سحرية لالتقاط البطاقة بالكامل وتنزيلها كملف PNG ممتاز عالي الدقة */
+function downloadCardAsImage(studentName) {
+  const cardElement = document.getElementById("studentTargetCard");
+  
+  // تشغيل المحرك المتقدم لالتقاط الشاشة البرمجية مع دعم الصور الخارجية المتقاطعة النطاق
+  html2canvas(cardElement, {
+      useCORS: true,
+      allowTaint: true,
+      scale: 2, // رفع دقة ووضوح الصورة المخرجة مرتين
+      backgroundColor: null
+  }).then(canvas => {
+      const imageURL = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.href = imageURL;
+      downloadLink.download = `بطاقة_الطالب_${studentName}.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+  }).catch(err => {
+      console.error("خطأ أثناء حفظ الصورة:", err);
+      alert("⚠️ تعذر حفظ البطاقة كصورة بسبب إعدادات حماية الأمان لروابط الصور الخارجية.");
+  });
 }
 
 /* =========================
@@ -692,34 +1008,59 @@ function closeCard(){
 }
 
 /* =========================
-   طباعة
+   طباعة احترافية ومضمونة للـ QR Code بنسبة 100%
 ========================= */
 
 function printCard(student){
 
   showCard(student);
 
+  // ننتظر قليلاً لضمان توليد وتحويل الـ QR لكود صورة حقيقي داخل الـ DOM
   setTimeout(()=>{
 
-    let content =
-    document.getElementById("cardContent").innerHTML;
-
+    let content = document.getElementById("cardContent").innerHTML;
     let win = window.open("");
 
     win.document.write(`
       <html>
       <head>
-      <title>بطاقة الطالب</title>
+      <title>بطاقة الطالب - ${student.name || ""}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Cairo', sans-serif; direction: rtl; text-align: center; background: #fff; margin: 40px; } 
+        .student-id-card {
+          width: 340px; height: 215px;
+          background: linear-gradient(135deg, #0f2027, #203a43, #2c5364) !important;
+          -webkit-print-color-adjust: exact; print-color-adjust: exact;
+          border-radius: 16px; position: relative; color: white; padding: 16px; box-sizing: border-box; text-align: right; overflow: hidden; margin: auto; box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .card-header-zone { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .card-academy-title { font-size: 13px; font-weight: 900; color: #f1c40f; }
+        .card-chip { width: 32px; height: 24px; background: linear-gradient(135deg, #e0a96d, #966b37) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 4px; }
+        .card-body-zone { display: flex; gap: 12px; align-items: flex-start; }
+        .card-photo-box img { width: 75px; height: 75px; border-radius: 12px; object-fit: cover; border: 2px solid #fff; }
+        .card-details-box { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+        .card-row-name { font-size: 15px; font-weight: bold; color: #ffffff; margin-bottom: 2px; }
+        .card-row-data { font-size: 11px; color: #dfe6e9; display: flex; align-items: center; gap: 4px; }
+        .card-row-data strong { color: #f1c40f; }
+        .card-footer-zone { position: absolute; bottom: 12px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .card-id-display { font-size: 13px; font-weight: bold; color: #fff; background: rgba(255,255,255,0.15) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 2px 8px; border-radius: 4px; }
+        .card-qr-box img { width: 55px; height: 55px; background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 3px; border-radius: 6px; }
+      </style>
       </head>
-      <body style="font-family:Cairo;text-align:center">
-      ${content}
+      <body>
+        ${content}
+        <script>
+          // إجبار المتصفح على تشغيل الطباعة التلقائية فور الانتهاء من رسم الهيكل
+          window.onload = function() { window.print(); window.close(); }
+        <\/script>
       </body>
       </html>
     `);
 
-    win.print();
+    win.document.close();
 
-  },500);
+  }, 600);
 
 }
 
