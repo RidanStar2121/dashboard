@@ -168,7 +168,7 @@
 </div>
 
 <script>
-    const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+    const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
     let studentsData = [];
     let groupsData = []; 
     let attendanceHistory = [];
@@ -309,6 +309,8 @@
         if (!groupInfo || groupInfo.includes("تنبيه") || groupInfo.includes("اختر")) return alert("يرجى اختيار الفوج والمادة المحددة لحفظ الحصة بنجاح");
 
         const isEdit = rowId !== "";
+        const currentStatus = document.getElementById('status').value;
+        const currentDate = document.getElementById('attDate').value;
 
         const payload = {
             action: isEdit ? "editStudent" : "addStudent",
@@ -317,8 +319,8 @@
             studentId: sId,
             studentName: sName,
             groupName: groupInfo, 
-            date: document.getElementById('attDate').value,
-            status: document.getElementById('status').value,
+            date: currentDate,
+            status: currentStatus,
             note: document.getElementById('note').value
         };
 
@@ -329,6 +331,34 @@
             const result = await res.json();
             if (result.success) {
                 alert(isEdit ? "✅ تم تعديل السجل بنجاح!" : "✅ تم تسجيل عملية الحضور بنجاح!");
+                
+                // 🌟 بداية نظام إشعارات الواتساب التلقائي الذكي 🌟
+                // البحث عن بيانات الطالب في المصفوفة لجلب رقم هاتف ولي أمره المكتوب في الشيت
+                const studentInfo = studentsData.find(s => s.id == sId);
+                // قراءة الرقم (يدعم العمود إذا كان اسمه phone أو parentPhone أو mobile)
+                const parentPhone = studentInfo ? (studentInfo.phone || studentInfo.parentPhone || studentInfo.mobile) : null;
+
+                if (parentPhone) {
+                    // صياغة نص الرسالة الاحترافي للأكاديمية
+                    const emojiStatus = currentStatus === "حاضر" ? "✅ [حضور]" : "❌ [غياب]";
+                    const whatsappMessage = `مرحباً بحضرتكم من *أكاديمية وضاح للعلوم* 🏛️\n\n` +
+                                            `نحيطكم علماً بالتقرير اليومي للطالب(ة): *${sName}*\n` +
+                                            `📅 التاريخ: ${currentDate}\n` +
+                                            `📚 الفوج الدراسي: ${groupInfo}\n` +
+                                            `🔔 الحالة الإدارية: *${currentStatus}* ${emojiStatus}\n\n` +
+                                            `نشكر تعاملك وثقتك في أكاديميتنا الدائمة.`;
+
+                    // تنظيف رقم الهاتف وإزالة أي فراغات أو رموز زائدة لضمان الإرسال الدولي الصحيح
+                    const cleanPhone = parentPhone.toString().replace(/[^0-9]/g, '');
+                    
+                    // فتح رابط الواتساب مجهز بالرقم والنص المشفر تلقائياً للإرسال الفوري
+                    const whatsappURL = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(whatsappMessage)}`;
+                    window.open(whatsappURL, '_blank');
+                } else {
+                    console.log("⚠️ تنبيه: لم يتم إرسال إشعار واتساب لعدم وجود رقم هاتف مسجل لهذا الطالب في شيت الطلاب.");
+                }
+                // 🌟 نهاية نظام إشعارات الواتساب 🌟
+
                 await fetchAttendanceHistory();
                 resetForm();
             } else {
@@ -485,6 +515,75 @@
             osc.stop(audioCtx.currentTime + 0.1);
         } catch(e) {}
     }
+	
+	
+	
+	
+	
+	
+	
+	
+// عند تحميل الصفحة، ابحث عن البيانات القادمة من الرابط
+window.addEventListener("DOMContentLoaded", () => {
+    // 1. قراءة الـ Parameters من الرابط
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentId = urlParams.get('id');
+    const studentName = urlParams.get('name'); // سيتم فك التشفير تلقائياً هنا
+
+    // 2. إذا وجدت بيانات قادمة في الرابط، ضعها في الحقول المناسبة
+    if (studentId && studentName) {
+        
+        // ⚠️ ملاحظة: تأكد من تغيير الأيدي (id) أدناه ليتطابق مع الـ id الخاص بخانات الإدخال لديك في الصفحة
+        const idInput = document.getElementById("studentId") || document.getElementById("id_input"); 
+        const nameInput = document.getElementById("studentName") || document.getElementById("name_input");
+
+        if (idInput) idInput.value = studentId;
+        if (nameInput) nameInput.value = studentName;
+        
+        console.log(`✅ تم إدراج بيانات الطالب تلقائياً: ${studentName}`);
+    }
+});	
+
+
+
+/* ====================================================
+   كود احترافي وجذري لاستقبال بيانات الطالب وتعبئتها تلقائياً
+====================================================== */
+function autoFillStudentData() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentId = urlParams.get('studentId');
+    const studentName = urlParams.get('studentName');
+
+    if (studentId || studentName) {
+        // البحث المرن عن الحقول في صفحة الحضور
+        let idInput = document.getElementById("studentId") 
+                   || document.querySelector("input[name='studentId']")
+                   || document.querySelector("input[placeholder*='ID']")
+                   || document.querySelector("input[placeholder*='معرف']");
+
+        let nameInput = document.getElementById("studentName") 
+                     || document.querySelector("input[name='studentName']")
+                     || document.querySelector("input[placeholder*='اسم']");
+
+        if (idInput && studentId) {
+            idInput.value = studentId;
+            idInput.dispatchEvent(new Event('input', { bubbles: true }));
+            idInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        
+        if (nameInput && studentName) {
+            nameInput.value = studentName;
+            nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+            nameInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", autoFillStudentData);
+} else {
+    autoFillStudentData();
+}
 </script>
 
 </body>
