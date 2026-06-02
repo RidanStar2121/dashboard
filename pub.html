@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة العرض الذكية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #007bff;
+            --dark-blue: #0a2540;
+            --accent-gold: #f59e0b;
+            --success: #28a745;
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #f8fafc;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+        }
+
+        /* رأس الصفحة الاحترافي */
+        .lobby-header {
+            background: linear-gradient(135deg, var(--dark-blue), var(--primary));
+            padding: 15px 30px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .academy-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .academy-logo i {
+            font-size: 32px;
+            color: var(--accent-gold);
+        }
+
+        .academy-logo h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+
+        .live-info {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .info-box {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .info-box span {
+            display: block;
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+
+        .info-box strong {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        /* تقسيم شاشة العرض */
+        .lobby-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1.8fr;
+            gap: 20px;
+            height: 100%;
+            min-height: 0; /* مهم لضمان عدم خروج العناصر عن الشاشة */
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        /* البطاقات الرئيسية */
+        .lobby-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            color: #1e293b;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .card-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .card-title i {
+            color: var(--primary);
+        }
+
+        /* 1. نظام الترحيب الفوري */
+        .welcome-box {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 2px solid var(--success);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            transition: all 0.5s ease;
+        }
+
+        .welcome-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .welcome-box h2 {
+            margin: 0 0 5px 0;
+            color: #14532d;
+            font-size: 26px;
+            font-weight: 900;
+        }
+
+        .welcome-box p {
+            margin: 0;
+            color: #166534;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* 2. جدول المجموعات الحالية */
+        .list-container {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 5px;
+        }
+
+        .list-item {
+            background: #f8fafc;
+            border-right: 5px solid var(--primary);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .item-details h4 {
+            margin: 0 0 5px 0;
+            font-size: 15px;
+            color: var(--dark-blue);
+        }
+
+        .item-details span {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .item-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* 3. لوحة شرف المتفوقين */
+        .honor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .honor-item {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border: 1px solid var(--accent-gold);
+            padding: 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .honor-item i {
+            color: var(--accent-gold);
+            font-size: 20px;
+        }
+
+        .honor-name {
+            font-size: 13px;
+            font-weight: bold;
+            color: #78350f;
+        }
+
+        /* حركة وميض خفيفة عند التحديث التلقائي */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .pulse-effect {
+            animation: pulse 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lobby-header">
+        <div class="academy-logo">
+            <i class="fas fa-graduation-cap"></i>
+            <div>
+                <h1>أكاديمية وضاح للعلوم</h1>
+                <span style="font-size: 11px; color: #cbd5e1; display: block;">منظومة العرض الذكي للممرات وقاعات الانتظار</span>
+            </div>
+        </div>
+        
+        <div class="live-info">
+            <div class="info-box">
+                <span>التوقيت الحالي</span>
+                <strong id="liveClock">00:00:00</strong>
+            </div>
+            <div class="info-box">
+                <span>التاريخ اليومي</span>
+                <strong id="liveDate">⏳ جاري التحميل</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="lobby-grid">
+        
+        <div class="column">
+            <div class="lobby-card" style="flex-grow: 1.5;">
+                <div class="card-title"><i class="fas fa-id-card"></i> دخول وتتبع الطلاب الفوري</div>
+                <div id="welcomeScreen" class="welcome-box">
+                    <div class="welcome-avatar"><i class="fas fa-user-check"></i></div>
+                    <h2>مرحباً بكم في الأكاديمية</h2>
+                    <p>يرجى تمرير بطاقة الـ QR للسيرفر لتأكيد الحضور</p>
+                </div>
+            </div>
+            
+            <div class="lobby-card" style="flex-grow: 1;">
+                <div class="card-title"><i class="fas fa-trophy"></i> لوحة شرف المتفوقين لهذا الشهر</div>
+                <div class="list-container">
+                    <div class="honor-grid" id="honorContainer">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="lobby-card" style="height: 100%;">
+                <div class="card-title"><i class="fas fa-calendar-day"></i> جدول الحصص والأفواج النشطة حالياً</div>
+                <div class="list-container" id="groupsContainer">
+                    <div style="text-align: center; color: #64748b; padding-top: 40px;">⏳ جاري تحديث جدول المجموعات من السحابة...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // الرابط السحابي المتوافق تماماً مع مشروعك الحالي
+        const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
+        
+        let lastAttendanceCount = 0;
+
+        window.onload = () => {
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // جلب البيانات فوراً ثم تحديثها دورياً وتلقائياً كل 7 ثوانٍ بدون تدخل بشري
+            fetchLobbyData();
+            setInterval(fetchLobbyData, 7000);
+        };
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('liveClock').innerText = now.toLocaleTimeString('ar-DZ');
+            document.getElementById('liveDate').innerText = now.toLocaleDateString('ar-DZ', { weekday: 'long', day: 'numeric', month: 'long' });
+        }
+
+        async function fetchLobbyData() {
+            try {
+                // 1. جلب سجلات الحضور لعرض الترحيب الفوري
+                const attRes = await fetch(`${sheetURL}?action=get&sheet=attendance`);
+                const attendanceData = await attRes.json();
+                
+                if (attendanceData && attendanceData.length > 0) {
+                    // أحدث تلميذ سجل هو آخر عنصر في المصفوفة القادمة من السيرفر
+                    const latestRecord = attendanceData[attendanceData.length - 1];
+                    
+                    // إذا كان هناك تسجيل جديد لم نرحب به بعد، أو لتحديث الشاشة باستمرار
+                    if(attendanceData.length !== lastAttendanceCount) {
+                        triggerWelcome(latestRecord);
+                        lastAttendanceCount = attendanceData.length;
+                    }
+                }
+
+                // 2. جلب الأفواج النشطة لتحديث جدول الحصص أمام الأولياء
+                const gRes = await fetch(`${sheetURL}?action=get&sheet=Group`);
+                const groupsData = await gRes.json();
+                renderGroups(groupsData);
+
+                // 3. جلب قائمة الطلاب كلوحة شرف افتراضية ذكية
+                const sRes = await fetch(`${sheetURL}?action=get&sheet=students`);
+                const studentsData = await sRes.json();
+                renderHonorRoll(studentsData);
+
+            } catch (e) {
+                console.error("Lobby Sync Error: ", e);
+            }
+        }
+
+        function triggerWelcome(record) {
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            welcomeScreen.classList.add('pulse-effect');
+            
+            const isPresent = record.status === "حاضر";
+            
+            welcomeScreen.innerHTML = `
+                <div class="welcome-avatar" style="background: ${isPresent ? '#28a745' : '#dc3545'}">
+                    <i class="fas ${isPresent ? 'fa-user-check' : 'fa-user-times'}"></i>
+                </div>
+                <h2 style="color: ${isPresent ? '#14532d' : '#7f1d1d'}">${record.studentName}</h2>
+                <p style="color: ${isPresent ? '#166534' : '#991b1b'}">
+                    تم تسجيل: <strong>${record.status}</strong> في الفوج المخصص
+                </p>
+                <small style="margin-top:10px; color:#64748b;"><i class="far fa-clock"></i> توقيت المعالجة: للتو</small>
+            `;
+
+            // إزالة تأثير الحركة بعد انتهائه ليكون جاهزاً للمرة القادمة
+            setTimeout(() => welcomeScreen.classList.remove('pulse-effect'), 500);
+        }
+
+        function renderGroups(groups) {
+            const container = document.getElementById('groupsContainer');
+            container.innerHTML = "";
+            
+            if(!groups || groups.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">لا توجد حصص مجدولة حالياً</div>`;
+                return;
+            }
+
+            // عرض أخر 6 مجموعات نشطة لتناسب حجم الشاشة
+            groups.slice(0, 6).forEach(g => {
+                container.innerHTML += `
+                    <div class="list-item">
+                        <div class="item-details">
+                            <h4>${g.groupName || 'فوج دراسي'}</h4>
+                            <span><i class="fas fa-chalkboard-teacher"></i> الأستاذ: ${g.teacher || 'غير محدد'}</span>
+                        </div>
+                        <div class="item-badge"><i class="fas fa-book"></i> ${g.subject || 'عام'}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderHonorRoll(students) {
+            const container = document.getElementById('honorContainer');
+            container.innerHTML = "";
+            
+            // اختيار عينات عشوائية أو أول 6 تلاميذ من الشيت لتمثيل المتفوقين وتدويرهم بصرياً
+            const honorList = students.slice(0, 6);
+            
+            if(honorList.length === 0) {
+                container.innerHTML = `<div>جاري إعداد لوحة الشرف...</div>`;
+                return;
+            }
+
+            honorList.forEach(s => {
+                container.innerHTML += `
+                    <div class="honor-item">
+                        <i class="fas fa-medal"></i>
+                        <span class="honor-name">${s.name}</span>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
