@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شاشة العرض الذكية</title>
+    <title>شاشة العرض الذكية والمتحركة | منظومة الأكاديمية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,7 +12,7 @@
             --dark-blue: #0a2540;
             --accent-gold: #f59e0b;
             --success: #28a745;
-            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-bg: rgba(255, 255, 255, 0.96);
         }
         
         body {
@@ -88,10 +88,10 @@
         /* تقسيم شاشة العرض */
         .lobby-grid {
             display: grid;
-            grid-template-columns: 1.2fr 1.8fr;
+            grid-template-columns: 1.3fr 1.7fr;
             gap: 20px;
             height: 100%;
-            min-height: 0; /* مهم لضمان عدم خروج العناصر عن الشاشة */
+            min-height: 0;
         }
 
         .column {
@@ -112,6 +112,7 @@
             display: flex;
             flex-direction: column;
             min-height: 0;
+            position: relative;
         }
 
         .card-title {
@@ -125,6 +126,8 @@
             gap: 10px;
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 10px;
+            z-index: 10;
+            background: var(--card-bg);
         }
 
         .card-title i {
@@ -174,74 +177,108 @@
             font-weight: 600;
         }
 
-        /* 2. جدول المجموعات الحالية */
-        .list-container {
-            overflow-y: auto;
+        /* 2. منطقة التحريك اللانهائي لجدول الحصص */
+        .scroll-viewport {
+            overflow: hidden;
+            position: relative;
             flex-grow: 1;
-            padding-right: 5px;
+            height: 100%;
+        }
+
+        /* حاوية الحركة الفردية التلقائية من الأسفل إلى الأعلى */
+        .scrolling-ticker {
+            position: absolute;
+            width: 100%;
+            animation: scrollUp linear infinite;
+        }
+
+        /* إيقاف الحركة مؤقتاً إذا مرر شخص مؤشر الفأرة عليها (اختياري ومميز) */
+        .scroll-viewport:hover .scrolling-ticker {
+            animation-play-state: paused;
+        }
+
+        @keyframes scrollUp {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); } /* يتحرك بمقدار النصف لأننا سنضاعف المحتوى لتجنب الفراغات البصرية */
         }
 
         .list-item {
             background: #f8fafc;
-            border-right: 5px solid var(--primary);
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            border-right: 6px solid var(--primary);
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
         }
 
         .item-details h4 {
             margin: 0 0 5px 0;
-            font-size: 15px;
+            font-size: 16px;
             color: var(--dark-blue);
         }
 
         .item-details span {
-            font-size: 12px;
+            font-size: 13px;
             color: #64748b;
         }
 
         .item-badge {
             background: #e0f2fe;
             color: #0369a1;
-            padding: 4px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
         }
 
-        /* 3. لوحة شرف المتفوقين */
-        .honor-grid {
+        /* 3. حاوية التحريك للوحة الشرف المتفوقين */
+        .honor-viewport {
+            overflow: hidden;
+            position: relative;
+            flex-grow: 1;
+            height: 80px;
+        }
+
+        .honor-ticker {
+            position: absolute;
+            width: 100%;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
+            animation: scrollHonor 15s linear infinite;
+        }
+
+        @keyframes scrollHonor {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
         }
 
         .honor-item {
             background: linear-gradient(135deg, #fffbeb, #fef3c7);
             border: 1px solid var(--accent-gold);
-            padding: 10px;
+            padding: 12px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
 
         .honor-item i {
             color: var(--accent-gold);
-            font-size: 20px;
+            font-size: 22px;
         }
 
         .honor-name {
-            font-size: 13px;
-            font-weight: bold;
+            font-size: 14px;
+            font-weight: 700;
             color: #78350f;
         }
 
-        /* حركة وميض خفيفة عند التحديث التلقائي */
+        /* وميض فوري */
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
@@ -259,7 +296,7 @@
             <i class="fas fa-graduation-cap"></i>
             <div>
                 <h1>أكاديمية وضاح للعلوم</h1>
-                <span style="font-size: 11px; color: #cbd5e1; display: block;">منظومة العرض الذكي للممرات وقاعات الانتظار</span>
+                <span style="font-size: 11px; color: #cbd5e1; display: block;">منظومة تتبع الحضور وعرض ممرات الطلاب التلقائية</span>
             </div>
         </div>
         
@@ -270,7 +307,7 @@
             </div>
             <div class="info-box">
                 <span>التاريخ اليومي</span>
-                <strong id="liveDate">⏳ جاري التحميل</strong>
+                <strong id="liveDate">⏳ جاري التحميل...</strong>
             </div>
         </div>
     </div>
@@ -278,19 +315,19 @@
     <div class="lobby-grid">
         
         <div class="column">
-            <div class="lobby-card" style="flex-grow: 1.5;">
-                <div class="card-title"><i class="fas fa-id-card"></i> دخول وتتبع الطلاب الفوري</div>
+            <div class="lobby-card" style="flex-grow: 1.4;">
+                <div class="card-title"><i class="fas fa-id-card"></i> الحضور والترحيب الفوري بالطلاب</div>
                 <div id="welcomeScreen" class="welcome-box">
                     <div class="welcome-avatar"><i class="fas fa-user-check"></i></div>
                     <h2>مرحباً بكم في الأكاديمية</h2>
-                    <p>يرجى تمرير بطاقة الـ QR للسيرفر لتأكيد الحضور</p>
+                    <p>يرجى تمرير كود الـ QR الخاص بك لتسجيل حضورك الفوري</p>
                 </div>
             </div>
             
             <div class="lobby-card" style="flex-grow: 1;">
-                <div class="card-title"><i class="fas fa-trophy"></i> لوحة شرف المتفوقين لهذا الشهر</div>
-                <div class="list-container">
-                    <div class="honor-grid" id="honorContainer">
+                <div class="card-title"><i class="fas fa-trophy"></i> لوحة المتفوقين والتميز (تحديث مستمر)</div>
+                <div class="honor-viewport">
+                    <div class="honor-ticker" id="honorContainer">
                         </div>
                 </div>
             </div>
@@ -298,9 +335,11 @@
 
         <div class="column">
             <div class="lobby-card" style="height: 100%;">
-                <div class="card-title"><i class="fas fa-calendar-day"></i> جدول الحصص والأفواج النشطة حالياً</div>
-                <div class="list-container" id="groupsContainer">
-                    <div style="text-align: center; color: #64748b; padding-top: 40px;">⏳ جاري تحديث جدول المجموعات من السحابة...</div>
+                <div class="card-title"><i class="fas fa-calendar-day"></i> جدول الحصص والأفواج النشطة اليوم</div>
+                <div class="scroll-viewport">
+                    <div class="scrolling-ticker" id="groupsContainer">
+                        <div style="text-align: center; color: #64748b; padding-top: 40px;">⏳ جاري مزامنة وبناء شريط الأفواج الذكي...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -308,18 +347,16 @@
     </div>
 
     <script>
-        // الرابط السحابي المتوافق تماماً مع مشروعك الحالي
         const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
-        
         let lastAttendanceCount = 0;
 
         window.onload = () => {
             updateClock();
             setInterval(updateClock, 1000);
             
-            // جلب البيانات فوراً ثم تحديثها دورياً وتلقائياً كل 7 ثوانٍ بدون تدخل بشري
             fetchLobbyData();
-            setInterval(fetchLobbyData, 7000);
+            // تحديث مخفي للبيانات من السحابة كل 10 ثوانٍ دون التأثير على حركة التلفاز
+            setInterval(fetchLobbyData, 10000);
         };
 
         function updateClock() {
@@ -330,40 +367,35 @@
 
         async function fetchLobbyData() {
             try {
-                // 1. جلب سجلات الحضور لعرض الترحيب الفوري
+                // 1. تتبع الحضور الفوري
                 const attRes = await fetch(`${sheetURL}?action=get&sheet=attendance`);
                 const attendanceData = await attRes.json();
-                
                 if (attendanceData && attendanceData.length > 0) {
-                    // أحدث تلميذ سجل هو آخر عنصر في المصفوفة القادمة من السيرفر
                     const latestRecord = attendanceData[attendanceData.length - 1];
-                    
-                    // إذا كان هناك تسجيل جديد لم نرحب به بعد، أو لتحديث الشاشة باستمرار
                     if(attendanceData.length !== lastAttendanceCount) {
                         triggerWelcome(latestRecord);
                         lastAttendanceCount = attendanceData.length;
                     }
                 }
 
-                // 2. جلب الأفواج النشطة لتحديث جدول الحصص أمام الأولياء
+                // 2. جلب الأفواج وبناء الحركة اللانهائية
                 const gRes = await fetch(`${sheetURL}?action=get&sheet=Group`);
                 const groupsData = await gRes.json();
                 renderGroups(groupsData);
 
-                // 3. جلب قائمة الطلاب كلوحة شرف افتراضية ذكية
+                // 3. لوحة الشرف الديناميكية
                 const sRes = await fetch(`${sheetURL}?action=get&sheet=students`);
                 const studentsData = await sRes.json();
                 renderHonorRoll(studentsData);
 
             } catch (e) {
-                console.error("Lobby Sync Error: ", e);
+                console.error("Lobby Engine Sync Error: ", e);
             }
         }
 
         function triggerWelcome(record) {
             const welcomeScreen = document.getElementById('welcomeScreen');
             welcomeScreen.classList.add('pulse-effect');
-            
             const isPresent = record.status === "حاضر";
             
             welcomeScreen.innerHTML = `
@@ -372,58 +404,68 @@
                 </div>
                 <h2 style="color: ${isPresent ? '#14532d' : '#7f1d1d'}">${record.studentName}</h2>
                 <p style="color: ${isPresent ? '#166534' : '#991b1b'}">
-                    تم تسجيل: <strong>${record.status}</strong> في الفوج المخصص
+                    تم تسجيل الحالة: <strong>${record.status}</strong>  بنجاح
                 </p>
-                <small style="margin-top:10px; color:#64748b;"><i class="far fa-clock"></i> توقيت المعالجة: للتو</small>
+                <small style="margin-top:8px; color:#64748b;"><i class="far fa-clock"></i> تم التحقق  : الأن فقط (اللحظة )</small>
             `;
-
-            // إزالة تأثير الحركة بعد انتهائه ليكون جاهزاً للمرة القادمة
             setTimeout(() => welcomeScreen.classList.remove('pulse-effect'), 500);
         }
 
         function renderGroups(groups) {
             const container = document.getElementById('groupsContainer');
-            container.innerHTML = "";
-            
             if(!groups || groups.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">لا توجد حصص مجدولة حالياً</div>`;
                 return;
             }
 
-            // عرض أخر 6 مجموعات نشطة لتناسب حجم الشاشة
-            groups.slice(0, 6).forEach(g => {
-                container.innerHTML += `
+            // توليد كود الـ HTML لعناصر الحصص
+            let itemsHTML = "";
+            groups.forEach(g => {
+                itemsHTML += `
                     <div class="list-item">
                         <div class="item-details">
-                            <h4>${g.groupName || 'فوج دراسي'}</h4>
-                            <span><i class="fas fa-chalkboard-teacher"></i> الأستاذ: ${g.teacher || 'غير محدد'}</span>
+                            <h4>${g.groupName || 'فوج غير مسمى'}</h4>
+                            <span><i class="fas fa-chalkboard-teacher"></i> الأستاذ: ${g.teacher || 'مستخلف'}</span>
                         </div>
-                        <div class="item-badge"><i class="fas fa-book"></i> ${g.subject || 'عام'}</div>
+                        <div class="item-badge"><i class="fas fa-book"></i> ${g.subject || 'مادة أساسية'}</div>
                     </div>
                 `;
             });
+
+            /* 💡 الخدعة البرمجية الاحترافية للحركة اللانهائية السلسة (Infinite Ticker):
+              نقوم بمضاعفة المحتوى (itemsHTML + itemsHTML). عندما ينتهي الجزء الأول، 
+              ينتقل المتصفح للجزء الثاني بشكل خفي دون أن يلاحظ المشاهد أي قفزة بالصورة!
+            */
+            container.innerHTML = itemsHTML + itemsHTML;
+
+            // حساب سرعة الحركة ديناميكياً بناءً على عدد الحصص (كل حصة تأخذ ثانيتين للتمرير)
+            const duration = Math.max(groups.length * 2.5, 12);
+            container.style.animationDuration = `${duration}s`;
         }
 
         function renderHonorRoll(students) {
             const container = document.getElementById('honorContainer');
-            container.innerHTML = "";
-            
-            // اختيار عينات عشوائية أو أول 6 تلاميذ من الشيت لتمثيل المتفوقين وتدويرهم بصرياً
-            const honorList = students.slice(0, 6);
-            
-            if(honorList.length === 0) {
-                container.innerHTML = `<div>جاري إعداد لوحة الشرف...</div>`;
+            if(!students || students.length === 0) {
+                container.innerHTML = `<div>جاري تحديث القائمة...</div>`;
                 return;
             }
 
-            honorList.forEach(s => {
-                container.innerHTML += `
+            let honorHTML = "";
+            // جلب الطلاب وعرضهم
+            students.forEach(s => {
+                honorHTML += `
                     <div class="honor-item">
                         <i class="fas fa-medal"></i>
                         <span class="honor-name">${s.name}</span>
                     </div>
                 `;
             });
+
+            // مضاعفة لوحة الشرف أيضاً لضمان حركة تمرير لانهائية متناسقة
+            container.innerHTML = honorHTML + honorHTML;
+            
+            const duration = Math.max(students.length * 3, 15);
+            container.style.animationDuration = `${duration}s`;
         }
     </script>
 </body>
