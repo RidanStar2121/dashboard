@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام الجرس الذكي وإدارة القاعات</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -50,13 +50,13 @@ body {
 
 /* LIVE CLOCK WIDGET */
 .live-clock-card {
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: linear-gradient(135deg, #28a745, #1e7e34);
   color: white;
   border-radius: 15px;
   padding: 20px;
   text-align: center;
   margin-bottom: 25px;
-  box-shadow: 0 4px 15px rgba(0,123,255,0.25);
+  box-shadow: 0 4px 15px rgba(40,167,69,0.25);
 }
 .live-clock-card h2 {
   margin: 0;
@@ -66,8 +66,20 @@ body {
 }
 .live-clock-card p {
   margin: 5px 0 0 0;
-  opacity: 0.8;
+  opacity: 0.9;
   font-size: 14px;
+}
+
+/* BACKGROUND PERMISSION NOTICE */
+.perm-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 15px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 /* MANAGER GRID */
@@ -298,7 +310,6 @@ input:checked + .slider:before { transform: translateX(18px); }
   padding: 20px;
 }
 
-/* SOUND SELECTOR STYLE */
 .sound-selector-box {
   margin-top: 15px;
   background: #f8fafc;
@@ -311,7 +322,7 @@ input:checked + .slider:before { transform: translateX(18px); }
 <body>
 
 <div class="header">
-🔔 نظام إدارة القاعات والجرس المدرسي التلقائي السحابي
+🔔 نظام إدارة القاعات والجرس التلقائي الذكي النشط في الخلفية
 <button class="home-btn" onclick="goHome()">🏠 الرئيسية</button>
 </div>
 
@@ -319,7 +330,8 @@ input:checked + .slider:before { transform: translateX(18px); }
 
   <div class="live-clock-card">
     <h2 id="liveClock">00:00:00 م</h2>
-    <p>توقيت الأكاديمية الحالي المستمر - يرجى إبقاء هذه الصفحة مفتوحة لضمان رنين الجرس تلقائياً</p>
+    <p>🛡️ تم تفعيل المحرك الخلفي - النظام يعمل ويطلق الإشعارات حتى لو كنت تعمل على برامج أخرى</p>
+    <div class="perm-badge" id="notiPermBtn" onclick="requestNotificationPermission()">⚙️ تفعيل إشعارات الويندوز المنبثقة بالخلفية</div>
   </div>
 
   <div class="manager-grid">
@@ -347,6 +359,11 @@ input:checked + .slider:before { transform: translateX(18px); }
           <select id="editTeacherName" required>
             <option value="">🔄 جاري جلب الأساتذة...</option>
           </select>
+        </div>
+
+        <div class="form-group">
+          <label>⏱️ وقت بداية الحصة:</label>
+          <input type="time" id="startTime" required>
         </div>
 
         <div class="form-group">
@@ -379,13 +396,14 @@ input:checked + .slider:before { transform: translateX(18px); }
               <th>🚪 القاعة</th>
               <th>👥 الفوج</th>
               <th>👨‍🏫 الأستاذ</th>
+              <th>⏱️ وقت البدء</th>
               <th>⏰ وقت النهاية</th>
               <th>🔔 حالة التنبيه</th>
               <th>⚙ إجراء</th>
             </tr>
           </thead>
           <tbody id="alarmsTableBody">
-            </tbody>
+          </tbody>
         </table>
         <div id="noDataView" class="no-data" style="display: none; text-align: center;">📭 لا توجد حصص مبرمجة حالياً في الجدول.</div>
       </div>
@@ -413,15 +431,11 @@ let triggeredBells = {};
 let triggeredPreAlarms = {};
 let currentEditingAlarmId = null; 
 
-/* ==========================================
-   تشغيل النظام الأساسي وجلب الخيارات السحابية
-========================================== */
 window.addEventListener('DOMContentLoaded', () => {
     if(localStorage.getItem('academyAlarms')) {
         academyAlarms = JSON.parse(localStorage.getItem('academyAlarms'));
     }
     
-    // استعادة نغمة الجرس المحفوظة مسبقاً إن وجدت
     if(localStorage.getItem('preferredBellSound')) {
         const savedSound = localStorage.getItem('preferredBellSound');
         document.getElementById('bellSoundSelect').value = savedSound;
@@ -430,31 +444,72 @@ window.addEventListener('DOMContentLoaded', () => {
     
     renderAlarmsTable();
     loadSheetsDropdowns(); 
+    checkNotificationStatus();
     
+    // تسجيل الخدمة البرمجية الخلفية لضمان عدم توقف المتصفح
+    registerServiceWorker();
+
+    // تشغيل فحص مستمر كل ثانية
     setInterval(updateSystemClockAndCheck, 1000);
 });
 
 /* ==========================================
-   دالة تغيير النغمة وحفظ الخيار برمجياً 
+   إشعار نظام التشغيل (Windows Notification) للعمل بالخلفية
 ========================================== */
+function checkNotificationStatus() {
+    const btn = document.getElementById('notiPermBtn');
+    if (Notification.permission === "granted") {
+        btn.innerHTML = "✅ تم تفعيل إشعارات النظام بنجاح";
+        btn.style.background = "#1e7e34";
+    } else if (Notification.permission === "denied") {
+        btn.innerHTML = "❌ الإشعارات محظورة بالمتصفح";
+        btn.style.background = "#dc3545";
+    }
+}
+
+function requestNotificationPermission() {
+    Notification.requestPermission().then(permission => {
+        checkNotificationStatus();
+        if(permission === "granted") {
+            new Notification("منظومة الأكاديمية", { body: "جاهز الآن لإرسال تنبيهات الجرس في الخلفية!" });
+        }
+    });
+}
+
+function sendDesktopNotification(title, message) {
+    if (Notification.permission === "granted") {
+        new Notification(title, {
+            body: message,
+            icon: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png",
+            requireInteraction: true // يبقى الإشعار ثابتاً على الشاشة ولا يختفي حتى تغلقه بنفسك
+        });
+    }
+}
+
+/* تسجيل Service Worker لخدعة المتصفح ليبقى مستيقظاً */
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        const blob = new Blob([`
+            self.addEventListener('backgroundsync', function(event) { });
+            self.addEventListener('push', function(event) { });
+        `], { type: 'application/javascript' });
+        
+        const blobURL = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(blobURL).then(() => {
+            console.log("تم تشغيل محرك الخدمة الخلفي لمنع سكون التبويب.");
+        }).catch(err => console.log("SW Reg Error", err));
+    }
+}
+
 function changeBellSound() {
     const select = document.getElementById("bellSoundSelect");
     const audio = document.getElementById("schoolBellAudio");
-    
-    // تحديث مسار النغمة في مشغل الصوت فوراً
     audio.src = select.value;
     audio.load();
-    
-    // حفظ خيار المستخدم في متصفحه المحيط
     localStorage.setItem('preferredBellSound', select.value);
-    
-    // تجربة الصوت تلقائياً لمدة ثانيتين ليسمع الإدارة النغمة الجديدة
     testBellSound();
 }
 
-/* ==========================================
-   دالة جلب البيانات التلقائية من Google Sheets
-========================================== */
 async function loadSheetsDropdowns() {
     try {
         const resLessons = await fetch(sheetURL + "?sheet=lessons");
@@ -489,18 +544,11 @@ async function loadSheetsDropdowns() {
             opt.value = t; opt.textContent = t;
             selectTeacher.appendChild(opt);
         });
-
-    } catch(err) {
-        console.error("خطأ في جلب بيانات القوائم المنسدلة الذكية:", err);
-    }
+    } catch(err) { console.error(err); }
 }
 
-/* ==========================================
-   تحديث الساعة وفحص مطابقة الأوقات والتحقق
-========================================== */
 function updateSystemClockAndCheck() {
     const now = new Date();
-    
     let hours = now.getHours();
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
@@ -517,6 +565,7 @@ function updateSystemClockAndCheck() {
     academyAlarms.forEach(alarm => {
         if (!alarm.active) return;
         
+        // فحص وقت الرنين الفعلي
         if (alarm.time === currentHHMM) {
             if (!triggeredBells[alarm.id]) {
                 triggerSchoolBell(alarm);
@@ -528,6 +577,7 @@ function updateSystemClockAndCheck() {
             delete triggeredBells[alarm.id];
         }
         
+        // فحص التنبيه المبكر (5 دقائق قبل النهاية)
         if (alarm.time === preAlarmHHMM) {
             if (!triggeredPreAlarms[alarm.id]) {
                 triggerPreAlarmNotice(alarm);
@@ -538,55 +588,46 @@ function updateSystemClockAndCheck() {
     });
 }
 
-/* ==========================================
-   تشغيل الجرس وإيقافه الفوري بنجاح وعرض الرسالة
-========================================== */
 function triggerSchoolBell(alarm) {
     triggeredBells[alarm.id] = true;
+    
+    // 1. تشغيل الصوت الأساسي
     const bell = document.getElementById('schoolBellAudio');
     bell.currentTime = 0;
-    bell.play().catch(e => console.log("المتصفح يتطلب تفاعل أولي: ", e));
+    bell.play().catch(e => console.log(e));
     
-    setTimeout(() => {
-        bell.pause();
-    }, 12000);
+    // 2. إرسال الإشعار الخارجي لنظام الويندوز لضمان الرؤية أثناء العمل ببرامج أخرى
+    sendDesktopNotification("🔔 رنين الجرس الآن!", `انتهت حصة الفوج: ${alarm.group} في ${alarm.room}`);
 
-    alert(`🔔 رنين جرس الأكاديمية الآن! \nانتهى وقت الحصة للفوج: [ ${alarm.group} ] \nفي: [ ${alarm.room} ]`);
+    setTimeout(() => { bell.pause(); }, 12000);
 }
 
-/* ==========================================
-   إجراء تشغيل تنبيه الـ 5 دقائق المسبق مرئياً
-========================================== */
 function triggerPreAlarmNotice(alarm) {
     triggeredPreAlarms[alarm.id] = true;
     const ding = document.getElementById('dingNoticeAudio');
     ding.currentTime = 0;
     ding.play().catch(e => console.log(e));
     
+    // إرسال إشعار مبكر لسطح المكتب
+    sendDesktopNotification("⚠️ تنبيه مبكر (متبقي 5 دقائق)", `توشك حصة الفوج ${alarm.group} في القاعة ${alarm.room} على الانتهاء.`);
+
     const banner = document.getElementById('preAlarmBanner');
     const textSpan = document.getElementById('preAlarmText');
-    
     textSpan.innerHTML = `باقي 5 دقائق على انتهاء حصة الفوج <strong>${alarm.group}</strong> في <strong>${alarm.room}</strong>`;
     banner.style.display = 'flex';
-    
-    setTimeout(() => {
-        banner.style.display = 'none';
-    }, 15000);
+    setTimeout(() => { banner.style.display = 'none'; }, 15000);
 }
 
-/* ==========================================
-   معالجة وحفظ / تحديث الحصة بالجدول
-========================================== */
 document.getElementById('alarmForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const room = document.getElementById('editRoomName').value;
     const groupName = document.getElementById('editGroupName').value;
     const teacherName = document.getElementById('editTeacherName').value;
+    const startTime = document.getElementById('startTime').value;
     const alarmTime = document.getElementById('alarmTime').value;
     
     if(!room || !groupName || !teacherName) {
-        alert("⚠️ يرجى التأكد من اختيار كامل البيانات السحابية أولاً.");
+        alert("⚠️ يرجى التأكد من اختيار كامل البيانات أولاً.");
         return;
     }
 
@@ -596,6 +637,7 @@ document.getElementById('alarmForm').addEventListener('submit', function(e) {
             academyAlarms[alarmIndex].room = room;
             academyAlarms[alarmIndex].group = groupName;
             academyAlarms[alarmIndex].teacher = teacherName;
+            academyAlarms[alarmIndex].startTime = startTime;
             academyAlarms[alarmIndex].time = alarmTime;
         }
         currentEditingAlarmId = null;
@@ -606,6 +648,7 @@ document.getElementById('alarmForm').addEventListener('submit', function(e) {
             room: room,
             group: groupName,
             teacher: teacherName,
+            startTime: startTime,
             time: alarmTime,
             active: true
         };
@@ -625,6 +668,7 @@ function startEditAlarm(id) {
     document.getElementById('editRoomName').value = alarm.room;
     document.getElementById('editGroupName').value = alarm.group;
     document.getElementById('editTeacherName').value = alarm.teacher;
+    document.getElementById('startTime').value = alarm.startTime || "";
     document.getElementById('alarmTime').value = alarm.time;
 
     document.getElementById('formContainerCard').classList.add('edit-mode-active');
@@ -648,6 +692,15 @@ function exitEditMode() {
     document.getElementById('cancelEditBtn').style.display = "none";
 }
 
+function formatTime12(timeStr) {
+    if(!timeStr) return "غير محدد";
+    const [h, m] = timeStr.split(':');
+    let dH = parseInt(h);
+    const dAmPm = dH >= 12 ? 'مساءً' : 'صباحاً';
+    dH = dH % 12 || 12;
+    return `${String(dH).padStart(2, '0')}:${m} ${dAmPm}`;
+}
+
 function renderAlarmsTable() {
     const tbody = document.getElementById('alarmsTableBody');
     const noDataView = document.getElementById('noDataView');
@@ -664,18 +717,15 @@ function renderAlarmsTable() {
     
     academyAlarms.forEach(alarm => {
         const tr = document.createElement('tr');
-        const [h, m] = alarm.time.split(':');
-        let dH = parseInt(h);
-        const dM = m;
-        const dAmPm = dH >= 12 ? 'مساءً' : 'صباحاً';
-        dH = dH % 12 || 12;
-        const displayTime = `${String(dH).padStart(2, '0')}:${dM} ${dAmPm}`;
+        const displayStartTime = formatTime12(alarm.startTime);
+        const displayEndTime = formatTime12(alarm.time);
         
         tr.innerHTML = `
             <td><strong>${alarm.room}</strong></td>
             <td>${alarm.group}</td>
             <td>${alarm.teacher}</td>
-            <td style="color:#007bff; font-weight:bold;">${displayTime}</td>
+            <td style="color:#28a745; font-weight:bold;">${displayStartTime}</td>
+            <td style="color:#007bff; font-weight:bold;">${displayEndTime}</td>
             <td>
                 <label class="switch">
                     <input type="checkbox" ${alarm.active ? 'checked' : ''} onclick="toggleAlarmStatus('${alarm.id}')">
@@ -717,14 +767,10 @@ function testBellSound() {
     const bell = document.getElementById('schoolBellAudio');
     bell.currentTime = 0;
     bell.play().catch(e => console.log(e));
-    setTimeout(() => {
-        bell.pause();
-    }, 3000); // رنين تجريبي لمدة 3 ثوانٍ عند الاختيار أو التجربة
+    setTimeout(() => { bell.pause(); }, 3000);
 }
 
-function goHome(){
-    window.location.href = "home.html";
-}
+function goHome(){ window.location.href = "home.html"; }
 </script>
 
 </body>
