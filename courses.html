@@ -283,10 +283,10 @@
             <input type="hidden" id="courseID">
             
             <div class="input-group">
-                <label>📖 اسم المادة الدراسية</label>
-                <select id="courseName">
-                    <option value="">اختر المادة الدراسية...</option>
-                </select>
+                <label>📖 اسم المادة الدراسية (اكتب مادة جديدة أو اختر)</label>
+                <input type="text" id="courseName" list="subjectsList" placeholder="اكتب اسم المادة (مثال: بايثون)...">
+                <datalist id="subjectsList">
+                    </datalist>
             </div>
             
             <div class="input-group">
@@ -349,7 +349,7 @@
 </div>
 
 <script>
-    const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+    const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
 
     let localCoursesArray = [];
 
@@ -358,7 +358,7 @@
         loadCourses();      
     };
 
-    // 1. جلب خيارات القوائم المنسدلة
+    // 1. جلب خيارات القوائم المنسدلة والـ Datalist
     async function loadDropdownData() {
         try {
             const res = await fetch(`${sheetURL}?action=get&sheet=teachers`);
@@ -378,27 +378,27 @@
         try {
             const res = await fetch(`${sheetURL}?action=get&sheet=subjects`); 
             const data = await res.json();
-            const selectCourse = document.getElementById("courseName");
+            const datalistCourse = document.getElementById("subjectsList");
             if (Array.isArray(data)) {
                 data.forEach(s => {
                     if(s.subject_name) {
                         let opt = document.createElement("option");
-                        opt.value = s.subject_name; opt.textContent = s.subject_name;
-                        selectCourse.appendChild(opt);
+                        opt.value = s.subject_name;
+                        datalistCourse.appendChild(opt);
                     }
                 });
             } else {
-                fallbackDropdown("courseName", [
+                fallbackDatalist("subjectsList", [
                     "إعلام آلي", "مكتبية", "بايثون", "جافا", "جافا سكريبت", "تصميم المواقع", "الأمن السبيراني", "الذكاء الصناعي", "سكراتش", "الروبوتيك",
                     "رياضيات", "فيزياء", "علوم طبيعية", "اللغة العربية", "اللغة الإنجليزية", "اللغة الفرنسية",
-                    "فلسفة", "قرآن كريم", "خياطة", "طبخ", "تعليم الكتابة والخط"
+                   "سوروبان", "فلسفة", "قرآن كريم", "خياطة", "طبخ", "تعليم الكتابة والخط", "امن وحماية لأعوان الأمن والحراسة"
                 ]);
             }
         } catch (e) { 
-            fallbackDropdown("courseName", [
+            fallbackDatalist("subjectsList", [
                 "إعلام آلي", "مكتبية", "بايثون", "جافا", "جافا سكريبت", "تصميم المواقع", "الأمن السبيراني", "الذكاء الصناعي", "سكراتش", "الروبوتيك",
-                "رياضيات", "فيزياء", "علوم طبيعية", "اللغة العربية", "اللغة الإنجليزية", "اللغة الفرنسية",
-                "فلسفة", "قرآن كريم", "خياطة", "طبخ", "تعليم الكتابة والخط"
+                    "رياضيات", "فيزياء", "علوم طبيعية", "اللغة العربية", "اللغة الإنجليزية", "اللغة الفرنسية",
+                   "سوروبان", "فلسفة", "قرآن كريم", "خياطة", "طبخ", "تعليم الكتابة والخط", "امن وحماية لأعوان الأمن والحراسة"
             ]);
         }
 
@@ -418,16 +418,27 @@
                 fallbackDropdown("courseLevel", [
                     "1 إبتدائي", "2 إبتدائي", "3 إبتدائي", "4 إبتدائي", "5 إبتدائي",
                     "1 متوسط", "2 متوسط", "3 متوسط", "4 متوسط", 
-                    "1 ثانوي", "2 ثانوي", "3 ثانوي (بكالوريا)"
-  , "جميع المستويات"             ]);
+                    "1 ثانوي", "2 ثانوي", "3 ثانوي (بكالوريا)", "جميع المستويات"
+                ]);
             }
         } catch (e) {
             fallbackDropdown("courseLevel", [
                 "1 إبتدائي", "2 إبتدائي", "3 إبتدائي", "4 إبتدائي", "5 إبتدائي",
                 "1 متوسط", "2 متوسط", "3 متوسط", "4 متوسط", 
-                "1 ثانوي", "2 ثانوي", "3 ثانوي (بكالوريا)"
-  ,  "جميع المستويات"        ]);
+                "1 ثانوي", "2 ثانوي", "3 ثانوي (بكالوريا)", "جميع المستويات"
+            ]);
         }
+    }
+
+    // تم تعديل هذه الدالة لتدعم الـ Datalist التفاعلي والكتابة الحرة
+    function fallbackDatalist(elementId, itemsArray) {
+        const datalist = document.getElementById(elementId);
+        datalist.innerHTML = ""; 
+        itemsArray.forEach(item => {
+            let opt = document.createElement("option");
+            opt.value = item;
+            datalist.appendChild(opt);
+        });
     }
 
     function fallbackDropdown(elementId, itemsArray) {
@@ -508,7 +519,7 @@
             action: isEdit ? "editStudent" : "addStudent", 
             sheet: "courses",
             id: idValue,
-            course: document.getElementById("courseName").value,
+            course: document.getElementById("courseName").value.trim(),
             level: document.getElementById("courseLevel").value,
             teacher: document.getElementById("courseTeacher").value,
             price: document.getElementById("coursePrice").value,
@@ -517,7 +528,7 @@
         };
 
         if (!data.course || !data.level || !data.teacher) {
-            return alert("⚠️ انتبه: يرجى اختيار (المادة، المستوى، والأستاذ) من القوائم المنسدلة أولاً.");
+            return alert("⚠️ انتبه: يرجى كتابة أو اختيار (المادة)، واختيار (المستوى، والأستاذ) أولاً.");
         }
 
         try {
