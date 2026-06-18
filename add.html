@@ -104,31 +104,8 @@
             <div class="courses-manager-box">
                 <h4 style="margin: 0 0 10px 0; color: #007bff;"><i class="fas fa-book-reader"></i> سلة تسجيل الدورات والمواد الدراسية المتعددة</h4>
                 <div class="courses-row">
-                    <select id="course" style="margin-bottom:0;">
-                        <option value="">📚 اختر المادة أو الدورة</option>
-                        <option>🎮 Scratch</option>
-                        <option>🤖 روبوتيك</option>
-                        <option>🐍 Python</option>
-                        <option>🧠 ذكاء اصطناعي</option>
-                        <option>الأمن السبيراني</option>
-                        <option>تصميم المواقع</option>
-                        <option>مكتبية</option>
-                        <option>سوروبان</option>
-                        <option>رياضيات إبتدائي</option>
-                        <option>فرنسية إبتدائي</option>
-                        <option>إنجليزية إبتدائي</option>
-                        <option>عربية متوسط</option>
-                        <option>فرنسية متوسط</option>
-                        <option>إنجليزية متوسط</option>
-                        <option>علوم متوسط</option>
-                        <option>فيزياء متوسط</option>
-                        <option>رياضيات متوسط</option>
-                        <option>عربية ثانوي</option>
-                        <option>فرنسية ثانوي</option>
-                        <option>إنجليزية ثانوي</option>
-                        <option>علوم ثانوي</option>
-                        <option>فيزياء ثانوي</option>
-                        <option>رياضيات ثانوي</option>
+                    <select id="course" style="margin-bottom:0;" onchange="onCourseSelected()">
+                        <option value="">📚 جاري تحميل المواد والدورات...</option>
                     </select>
                     
                     <select id="teacher" style="margin-bottom:0;">
@@ -147,10 +124,10 @@
                         </tr>
                     </thead>
                     <tbody id="selectedCoursesRows">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
-            </div>
+        </div>
 
         <div class="buttons">
             <button class="success" onclick="saveStudent()"><i class="fas fa-save"></i> 💾 حفظ البيانات</button>
@@ -167,6 +144,7 @@
 <script>
 const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
 let allStudents = [];
+let globalCoursesData = []; // متغير عالمي لتخزين الدورات والأساتذة المجلوبة من شيت courses
 let selectedID = null;
 
 // مصفوفة تخزين مؤقتة للمواد المضافة للطالب الحالي في الواجهة
@@ -174,6 +152,7 @@ let currentStudentCourses = [];
 
 window.onload = async () => {
     await loadTeachers();      
+    await loadCoursesFromServer(); // جلب الدورات تلقائياً عند فتح الصفحة
     await loadStudentsList();  
     checkEditMode();           
 };
@@ -200,6 +179,53 @@ async function loadTeachers() {
     } catch (err) {
         console.error("Teacher load error:", err);
         teacherSelect.innerHTML = '<option value="">⚠️ خطأ في تحميل الأساتذة</option>';
+    }
+}
+
+// دالة جديدة كلياً: جلب المواد والدورات من ورقة courses وسحبها ديناميكياً
+async function loadCoursesFromServer() {
+    const courseSelect = document.getElementById("course");
+    try {
+        const response = await fetch(`${sheetURL}?action=get&sheet=courses`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        globalCoursesData = await response.json();
+        
+        courseSelect.innerHTML = '<option value="">📚 اختر المادة أو الدورة</option>';
+        if (Array.isArray(globalCoursesData)) {
+            globalCoursesData.forEach(item => {
+                if (item.course && item.course.trim() !== "") {
+                    const option = document.createElement("option");
+                    option.value = item.course.trim();
+                    option.textContent = item.course.trim();
+                    courseSelect.appendChild(option);
+                }
+            });
+        }
+    } catch (err) {
+        console.error("Courses load error:", err);
+        courseSelect.innerHTML = '<option value="">⚠️ خطأ في تحميل المواد</option>';
+    }
+}
+
+// دالة التغيير التلقائي: بمجرد اختيار المادة يتم البحث عن أستاذها وتحديده فوراً
+function onCourseSelected() {
+    const courseSelect = document.getElementById("course");
+    const teacherSelect = document.getElementById("teacher");
+    const selectedCourse = courseSelect.value;
+
+    if (!selectedCourse) {
+        teacherSelect.value = "";
+        return;
+    }
+
+    // البحث في البيانات المخزنة سحابياً عن السطر الذي يحتوي على هذه المادة
+    const matchedRecord = globalCoursesData.find(item => item.course && item.course.trim() === selectedCourse);
+
+    if (matchedRecord && matchedRecord.teacher) {
+        // تحديد الأستاذ تلقائياً في القائمة المنسدلة للأساتذة
+        teacherSelect.value = matchedRecord.teacher.trim();
+    } else {
+        teacherSelect.value = "";
     }
 }
 
