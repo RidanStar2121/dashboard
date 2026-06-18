@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الأساتذة الاحترافية</title>
+    <title>إدارة الأساتذة الاحترافية - نذير وضاح</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -257,37 +257,12 @@
         <div class="card">
             <h3>📝 بيانات الأستاذ</h3>
             <input type="hidden" id="teacherId">
+            <input type="hidden" id="subject" value="">
+            
             <div class="grid">
                 <input id="name" placeholder="👤 الاسم الكامل للأستاذ">
                 <input id="phone" placeholder="📱 رقم الهاتف">
                 
-                <select id="subject">
-                    <option value="">📚 اختر المادة المدرسة...</option>
-                    <option>🎮 Scratch</option>
-                        <option>🤖 روبوتيك</option>
-                        <option>🐍 Python</option>
-                        <option>🧠 ذكاء اصطناعي</option>
-                        <option>الأمن السبيراني</option>
-                        <option>تصميم المواقع</option>
-                        <option>مكتبية</option>
-                        <option>سوروبان</option>
-                        <option>رياضيات إبتدائي</option>
-                        <option>فرنسية إبتدائي</option>
-                        <option>إنجليزية إبتدائي</option>
-                        <option>عربية متوسط</option>
-                        <option>فرنسية متوسط</option>
-                        <option>إنجليزية متوسط</option>
-                        <option>علوم متوسط</option>
-                        <option>فيزياء متوسط</option>
-                        <option>رياضيات متوسط</option>
-                        <option>عربية ثانوي</option>
-                        <option>فرنسية ثانوي</option>
-                        <option>إنجليزية ثانوي</option>
-                        <option>علوم ثانوي</option>
-                        <option>فيزياء ثانوي</option>
-                        <option>رياضيات ثانوي</option>
-                </select>
-
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                     <label style="font-size: 12px; font-weight: bold; color: #64748b;">🏫 الأفواج المرتبطة بالأستاذ حالياً (تلقائي):</label>
                     <div class="teacher-groups-display" id="teacherGroupsFormList">
@@ -361,7 +336,7 @@
                         </tr>
                     </thead>
                     <tbody id="modalStudentsTableBody">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -369,26 +344,22 @@
 </div>
 
 <script>
-const sheetURL = "https://script.google.com/macros/s/AKfycbx_OBq4qf1dfRwJJmDxymHME1QtYSFhUcKGPW773TNlRZ4GwRQdhyk_AoLDEYsYmPUq9g/exec";
+const sheetURL = "https://script.google.com/macros/s/AKfycbzQpncmEbFRwd3N5nwHS911q5oMyqonKgIJKUqNMvkxKCRwDhFzgg8N-YozLMKiWkZaMg/exec";
 let allTeachers = [];
 let allGroups = [];
-let allStudents = []; // مصفوفة شاملة لتخزين كل طلاب المنظومة بالذاكرة
+let allStudents = []; 
 
 async function loadInitialData() {
     try {
-        // 1. جلب الأساتذة
         const resTeachers = await fetch(`${sheetURL}?action=get&sheet=teachers`);
         allTeachers = await resTeachers.json();
         
-        // 2. جلب الأفواج
         const resGroups = await fetch(`${sheetURL}?action=get&sheet=Group`);
         allGroups = await resGroups.json();
 
-        // 3. الحل الذكي: جلب شيت الطلاب الرئيسي لضمان وجود أي اسم ID بالمنظومة
         const resStudents = await fetch(`${sheetURL}?action=get&sheet=students`);
         allStudents = await resStudents.json();
 
-        // استدعاء دالات الرندرة الخاصة بصفحة الأساتذة لديك هنا
         if (typeof calculateStats === "function") calculateStats();
         if (typeof renderTeachers === "function") renderTeachers(allTeachers);
         
@@ -432,7 +403,6 @@ function renderTeachers(dataArray){
 
         if(teacherGroups.length > 0) {
             teacherGroups.forEach(g => {
-                // تعديل ذكي جداً: عند الضغط يتم تشغيل دالة تفتح النافذة العائمة وتعرض التلاميذ فوراً
                 groupsBadgesHtml += `<span class="group-badge-tag" onclick="openStudentsModal('${encodeURIComponent(g.groupName.trim())}', '${encodeURIComponent(t.name)}')" title="اضغط لعرض قائمة التلاميذ فوراً">🏫 ${g.groupName}</span>`;
             });
         } else {
@@ -445,7 +415,7 @@ function renderTeachers(dataArray){
             <td><b>${t.id || ""}</b></td>
             <td><b>${t.name || ""}</b></td>
             <td>${t.phone || "-"}</td>
-            <td><span style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-size:13px;">${t.subject || ""}</span></td>
+            <td><span style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-size:13px;">${t.subject || "-"}</span></td>
             <td>${t.level || ""}</td>
             <td style="font-weight:bold; color:var(--accent);">${parseFloat(t.salary || 0).toLocaleString()} DA</td>
             <td><div style="max-width:250px; margin:auto;">${groupsBadgesHtml}</div></td>
@@ -459,9 +429,6 @@ function renderTeachers(dataArray){
     });
 }
 
-// --- دالة فك تشفير وعرض التلاميذ داخل الواجهة العائمة فوراً ---
-// --- الدالة المحدثة والذكية لضمان جلب وقراءة تلاميذ الفوج بنجاح ---
-// --- الدالة الذكية المحدثة لعزل طلاب الفوج المعنيين فقط بناءً على studentIds ---
 function openStudentsModal(encodedGroupName, encodedTeacherName) {
     const groupName = decodeURIComponent(encodedGroupName).trim().toLowerCase();
     const teacherName = decodeURIComponent(encodedTeacherName).trim();
@@ -472,7 +439,6 @@ function openStudentsModal(encodedGroupName, encodedTeacherName) {
     const studentsTableBody = document.getElementById("modalStudentsTableBody");
     studentsTableBody.innerHTML = "<tr><td colspan='2'>🔍 جاري قراءة القائمة الرسمية ومطابقة الأسماء الكاملة...</td></tr>";
     
-    // 1. البحث عن الفوج المستهدف داخل مصفوفة allGroups
     const targetGroup = allGroups.find(g => {
         const gName = g.groupName || "";
         return gName.toString().trim().toLowerCase() === groupName;
@@ -485,7 +451,6 @@ function openStudentsModal(encodedGroupName, encodedTeacherName) {
         return;
     }
 
-    // 2. تفكيك الـ studentIds إلى مصفوفة نظيفة
     let idList = targetGroup.studentIds.toString().split(",")
                      .map(id => id.trim())
                      .filter(id => id !== "");
@@ -497,11 +462,9 @@ function openStudentsModal(encodedGroupName, encodedTeacherName) {
         studentsTableBody.innerHTML = "";
         let displayedCount = 0;
 
-        // 3. المطابقة الذكية الشاملة
         idList.forEach(stId => {
             let sName = "";
 
-            // أ) البحث أولاً في شيت الطلاب الرئيسي (وهو الحل الجذري للمشكلة)
             if (typeof allStudents !== 'undefined' && allStudents.length > 0) {
                 const match = allStudents.find(s => {
                     const sId = s.id || s.studentId || "";
@@ -510,7 +473,6 @@ function openStudentsModal(encodedGroupName, encodedTeacherName) {
                 if (match) sName = match.name || match.studentName || match.student_name;
             }
 
-            // ب) خطة بديلة: إذا لم يعثر عليه في شيت الطلاب، يبحث في شيت الحضور القديم
             if (!sName && typeof attendanceData !== 'undefined' && attendanceData.length > 0) {
                 const matchAtt = attendanceData.find(s => {
                     const sId = s.studentId || s.id || "";
@@ -519,12 +481,10 @@ function openStudentsModal(encodedGroupName, encodedTeacherName) {
                 if (matchAtt) sName = matchAtt.studentName || matchAtt.name;
             }
 
-            // ج) إذا لم يعثر عليه نهائياً في أي مكان، يبقي رقمه بشكل منظم
             if (!sName) {
                 sName = `تلميذ مسجل برقم (${stId})`;
             }
 
-            // عرض السطر بشكل احترافي ومنسق ومطابق للتصميم الجميل لديك
             const str = document.createElement("tr");
             str.innerHTML = `
                 <td><b style="color: #475569;">${stId}</b></td>
@@ -573,14 +533,13 @@ function saveTeacher(){
         id: id,
         name: document.getElementById("name").value.trim(),
         phone: document.getElementById("phone").value.trim(),
-        subject: document.getElementById("subject").value,
+        subject: document.getElementById("subject").value, // سيرسل القيمة فارغة أو المحدثة من شيت الدورات
         level: document.getElementById("level").value,
         salary: document.getElementById("salary").value,
         group_name: "" 
     };
 
     if(!data.name) { alert("⚠️ يرجى إدخال اسم الأستاذ الكامل أولاً"); return; }
-    if(!data.subject) { alert("⚠️ من فضلك حدد المادة المدرسة"); return; }
 
     btn.disabled = true;
     btn.innerText = "⏳ جاري حفظ وتأمين البيانات...";
