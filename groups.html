@@ -115,7 +115,7 @@
         <span class="section-title" id="form-mode-title"><i class="fas fa-plus-circle"></i> إنشاء فوج جديد</span>
         
         <input type="hidden" id="groupId">
-        <input type="text" id="groupName" placeholder="✍️ اسم الفوج (مثال: فوج 1 تايم كور)">
+        <input type="text" id="groupName" placeholder="✍️ اسم الفوج (مثال: الفوج 1 بايثون)">
         
         <select id="subject">
             <option value="">📚 اختر المادة / الدورة</option>
@@ -180,10 +180,10 @@
     let allStudents = [];
     let selectedStudentIds = []; 
     let globalCoursesData = [];
-    let currentSchoolName = "المؤسسة التعليمية الذكية"; // قيمة افتراضية في حال عدم وجود الربط
+    let currentSchoolName = "المؤسسة التعليمية الذكية"; 
 
     window.onload = async () => {
-        await loadSettingsFromServer(); // جلب اسم المدرسة من جدول الإعدادات أولاً
+        await loadSettingsFromServer(); 
         await loadCoursesFromServer();
         await loadTeachers(); 
         await loadInitialData(); 
@@ -208,7 +208,6 @@
             if (response.ok) {
                 const settingsData = await response.json();
                 if (Array.isArray(settingsData) && settingsData.length > 0) {
-                    // البحث عن السطر المكتوب فيه اسم المدرسة أو استخدام الحقل مباشرة
                     const config = settingsData[0];
                     if (config.schoolName && config.schoolName.trim() !== "") {
                         currentSchoolName = config.schoolName.trim();
@@ -528,7 +527,7 @@
 
         const btn = document.getElementById("save-btn");
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ سحابياً...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ ...';
 
         try {
             const response = await fetch(sheetURL, {
@@ -582,52 +581,30 @@
     async function deleteGroup(id) {
         if(!confirm("هل أنت متأكد تماماً من حذف هذا الفوج؟ (لن يتم حذف الطلاب، بل الفوج فقط)")) return;
 
-        // إعداد البنية الأمثل المتوافقة بالكامل مع الخادم السحابي النصي لـ Google Web App دون تعليق
+        // صياغة Payload متطابق 100% مع شروط الكود السحابي لحذف السطور
         const payload = {
-            action: "deleteUser", 
+            action: "deleteStudent", // تم التعديل لتتوافق تماماً مع كود السيرفر المستقبِل للحذف
             sheet: "Group",
             id: id
         };
 
-        showToast("⏳ جاري معالجة طلب الحذف والتحديث سحابياً...", "#ffc107");
-
         try {
-            // استخدام ترويسة text/plain تمنع مشاكل الطلبات المسبقة (Pre-flight CORS) وتضمن وصول البيانات لـ GAS فوراً
-            const response = await fetch(sheetURL, { 
-                method: "POST", 
-                mode: "cors",
-                headers: {
-                    "Content-Type": "text/plain;charset=utf-8"
-                },
-                body: JSON.stringify(payload) 
+            const response = await fetch(sheetURL, {
+                method: "POST",
+                body: JSON.stringify(payload)
             });
             
-            const res = await response.json();
+            const result = await response.json();
             
-            if(res.success || res.status === "success" || res.result === "success") {
-                showToast("🗑️ تم حذف الفوج بنجاح وتحديث السحابة", "#dc3545");
-                await loadInitialData(); // إعادة التحميل المباشر بعد التأكيد من السيرفر
+            if(result.success) {
+                showToast("🗑️ تم حذف الفوج بنجاح .", "#28a745");
+                await loadInitialData(); 
             } else {
-                // خطة بديلة ذكية: تنفيذ التحميل والمزامنة في حالة أرسل السيرفر نجاحاً ببنية مختلفة
-                showToast("🗑️ تم تنفيذ طلب الحذف بنجاح وجاري مزامنة المنظومة", "#dc3545");
-                await loadInitialData();
+                showToast("❌ فشل عملية الحذف: " + result.error, "#dc3545");
             }
-        } catch (e) {
-            console.error("حذف الفوج معلق أو فشل، جاري المحاولة البديلة الفورية:", e);
-            
-            // محاولة بديلة عبر إرسال معلمات الرابط المباشرة لضمان الإلغاء الكامل دون تعليق
-            try {
-                const altResponse = await fetch(`${sheetURL}?action=deleteUser&sheet=Group&id=${id}`, { method: "GET" });
-                if(altResponse.ok) {
-                    showToast("🗑️ تم الحذف والمزامنة بنجاح عبر بروتوكول المزامنة البديل", "#28a745");
-                    await loadInitialData();
-                } else {
-                    showToast("❌ فشل الحذف التلقائي، يرجى مراجعة صلاحيات السكربت", "#dc3545");
-                }
-            } catch(altErr) {
-                console.error("الخطأ البديل:", altErr);
-                showToast("❌ فشل الحذف النهائي، يرجى التحقق من اتصال السكربت السحابي", "#dc3545");
-            }
+        } catch(e) {
+            console.error("خطأ الحذف:", e);
+            showToast("❌ حدث عطل أثناء الاتصال بقاعدة البيانات", "#dc3545");
         }
     }
 
