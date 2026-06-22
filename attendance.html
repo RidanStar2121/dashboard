@@ -404,12 +404,13 @@
 
     // الدالة الذكية والمطابقة تماماً لصفحة Group لحذف السجل بدون لمس الـ Apps Script
     // الدالة الذكية والمطابقة تماماً لصفحة Group لحذف السجل بدون لمس الـ Apps Script
+   // الدالة الذكية والمطابقة تماماً لصفحة المجموعات الناجحة لحذف السجل سحابياً بشكل صحيح
     async function deleteAttendance(id) {
         if (!confirm("هل أنت متأكد تماماً من حذف سجل الحضور هذا؟ لا يمكن التراجع عن هذا الإجراء.")) return;
 
-        // استخدام نفس تركيبة وبنية متغير الـ payload لصفحة المجموعات الناجحة بنسبة 100%
+        // صياغة الـ Payload المتوافقة تماماً مع شروط الكود السحابي لاستقبال أوامر الحذف
         const payload = {
-            action: "deleteUser", 
+            action: "deleteStudent", 
             sheet: "attendance",
             id: id
         };
@@ -417,24 +418,20 @@
         try {
             const response = await fetch(sheetURL, { 
                 method: "POST", 
-                headers: {
-                    "Content-Type": "text/plain;charset=utf-8"
-                },
                 body: JSON.stringify(payload) 
             });
             
             const result = await response.json();
             
-            if (result.success || response.ok) {
-                // تحديث السجل فوراً في الواجهة لإشعار المستخدم بالدقة
-                alert("🗑️ تم حذف السجل بنجاح من المنظومة سحابياً.");
-                await fetchAttendanceHistory();
+            if (result.success) {
+                alert("🗑️ تم حذف السجل بنجاح وتحديث السحابة.");
+                await fetchAttendanceHistory(); // لتحديث جدول الحضور فوراً بعد الحذف الفعلي
             } else {
-                alert("❌ فشل الحذف من السيرفر: " + (result.error || "خطأ غير معروف"));
+                alert("❌ فشل عملية الحذف: " + (result.error || "خطأ غير معروف"));
             }
         } catch (e) {
-            alert("❌ فشل الحذف، يرجى التحقق من اتصال الشبكة.");
-            console.error(e);
+            console.error("خطأ الحذف:", e);
+            alert("❌ حدث عطل أثناء الاتصال بالخادم السحابي");
         }
     }
 
